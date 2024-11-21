@@ -9,7 +9,6 @@ import threading
 import queue
 from pathlib import Path
 
-
 # Interactive Console Definition
 class InteractiveConsole(tk.Frame):
     def __init__(self, master=None, **kwargs):
