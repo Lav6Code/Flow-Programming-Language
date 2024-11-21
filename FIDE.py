@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter.filedialog import *
-import sv_ttk
 import importlib.util
 import sys
 import os
@@ -8,6 +7,7 @@ import subprocess
 import threading
 import queue
 from pathlib import Path
+import sv_ttk
 
 # Interactive Console Definition
 class InteractiveConsole(tk.Frame):
@@ -36,7 +36,7 @@ class InteractiveConsole(tk.Frame):
             bufsize=1,
         )
         self.text.configure(state="normal")
-        self.text.insert(tk.END, f"Flow executing: {file.name.split("/")[-1]}\n")
+        self.text.insert(tk.END, f"{file.name.split('/')[-1]} is executed.\n {'_' * terminal.cget('width')}")
         self.text.see(tk.END)
         
 
@@ -55,7 +55,7 @@ class InteractiveConsole(tk.Frame):
             else:
                 self.text.insert(tk.END, line)
                 self.text.see(tk.END)
-        self.text.insert(tk.END, f"{file.name.split("/")[-1]} is executed.\n {"_"*terminal.cget("width")}")
+        self.text.insert(tk.END, f"{file.name.split('/')[-1]} is executed.\n {'_'*terminal.cget('width')}")
         self.text.see(tk.END)
         self.text.configure(state="disabled")
 
