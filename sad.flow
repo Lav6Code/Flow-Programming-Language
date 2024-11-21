@@ -1,0 +1,4 @@
+if(>(5,2),(
+	output("5 je vece od 2");
+));
+

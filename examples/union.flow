@@ -1,0 +1,4 @@
+var("SET",set(1,2,4));
+var("SET1",set(1,3,4));
+var("SET2",set(4,4,5));
+output(union(SET,SET1,SET2));

@@ -1,0 +1,3 @@
+var("S", set(1,2,3));
+var("S1", set(2));
+output(intersection(S,S1));

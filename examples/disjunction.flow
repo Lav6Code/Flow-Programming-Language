@@ -1,0 +1,3 @@
+var("SET", set(1,2,3));
+var("SET1", set(3,4));
+output(disjunction(SET,SET1));

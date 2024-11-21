@@ -1,0 +1,2 @@
+output("PRIJE");
+output(input("SIGMA KAŽE: "));

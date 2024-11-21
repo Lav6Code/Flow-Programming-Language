@@ -1,0 +1,3 @@
+var("a", "SIGMA");
+var("b", "JA SAM");
+output(+(a,b));
