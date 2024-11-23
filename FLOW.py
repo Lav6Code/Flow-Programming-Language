@@ -193,7 +193,7 @@ def execute(command, args): # args with ,
     if command == "+":
         if type(args[0].sol) == str:
             return (args[0].sol) + (args[1].sol)
-        if type(args[0])==int and type(args[1])==int:
+        if type(args[0].sol)==int and type(args[1].sol)==int:
             return int(args[0].sol) + int(args[1].sol)
         else:
             print("ARGUMENT ERROR: Trying to add(+) two values with different type.")
