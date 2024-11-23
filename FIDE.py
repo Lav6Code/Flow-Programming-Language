@@ -36,8 +36,9 @@ class InteractiveConsole(tk.Frame):
             bufsize=1,
         )
         self.text.configure(state="normal")
-        self.text.insert(tk.END, f"{file.name.split('/')[-1]} is executed.\n {'_' * terminal.cget('width')}")
+        self.text.insert(tk.END, f"EXECUTING: {file.name.split('/')[-1]}\n{'═'*37}\n")
         self.text.see(tk.END)
+
         
 
         threading.Thread(target=self.read_output, daemon=True).start()
@@ -55,8 +56,8 @@ class InteractiveConsole(tk.Frame):
             else:
                 self.text.insert(tk.END, line)
                 self.text.see(tk.END)
-        self.text.insert(tk.END, f"{file.name.split('/')[-1]} is executed.\n {'_'*terminal.cget('width')}")
         self.text.see(tk.END)
+        self.text.insert(tk.END,'═'*37)
         self.text.configure(state="disabled")
 
     def on_enter(self, event):
@@ -89,7 +90,7 @@ green_keywords = ['+', '*', "-", "/"]
 red_keywords = ['var', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len"]
 orange_keywords = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"']
 blue_keywords = [";", "(", ")"]
-flow_path = "C:/Users/Valchichi/Dropbox/PROGRAMIRANJE/FLOW-programming language/FLOW.py"
+flow_path = "./FLOW.py"
 
 
 # FUNCTIONS (Unchanged from your original implementation)
