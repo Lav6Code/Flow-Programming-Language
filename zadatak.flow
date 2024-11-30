@@ -1,0 +1,3 @@
+var("n", num(input("")));
+var("zbroj", 0);
+for(n,(var("zbroj",+(zbroj, num(input("")));));

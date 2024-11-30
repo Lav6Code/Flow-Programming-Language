@@ -26,7 +26,7 @@ class InteractiveConsole(tk.Frame):
         if self.process is not None and self.process.poll() is None:
             self.text.insert(tk.END, "A process is already running.\n")
             return
-
+        self.text.configure(state="normal")
         self.process = subprocess.Popen(
             command,
             stdin=subprocess.PIPE,
@@ -35,7 +35,7 @@ class InteractiveConsole(tk.Frame):
             text=True,
             bufsize=1,
         )
-        self.text.configure(state="normal")
+
         self.text.insert(tk.END, f"EXECUTING: {file.name.split('/')[-1]}\n{'═'*37}\n")
         self.text.see(tk.END)
 
@@ -54,10 +54,12 @@ class InteractiveConsole(tk.Frame):
                 VARS = eval(dicts)
                 update_variables_textbox(VARS)
             else:
+                print(line)
                 self.text.insert(tk.END, line)
                 self.text.see(tk.END)
         self.text.see(tk.END)
-        self.text.insert(tk.END,'═'*37)
+        self.text.insert(tk.END,'═'*37, "\n")
+
         self.text.configure(state="disabled")
 
     def on_enter(self, event):
@@ -69,7 +71,6 @@ class InteractiveConsole(tk.Frame):
         line = self.text.get("insert linestart", "insert").strip()
         self.text.insert(tk.END, "\n")  # Move to a new line
         self.text.see(tk.END)
-
         if line:
             self.process.stdin.write(line + "\n")
             self.process.stdin.flush()
@@ -94,6 +95,36 @@ flow_path = "./FLOW.py"
 
 
 # FUNCTIONS (Unchanged from your original implementation)
+def change_path_f():
+    global flow_path, intpreter_configuration_window
+    
+    flow_file = askopenfile(title="Select Flow Intpereter", mode ='r', filetypes =[('Python', '*.py')])
+    if flow_file is not None:
+        flow_path = flow_file.name
+    else:
+        flow_path = None
+    intpreter_configuration_window.destroy()
+
+def interpreter_configuration(event=None):
+    global intpreter_configuration_window
+    intpreter_configuration_window = tk.Toplevel(app)
+    intpreter_configuration_window.geometry("750x150")
+    intpreter_configuration_window.title("Configure Intepreter")
+    intpreter_configuration_window.after(10, intpreter_configuration_window.lift)
+    
+    current_intepreter_title = tk.Label(master=intpreter_configuration_window, text="╔{ CURRENT INTEPRETER }╗", fg="#3277a8", font = ("Calibri Bold", 16))
+    current_intepreter_title.pack()
+    
+    current_path = tk.Label(master=intpreter_configuration_window, text="", font = "Consolas 12", bg = "#8f99a1", fg = "#000")
+    if flow_path:
+        current_path.config(text=flow_path)
+    else:
+        current_path.config(text="⚠️NO INTEPRETER SELECTED⚠️")
+    current_path.pack()
+    
+    change_path = tk.Button(intpreter_configuration_window, text="Change Path to FLOW intepreter", command = change_path_f)
+    change_path.place(relx=0.5,rely=0.7, anchor=tk.CENTER)
+    
 def update_variables_textbox(variables):
     print(variables)
     global variable_box
@@ -206,6 +237,7 @@ def open_file(event=None):
             textbox.delete("1.0", tk.END)
             textbox.insert(tk.INSERT, file_content[:-1])
             update_text()
+            terminal.text.delete("1.0", tk.END)
     else:
         response = tk.messagebox.askquestion(title="⚠️ File will not be saved! ⚠️",
                                              message="Save file before opening another file?", type="yesnocancel")
@@ -297,6 +329,11 @@ menubar.add_cascade(menu=file_menu, label="File")
 run_menu = tk.Menu(menubar, tearoff=False)
 run_menu.add_command(label="Run", accelerator="F5", command=run_file)
 menubar.add_cascade(menu=run_menu, label="Run")
+
+configuration_menu = tk.Menu(menubar, tearoff=False)
+configuration_menu.add_command(label = "Intepreter",  accelerator="Ctrl + I", command = interpreter_configuration)
+menubar.add_cascade(menu=configuration_menu, label="Configure")
+
 app.config(menu=menubar)
 
 # Bindings (Unchanged)
