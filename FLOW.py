@@ -399,6 +399,10 @@ def execute(command, args): # args with ,
             lst.append(a.sol)
         return lst
     
+    #COMMAND NOT FOUND SYNTAX ERROR
+    else:
+        print(f"SYNTAX ERROR: {command} is not a command or a varaible.")
+    
     
 def tokenize(code, tokens_list=None):
     

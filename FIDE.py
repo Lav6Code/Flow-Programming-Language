@@ -288,7 +288,7 @@ def exita(event=None):
 file=None
 
 # WIDGETS (Same as original code, except terminal replaced)
-textbox = tk.Text(app, width=57, height=23, font=("Consolas 20"), undo=True)
+textbox = tk.Text(app, width=57, height=23, font=("Consolas 20"), undo=True, wrap="none")
 textbox.place(rely=0, relx=0.04)
 textbox.tag_config("GREEN", foreground="green")
 textbox.tag_config("RED", foreground="red")
