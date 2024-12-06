@@ -48,13 +48,14 @@ class InteractiveConsole(tk.Frame):
         VARS = {}
         """Reads utput from the subprocess."""
         for line in iter(self.process.stdout.readline, ""):
+            print(line)
             if line.startswith(VARS_CONNECTION_KEY+"{"):
                 dicts = line[len(VARS_CONNECTION_KEY):-1]
                 dicts.split(",")
                 VARS = eval(dicts)
                 update_variables_textbox(VARS)
             else:
-                print(line)
+                #print(line)
                 self.text.insert(tk.END, line)
                 self.text.see(tk.END)
         self.text.see(tk.END)
