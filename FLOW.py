@@ -1,5 +1,6 @@
 import importlib.util
 import sys
+
 FLOW_VERSION = 0.1
 
 FORBIDDEN_CHARS = ['~']
@@ -7,7 +8,10 @@ FORBIDDEN_CHARS = ['~']
 VARS = {}       
 COMMANDS = [None, '+', '*', "-", "/", 
             ">", "<", "=", ">=", "<=", "!=", 
-            'var', 'output', "input","if","for","set"]
+            'var', 'output', "input", "if", "for", "set",
+            "num", "disjunction", "subset", "superset", "add", "union",
+            "len", "fetch", "intersection"
+            ]
 COMMENT = "//"
 
 
@@ -90,7 +94,6 @@ class Token:
                 self.typ = "VAR"
 
 
-            
         if self.typ is None:
             print(f'error in Token {self.dsc}')
             print("SYNTAX ERROR: wrong type declaration")
@@ -207,42 +210,49 @@ def execute(command, args): # args with ,
         else:
             print("ARGUMENT ERORR: Trying to multiply(*) two values with wrong type.")
             exit()
+
     elif command == "-":
         if is_int(args[0].sol) and is_int(args[1].sol):
             return int(args[0].sol) - int(args[1].sol)
         else:
             print("ARGUMENT ERORR: Trying to substract(-) two values with wrong type.")
             exit()
+
     elif command == ">":
         if type(args[0].sol) == int and type(args[0].sol) == int:
             return args[0].sol > args[1].sol
         else:
             print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
             exit()
+
     elif command == ">=":
         if type(args[0].sol) == int and type(args[0].sol) == int:
             return args[0].sol >= args[1].sol
         else:
             print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
             exit()
+
     elif command == "<":
         if type(args[0].sol) == int and type(args[0].sol) == int:
             return args[0].sol < args[1].sol
         else:
             print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
             exit()
+
     elif command == "<=":
         if type(args[0].sol) == int and type(args[0].sol) == int:
             return args[0].sol <= args[1].sol
         else:
             print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
             exit()
+
     elif command == "=":
         if type(args[0].sol) == int and type(args[0].sol) == int:
             return args[0].sol == args[1].sol
         else:
             print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
             exit()
+
     elif command == "!=":
         if type(args[0].sol) == int and type(args[0].sol) == int:
             return args[0].sol != args[1].sol
@@ -263,6 +273,7 @@ def execute(command, args): # args with ,
         else:
             print("ARGUMENT ERROR: Trying to use non NUM value for FOR loop.")
             exit()
+
     elif command == "while":
         if args[0].typ == "BLK":
             while True:
@@ -300,6 +311,7 @@ def execute(command, args): # args with ,
             except:
                 print(f"INDEX ERROR: trying to FETCH inexistent value from {i_} position to {j_} in {set_} SET.")
                 exit()
+
     elif command == "add":
         if type(args[0].sol) == list:
             if len(args) == 2:
@@ -313,6 +325,7 @@ def execute(command, args): # args with ,
         else:
             print(f"ARGUMENT ERROR: trying to add an element into a wrong TYPE, should be SET")
             exit()
+
     elif command == "union":
         UNION_SET = []
         for a in args:
@@ -325,12 +338,12 @@ def execute(command, args): # args with ,
         return UNION_SET
     
     elif command == "len":
-
         if type(a.sol) == list:
             return len(a.sol)
         else:
             print("ARGUMENT ERROR: Trying to get a lentgh of a wrong type, should be SET.")
             exit()
+
     elif command == "intersection":
         INTERSECTED = []
         if type(args[0].sol) == list and type(args[1].sol) == list:
@@ -342,6 +355,7 @@ def execute(command, args): # args with ,
         else:
             print("ARGUMENT ERROR: trying to intersect elements that are wrong TYPE, both elements should be SET")
             exit()
+
     elif command == "subset":
         if type(args[0].sol) == list and type(args[1].sol) == list:
             #QUICK CHECK
@@ -516,15 +530,22 @@ def run(file_path):
  
     return VARS, EXECUTE_MESSAGE
 
+
 # RUNNING
 
 # Check if a .flow file is provided as an argument
-if len(sys.argv) < 2:
+if len(sys.argv) < 3:
     print("Usage: python flow.py <filename>.flow")
     sys.exit(1)
 
 # Get the filename from the command line
 filename = sys.argv[1]
+RUNNER = sys.argv[2]
+VARS_CONNECTION_KEY = "[SENDING_VARS_TO_FIDE]"
+INPUT_CONNECTION_KEY = "[RUNNING_IN_FIDE]"
+
 run(filename)
-VARS_CONNECTION_KEY = "152693"
-print(VARS_CONNECTION_KEY+str(VARS))
+
+# sending vars to FIDE
+if RUNNER == "FIDE":
+    print(VARS_CONNECTION_KEY+str(VARS))

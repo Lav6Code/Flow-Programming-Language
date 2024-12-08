@@ -3,6 +3,7 @@ from tkinter.filedialog import *
 import importlib.util
 import sys
 import os
+os.system("")
 import subprocess
 import threading
 import queue
@@ -39,23 +40,23 @@ class InteractiveConsole(tk.Frame):
         self.text.insert(tk.END, f"EXECUTING: {file.name.split('/')[-1]}\n{'═'*37}\n")
         self.text.see(tk.END)
 
-        
-
         threading.Thread(target=self.read_output, daemon=True).start()
 
     def read_output(self):
-        global VARS
-        VARS = {}
         """Reads utput from the subprocess."""
         for line in iter(self.process.stdout.readline, ""):
-            print(line)
             if line.startswith(VARS_CONNECTION_KEY+"{"):
                 dicts = line[len(VARS_CONNECTION_KEY):-1]
                 dicts.split(",")
                 VARS = eval(dicts)
                 update_variables_textbox(VARS)
+
+            elif line.startswith(INPUT_CONNECTION_KEY):
+                line = line.replace(INPUT_CONNECTION_KEY, '')
+                self.text.insert(tk.END, line)
+                self.text.see(tk.END)
+
             else:
-                #print(line)
                 self.text.insert(tk.END, line)
                 self.text.see(tk.END)
         self.text.see(tk.END)
@@ -277,10 +278,11 @@ def save_file(event=None):
 
 
 def run_file(event=None):
-    global terminal, flow_path, file
+    global terminal, flow_path, file, VARS
     save_file()
     if file:
-        terminal.start_process(["python", os.path.normpath(flow_path), os.path.normpath(file.name)])
+        VARS = {}
+        terminal.start_process(["python", os.path.normpath(flow_path), os.path.normpath(file.name), "FIDE"])
 
 def exita(event=None):
     sys.exit()
@@ -304,7 +306,8 @@ variable_box.config(state="disabled")
 variable_label = tk.Label(app, text="║VARIABLES║\n╚=========╝", font=("Consolas 20"), fg="lightblue")
 variable_label.place(relx=0.81, rely=-0)
 
-VARS_CONNECTION_KEY = "152693"
+VARS_CONNECTION_KEY = "[SENDING_VARS_TO_FIDE]"
+INPUT_CONNECTION_KEY = "[RUNNING_IN_FIDE]"
 
 line_counter = tk.Text(app, width=3, height=23, font=("Consolas 20"), fg="lightblue", state="disabled")
 line_counter.place(rely=-0, relx=0)
@@ -343,7 +346,9 @@ app.bind("<Control-o>", open_file)
 app.bind("<Control-s>", save_file)
 app.bind("<Control-e>", exit)
 app.bind("<F5>", run_file)
+
 app.bind_all('<Key>', update_text)
+app.bind_all('<Return>', update_text)
 
 # THEME AND MAIN LOOP
 sv_ttk.set_theme("dark")

@@ -1,1 +1,2 @@
-fksdhj(ds);
+var("n",num(input("INPUT:")));
+output("SIGMA");
