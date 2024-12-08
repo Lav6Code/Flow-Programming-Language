@@ -287,6 +287,12 @@ def run_file(event=None):
 def exita(event=None):
     sys.exit()
 
+def clear_console(event=None):
+    global terminal
+    terminal.text.configure(state="normal")
+    terminal.text.delete('1.0', tk.END)
+    terminal.text.configure(state="disabled")
+    
 #Setting file to NONE
 file=None
 
@@ -316,6 +322,9 @@ line_counter.config(spacing1=10)
 # Replace the tkterminal with the new InteractiveConsole
 terminal = InteractiveConsole(app)
 terminal.place(relx=0.751, rely=0.6)
+
+clear_console = tk.Button(app, text="×", fg="red", command = clear_console, font=("Consolas 20"))
+clear_console.place(relx=0.97, rely=0.55,anchor=tk.CENTER)
 
 console_label = tk.Label(app, text="║ CONSOLE ║\n╚=========╝", font=("Consolas 20"), fg="lightblue")
 console_label.place(relx=0.81, rely=0.5)
