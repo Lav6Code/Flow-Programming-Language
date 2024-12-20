@@ -135,7 +135,11 @@ def update_variables_textbox(variables):
     insert_text = ""
     
     for v in variables:
-        insert_text += f"{v}={variables[v]}\n"
+        if type(variables[v]) == int:
+            insert_text += f"{v}={variables[v]}\n"
+        elif type(variables[v]) == str:
+            insert_text += f"{v}='{variables[v]}'\n"
+
     variable_box.insert("1.0",insert_text)
     variable_box.config(state="disabled")
 

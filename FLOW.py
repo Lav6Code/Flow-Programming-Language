@@ -9,7 +9,7 @@ VARS = {}
 COMMANDS = [None, '+', '*', "-", "/", 
             ">", "<", "=", ">=", "<=", "!=", 
             'var', 'output', "input", "if", "for", "set",
-            "num", "disjunction", "subset", "superset", "add", "union",
+            "num", "txt", "disjunction", "subset", "superset", "add", "union",
             "len", "fetch", "intersection"
             ]
 COMMENT = "//"
@@ -404,9 +404,12 @@ def execute(command, args): # args with ,
             else:
                 print("TYPE ERROR: Error while handling conversion from this argument's type to NUM type")
                 exit()
-        else:
+        elif type_conversion == "txt":
             return a
 
+        else:
+            print("ARGUMENT ERROR: Input's arguments should only be 'num' or 'txt' depending on what type does a user wants to convert value into.")
+            exit()
 
     elif command == "var":
         VARS[args[0].sol] = args[1].sol
@@ -419,6 +422,13 @@ def execute(command, args): # args with ,
             return int(args[0].sol)
         else:
             print("TYPE ERROR: Error while handling conversion from this argument's type to NUM type")
+            exit()
+
+    elif command == "txt":
+        if not is_int(args[0].sol):
+            return str(args[0].sol)
+        else:
+            print("TYPE ERROR: Error while handling conversion from this argument's type to TXT type")
             exit()
 
     elif command == "set":

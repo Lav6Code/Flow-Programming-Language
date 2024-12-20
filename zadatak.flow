@@ -1,2 +1,2 @@
-var("n",num(input("num")));
+var("n", input("txt"));
 output("SIGMA");
