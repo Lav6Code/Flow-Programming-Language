@@ -14,7 +14,7 @@ import sv_ttk
 class InteractiveConsole(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
-        self.text = tk.Text(self, wrap=tk.WORD, font=("Consolas", 11), height=17, width=37)
+        self.text = tk.Text(self, wrap=tk.WORD, font=("Consolas", 11), height=16, width=37)
         self.text.pack(expand=True, fill=tk.BOTH)
         self.text.bind("<Return>", self.on_enter)
         self.text.configure(state="disabled")
@@ -81,7 +81,7 @@ class InteractiveConsole(tk.Frame):
 
 
 # SETUP
-WIDTH, HEIGHT = 1207, 800
+WIDTH, HEIGHT = 1207, 700
 app = tk.Tk()
 app.geometry(str(WIDTH) + "x" + str(HEIGHT))
 app.lift()
@@ -305,8 +305,8 @@ textbox.tag_config("ORANGE", foreground="orange")
 textbox.tag_config("BLUE", foreground="lightblue")
 textbox.config(spacing1=10)
 
-variable_box = tk.Text(app, width=20, height=10, font=("Consolas 20"))
-variable_box.place(rely=0.082, relx=0.75171)
+variable_box = tk.Text(app, width=24, height=8, font=("Consolas 16"))
+variable_box.place(rely=0.105, relx=0.755)
 variable_box.config(state="disabled")
 
 variable_label = tk.Label(app, text="║VARIABLES║\n╚=========╝", font=("Consolas 20"), fg="lightblue")
@@ -321,13 +321,13 @@ line_counter.config(spacing1=10)
 
 # Replace the tkterminal with the new InteractiveConsole
 terminal = InteractiveConsole(app)
-terminal.place(relx=0.751, rely=0.6)
+terminal.place(relx=0.751, rely=0.57)
 
-clear_console = tk.Button(app, text="×", fg="red", command = clear_console, font=("Consolas 20"))
+clear_console = tk.Button(app, text="CLEAR ×", fg="red", command = clear_console, font=("Consolas 7"))
 clear_console.place(relx=0.97, rely=0.55,anchor=tk.CENTER)
 
 console_label = tk.Label(app, text="║ CONSOLE ║\n╚=========╝", font=("Consolas 20"), fg="lightblue")
-console_label.place(relx=0.81, rely=0.5)
+console_label.place(relx=0.81, rely=0.46799)
 
 # MENU BAR (Unchanged)
 menubar = tk.Menu()

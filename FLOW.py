@@ -396,7 +396,11 @@ def execute(command, args): # args with ,
         return False
 
     elif command == "input":
-        return input()
+        a = input()
+        if a != "":
+            return a
+        else:
+            return args[0].sol
 
     elif command == "var":
         VARS[args[0].sol] = args[1].sol
