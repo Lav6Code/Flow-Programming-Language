@@ -1,15 +1,17 @@
 import importlib.util
 import sys
+import ctypes
 
 FLOW_VERSION = 0.1
 
 FORBIDDEN_CHARS = ['~']
 
 VARS = {}       
+FUNCTIONS = {}
 COMMANDS = [None, '+', '*', "-", "/", 
             ">", "<", "=", ">=", "<=", "!=", 
             'var', 'output', "input", "if", "for", "set",
-            "num", "txt", "disjunction", "subset", "superset", "add", "union",
+            "num", "txt", "disjunction", "subset", "superset", "add", "union", "func",
             "len", "fetch", "intersection"
             ]
 COMMENT = "//"
@@ -93,6 +95,8 @@ class Token:
             elif '"' not in argstr[0]:
                 self.typ = "VAR"
 
+            elif argstr in FUNCTIONS:
+                self.typ = "FUNC"
 
         if self.typ is None:
             print(f'error in Token {self.dsc}')
@@ -126,6 +130,11 @@ class Token:
                 self.sol = execute(self.com, self.arg)
     
         elif self.typ == "BLK" and forced:
+            for a in self.arg:
+                a.evaluate()
+            self.sol = True # execute(None, self.arg)
+        
+        elif self.typ == "FUNC" and forced:
             for a in self.arg:
                 a.evaluate()
             self.sol = True # execute(None, self.arg)
@@ -189,11 +198,11 @@ def parse_block(sstr):
 
 
 def execute(command, args): # args with ,
-    global VARS
+    global VARS, FUNCTIONS
     # argstr = []
     # for a in args:
     #     argstr.append(a.sol)
-        
+    # Function
     # Operators
     if command == "+":
         if type(args[0].sol) == str:
@@ -414,6 +423,13 @@ def execute(command, args): # args with ,
     elif command == "var":
         VARS[args[0].sol] = args[1].sol
         return True
+    
+    elif command == "func":
+        FUNCTIONS[args[0].sol] = args[1].sol
+        return True
+
+    elif command == "Print":
+        ctypes.windll.user32.MessageBoxW(0, "Your text", "Your title", 1)
     
     # Type conversions:
         
