@@ -1,3 +1,4 @@
 func("Print", (
-output("Print");
+output("SIGMA");
 ));
+Print()

@@ -1,6 +1,5 @@
 import importlib.util
 import sys
-import ctypes
 
 FLOW_VERSION = 0.1
 
@@ -70,9 +69,6 @@ class Token:
         
         if self.com:
             self.typ = "COM"
-            if COMMANDS.count(self.com) == 0:
-                print(f"SYNTAX ERROR: '{command}' is not a command or a variable.")
-                exit()
         else: 
             
             # is it BLK?
@@ -425,12 +421,12 @@ def execute(command, args): # args with ,
         return True
     
     elif command == "func":
-        FUNCTIONS[args[0].sol] = args[1].sol
+        FUNCTIONS[args[0].sol] = args[1]
+        print(f"{FUNCTIONS=}")
         return True
-
-    elif command == "Print":
-        ctypes.windll.user32.MessageBoxW(0, "Your text", "Your title", 1)
-    
+   
+    elif command in FUNCTIONS:
+        FUNCTIONS[command].evaluate(forced=False)
     # Type conversions:
         
     elif command == "num":
