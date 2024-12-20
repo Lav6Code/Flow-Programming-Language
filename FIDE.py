@@ -91,7 +91,7 @@ app.resizable(True, True)
 # FLOW SETUP
 green_keywords = ['+', '*', "-", "/"]
 red_keywords = ['var', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len"]
-orange_keywords = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"']
+orange_keywords = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"', "num", "set"]
 blue_keywords = [";", "(", ")"]
 flow_path = "./FLOW.py"
 

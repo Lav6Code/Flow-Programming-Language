@@ -24,10 +24,10 @@ def repeating_el(lists):
         
 
 def is_int(strs):
-    if len(strs) == 0:
+    if len(str(strs)) == 0:
         return False
     isitint = True
-    for i in strs:
+    for i in str(strs):
         if i not in "0123456789":
             isitint = False
             break
@@ -397,10 +397,16 @@ def execute(command, args): # args with ,
 
     elif command == "input":
         a = input()
-        if a != "":
-            return a
+        type_conversion = args[0].sol
+        if type_conversion == "num":
+            if is_int(a):
+                return int(a)
+            else:
+                print("TYPE ERROR: Error while handling conversion from this argument's type to NUM type")
+                exit()
         else:
-            return args[0].sol
+            return a
+
 
     elif command == "var":
         VARS[args[0].sol] = args[1].sol
