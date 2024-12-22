@@ -1,3 +1,5 @@
-func("Print", (
+func("Print", 
+(
 output("Print");
 ));
+

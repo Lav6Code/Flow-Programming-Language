@@ -1,21 +1,23 @@
 import importlib.util
 import sys
-import ctypes
 
 FLOW_VERSION = 0.1
 
 FORBIDDEN_CHARS = ['~']
 
 VARS = {}       
-FUNCTIONS = {}
-COMMANDS = [None, '+', '*', "-", "/", 
-            ">", "<", "=", ">=", "<=", "!=", 
-            'var', 'output', "input", "if", "for", "set",
-            "num", "txt", "disjunction", "subset", "superset", "add", "union", "func",
-            "len", "fetch", "intersection"
+FUNS = {}
+COMMANDS = [None, '+', '*', "-", "/",  # MATH
+            ">", "<", "=", ">=", "<=", "!=", # LOGIC
+            'output', "input", # USER INTERACTION
+            "if", "for", "while",  # FLOW
+            "set", 'var', # OBJECT CREATIONS
+            "num", "txt",  #TYPES
+            "disjunction", "subset", "superset", "add", "union", #SET RELATED
+            "len", "fetch", "intersection",  #SET RELATED
+            "func", "call", # FUNCTION RELATED
             ]
 COMMENT = "//"
-
 
 def repeating_el(lists):
     non_repeating_elements = []
@@ -67,12 +69,8 @@ class Token:
             
         self.sol = None
         self.typ = None
-        
         if self.com:
             self.typ = "COM"
-            if COMMANDS.count(self.com) == 0:
-                print(f"SYNTAX ERROR: '{command}' is not a command or a variable.")
-                exit()
         else: 
             
             # is it BLK?
@@ -95,15 +93,12 @@ class Token:
             elif '"' not in argstr[0]:
                 self.typ = "VAR"
 
-            elif argstr in FUNCTIONS:
-                self.typ = "FUNC"
 
         if self.typ is None:
             print(f'error in Token {self.dsc}')
             print("SYNTAX ERROR: wrong type declaration")
         
-        # print('  ...created', self)
-            
+        # print('  ...created', self)            
             
     def __repr__(self):
         return f"{self.typ} Token {self.dsc} (sol: {self.sol})"
@@ -128,17 +123,11 @@ class Token:
                 a.evaluate()
             if self.com in COMMANDS:
                 self.sol = execute(self.com, self.arg)
-    
+
         elif self.typ == "BLK" and forced:
             for a in self.arg:
                 a.evaluate()
             self.sol = True # execute(None, self.arg)
-        
-        elif self.typ == "FUNC" and forced:
-            for a in self.arg:
-                a.evaluate()
-            self.sol = True # execute(None, self.arg)
-
 
 def parse_arg(sstr):
     
@@ -198,11 +187,8 @@ def parse_block(sstr):
 
 
 def execute(command, args): # args with ,
-    global VARS, FUNCTIONS
-    # argstr = []
-    # for a in args:
-    #     argstr.append(a.sol)
-    # Function
+    global VARS, FUNS
+
     # Operators
     if command == "+":
         if type(args[0].sol) == str:
@@ -296,6 +282,7 @@ def execute(command, args): # args with ,
         else:
             print("ARGUMENT ERROR: Trying to execute a argument that does not have the abilty to be intepreted.")
             exit()
+
     # Other commands
 
     elif command == "output":
@@ -425,11 +412,13 @@ def execute(command, args): # args with ,
         return True
     
     elif command == "func":
-        FUNCTIONS[args[0].sol] = args[1].sol
+        FUNS[args[0].sol] = args[1]
         return True
 
-    elif command == "Print":
-        ctypes.windll.user32.MessageBoxW(0, "Your text", "Your title", 1)
+    elif command == "call":
+        # TODO check if arg in FUNS
+        FUNS[args[0].sol].evaluate(forced=True)
+        return True
     
     # Type conversions:
         
