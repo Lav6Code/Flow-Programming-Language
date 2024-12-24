@@ -296,7 +296,48 @@ def clear_console(event=None):
     terminal.text.configure(state="normal")
     terminal.text.delete('1.0', tk.END)
     terminal.text.configure(state="disabled")
+
+def make_function(filess):
+    global files
+    files = filess
+
+    def load_recent_file(event=None):
+        global files, textbox, app
+        file_to_open = files
+        response = tk.messagebox.askquestion(title="⚠️ File will not be saved! ⚠️",
+                                                message="Save file before opening another file?", type="yesnocancel")
+        if response == "yes":
+            save_file()
+            file_content = open(file_to_open).read()
+            textbox.delete("1.0", tk.END)
+            textbox.insert(tk.INSERT, file_content[:-1])
+            update_text()
+            terminal.text.delete("1.0", tk.END)
+        elif response == "cancel":
+            pass
+        else:
+            file_content = open(file_to_open).read()
+            textbox.delete("1.0", tk.END)
+            textbox.insert(tk.INSERT, file_content[:-1])
+            update_text()
+                
+        if files is not None:
+            app.title(file_to_open.name.split("/")[-1])
+        else:
+            app.title("untitled.flow")
     
+    return load_recent_file
+
+def open_recents_file(event=None):
+    global open_recents
+    open_recents = tk.Toplevel(app)
+    open_recents.geometry("500x500")
+    open_recents.title("Open Recent Files")
+    recents = open("fide/recents.txt","r").read().split("\n")
+    for i in recents:
+        recent_button = tk.Button(open_recents, text=i.split("/")[-1], height=5, width=10, command=make_function(i))
+        recent_button.place(rely=0.5, relx=recents.index(i) * .19 + .07)
+
 #Setting file to NONE
 file=None
 
@@ -338,6 +379,7 @@ menubar = tk.Menu()
 file_menu = tk.Menu(menubar, tearoff=False)
 file_menu.add_command(label="New", accelerator="Ctrl+N", command=new_file)
 file_menu.add_command(label="Open", accelerator="Ctrl+O", command=open_file)
+file_menu.add_command(label="Open Recents", accelerator="Ctrl+Shift+O", command=open_recents_file)
 file_menu.add_command(label="Save", accelerator="Ctrl+S", command=save_file)
 file_menu.add_separator()
 file_menu.add_command(label="Exit", accelerator="Ctrl+E", command=exit)
