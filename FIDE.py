@@ -1,4 +1,5 @@
 import tkinter as tk
+import customtkinter as ctk
 from tkinter.filedialog import *
 import importlib.util
 import sys
@@ -234,37 +235,6 @@ def new_file(event=None):
     file = None
     app.title("Untitled.flow")
 
-def open_file(event=None):
-    global file
-    if textbox.get("1.0", tk.END).replace("\n", "") == "":
-        file = askopenfile(mode='r', filetypes=[('Flow Files', '*.flow')])
-        if file is not None:
-            file_content = file.read()
-            textbox.delete("1.0", tk.END)
-            textbox.insert(tk.INSERT, file_content[:-1])
-            update_text()
-            terminal.text.delete("1.0", tk.END)
-    else:
-        response = tk.messagebox.askquestion(title="⚠️ File will not be saved! ⚠️",
-                                             message="Save file before opening another file?", type="yesnocancel")
-        if response == "yes":
-            save_file()
-            textbox.delete("1.0", tk.END)
-            app.update()
-            open_file()
-        elif response == "cancel":
-            pass
-        else:
-            textbox.delete("1.0", tk.END)
-            app.update()
-            open_file()
-
-    if file is not None:
-        app.title(file.name.split("/")[-1])
-    else:
-        app.title("untitled.flow")
-
-
 def save_file(event=None):
     global file
 
@@ -297,46 +267,87 @@ def clear_console(event=None):
     terminal.text.delete('1.0', tk.END)
     terminal.text.configure(state="disabled")
 
-def make_function(filess):
-    global files
-    files = filess
-
-    def load_recent_file(event=None):
-        global files, textbox, app
-        file_to_open = files
-        response = tk.messagebox.askquestion(title="⚠️ File will not be saved! ⚠️",
+"""
+if textbox.get("1.0", tk.END).replace("\n", "") == "":
+# 
+else:
+        response = tk.messagebox.askquestion(title="⚠️ file will not be saved! ⚠️",
                                                 message="Save file before opening another file?", type="yesnocancel")
         if response == "yes":
             save_file()
-            file_content = open(file_to_open).read()
+            textbox.delete("1.0", tk.END)
+            app.update()
+            open_file()
+        elif response == "cancel":
+            pass
+        else:
+            textbox.delete("1.0", tk.END)
+            app.update()
+            open_file()
+"""
+
+def open_file(filename):
+    global textbox, file, recent_files_menu
+
+    if not filename.endswith(".flow"):
+        response = tk.messagebox.showwarning(title=f"⚠️ {filename} is not compatible",
+                                         message=f"{filename} should have an extension .flow, its not compatible")
+        return
+
+    if not os.path.exists(filename):
+        response = tk.messagebox.showwarning(title=f"⚠️ can't find {filename} directory ⚠️",
+                                                message=f"{filename} does not exist")
+        return
+
+    # RECENTS MANAGEMENT
+    recents_changed = False
+    with open('fide/recents.txt', 'r') as recents_file:
+        recents = recents_file.readlines()
+        recents = [line.rstrip() for line in recents]
+        if filename not in recents:
+            recents.insert(0, filename)
+            if len(recents) > 4:
+                recents.pop(4)
+            recents_changed = True
+    if recents_changed:
+        with open('fide/recents.txt', 'w') as recents_file:
+            recents_file.write("\n".join(recents))
+
+    if filename is not None:
+        with open(filename, 'r') as file_content:
+            file_content = file_content.read()
             textbox.delete("1.0", tk.END)
             textbox.insert(tk.INSERT, file_content[:-1])
             update_text()
             terminal.text.delete("1.0", tk.END)
-        elif response == "cancel":
-            pass
-        else:
-            file_content = open(file_to_open).read()
-            textbox.delete("1.0", tk.END)
-            textbox.insert(tk.INSERT, file_content[:-1])
-            update_text()
-                
-        if files is not None:
-            app.title(file_to_open.name.split("/")[-1])
-        else:
-            app.title("untitled.flow")
+            app.title(filename.split("/")[-1])
+        file = filename
+    else:
+        app.title("untitled.flow")
     
-    return load_recent_file
+    # set recent files to menu
+    if recents_changed:
+        with open("fide/recents.txt","r") as recents:
+            recent_files_menu.delete(0,4)
+            for r in recents.readlines():
+                r = r.rstrip()
+                recent_files_menu.add_command(label=r.split("/")[-1], command=lambda fname=r: open_file(fname))
 
-def open_recents_file(event=None):
-    global open_recents
-    open_recents = tk.Toplevel(app)
-    open_recents.geometry("500x500")
-    open_recents.title("Open Recent Files")
-    recents = open("fide/recents.txt","r").read().split("\n")
-    for i in recents:
-        recent_button = tk.Button(open_recents, text=i.split("/")[-1], height=5, width=10, command=make_function(i))
-        recent_button.place(rely=0.5, relx=recents.index(i) * .19 + .07)
+
+def open_file_from_dialog():
+    # take filename from dialog box
+    filename = askopenfile(mode='r', filetypes=[('Flow Files', '*.flow')])
+    if filename is not None: 
+        filename=filename.name
+        # open it
+        open_file(filename)
+
+
+############
+### MAIN ###
+############
+
+print("\nrunning FIDE...")
 
 #Setting file to NONE
 file=None
@@ -377,12 +388,22 @@ console_label.place(relx=0.81, rely=0.46799)
 # MENU BAR (Unchanged)
 menubar = tk.Menu()
 file_menu = tk.Menu(menubar, tearoff=False)
-file_menu.add_command(label="New", accelerator="Ctrl+N", command=new_file)
-file_menu.add_command(label="Open", accelerator="Ctrl+O", command=open_file)
-file_menu.add_command(label="Open Recents", accelerator="Ctrl+Shift+O", command=open_recents_file)
-file_menu.add_command(label="Save", accelerator="Ctrl+S", command=save_file)
+file_menu.add_command(label="New", accelerator="Ctrl+n", command=new_file)
+file_menu.add_command(label="Open", accelerator="Ctrl+o", command=open_file_from_dialog)
+
+# RECENT FILES
+recent_files_menu = tk.Menu(file_menu, tearoff=False)
+file_menu.add_cascade(menu=recent_files_menu, label="Open Recents", accelerator="Ctrl+O")
+
+# load recent files
+with open("fide/recents.txt","r") as recents:
+    for r in recents.readlines():
+        r = r.rstrip()
+        recent_files_menu.add_command(label=r.split("/")[-1], command=lambda fname=r: open_file(fname))
+
+file_menu.add_command(label="Save", accelerator="Ctrl+s", command=save_file)
 file_menu.add_separator()
-file_menu.add_command(label="Exit", accelerator="Ctrl+E", command=exit)
+file_menu.add_command(label="Exit", accelerator="Ctrl+e", command=exit)
 menubar.add_cascade(menu=file_menu, label="File")
 
 run_menu = tk.Menu(menubar, tearoff=False)
@@ -390,14 +411,14 @@ run_menu.add_command(label="Run", accelerator="F5", command=run_file)
 menubar.add_cascade(menu=run_menu, label="Run")
 
 configuration_menu = tk.Menu(menubar, tearoff=False)
-configuration_menu.add_command(label = "Intepreter",  accelerator="Ctrl + I", command = interpreter_configuration)
+configuration_menu.add_command(label = "Intepreter",  accelerator="Ctrl + i", command = interpreter_configuration)
 menubar.add_cascade(menu=configuration_menu, label="Configure")
 
 app.config(menu=menubar)
 
 # Bindings (Unchanged)
 app.bind("<Control-n>", new_file)
-app.bind("<Control-o>", open_file)
+app.bind("<Control-o>", open_file_from_dialog)
 app.bind("<Control-s>", save_file)
 app.bind("<Control-e>", exit)
 app.bind("<F5>", run_file)
