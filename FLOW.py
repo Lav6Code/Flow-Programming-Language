@@ -381,7 +381,7 @@ def execute(command, args): # args with ,
         return False
     elif command == "sum":
         if len(args) == 1:
-            if args[0].typ == "SET":
+            if type(args[0].sol) == list:
                 return sum(args[0].sol)
             else:
                 print("ARGUMENT/TYPE ERROR: Trying to get a SUM of only one value, or values are incorrect type.")
@@ -390,7 +390,7 @@ def execute(command, args): # args with ,
             sum_list = []
             for i in args:
                 if i.typ == "NUM":
-                    sum_list.append(i)
+                    sum_list.append(i.sol)
                 else:
                     print("TYPE ERROR: Trying to get a SUM of mutlitple non NUM type values.")
                     exit()
@@ -480,11 +480,13 @@ def execute(command, args): # args with ,
             exit()
 
     elif command == "txt":
-        if not is_int(args[0].sol):
+        if is_int(args[0].sol):
             return str(args[0].sol)
         else:
-            print("TYPE ERROR: Error while handling conversion from this argument's type to TXT type")
-            exit()
+            if type(args[0].sol) != str:
+                print("TYPE ERROR: Trying to convert non-convertable value into TXT type.")
+                exit()
+            return str(args[0].sol)
 
     elif command == "set":
         lst = []

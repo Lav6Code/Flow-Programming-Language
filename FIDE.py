@@ -261,8 +261,8 @@ def save_file(event=None):
         file = asksaveasfile(defaultextension=".flow", filetypes=[("Flow files", "*.flow")]).name
         if file:
             app.title(file.split("/")[-1])
-            file.write(textbox.get("1.0", tk.END))
-            file.close()
+            with open(file, "w") as file_t:
+                file_t.write(textbox.get("1.0", tk.END))
 
 
 def run_file(event=None):
@@ -348,7 +348,7 @@ def open_file(filename):
                 recent_files_menu.add_command(label=r.split("/")[-1], command=lambda fname=r: open_file(fname))
 
 
-def open_file_from_dialog():
+def open_file_from_dialog(event=None):
     # take filename from dialog box
     filename = askopenfile(mode='r', filetypes=[('Flow Files', '*.flow')])
     if filename is not None: 
