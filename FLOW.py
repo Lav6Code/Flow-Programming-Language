@@ -7,8 +7,8 @@ FORBIDDEN_CHARS = ['~']
 
 VARS = {}       
 FUNS = {}
-COMMANDS = [None, '+', '*', "-", "/",  # MATH
-            ">", "<", "=", ">=", "<=", "!=", # LOGIC
+COMMANDS = [None, '+', '*', "-", "/","sum",  # MATH
+            ">", "<", "=", ">=", "<=", "!=", "max", "min", # LOGIC
             'output', "input", # USER INTERACTION
             "if", "for", "while",  # FLOW
             "set", 'var', # OBJECT CREATIONS
@@ -17,7 +17,7 @@ COMMANDS = [None, '+', '*', "-", "/",  # MATH
             "len", "fetch", "intersection",  #SET RELATED
             "func", "call", # FUNCTION RELATED
             ]
-COMMENT = "//"
+COMMENT = "$"
 
 def repeating_el(lists):
     non_repeating_elements = []
@@ -379,6 +379,56 @@ def execute(command, args): # args with ,
             print("ARGUMENT ERROR: trying to detect subsets of elements that are wrong TYPE, both elements should be SET")
             exit()
         return False
+    elif command == "sum":
+        if len(args) == 1:
+            if args[0].typ == "SET":
+                return sum(args[0].sol)
+            else:
+                print("ARGUMENT/TYPE ERROR: Trying to get a SUM of only one value, or values are incorrect type.")
+                exit()
+        else:
+            sum_list = []
+            for i in args:
+                if i.typ == "NUM":
+                    sum_list.append(i)
+                else:
+                    print("TYPE ERROR: Trying to get a SUM of mutlitple non NUM type values.")
+                    exit()
+            return sum(sum_list)
+        
+    elif command == "max":
+        if len(args) == 1:
+            if type(args[0].sol) == list:
+                return max(args[0].sol)
+            else:
+                print("ARGUMENT/TYPE ERROR: Trying to get a MAX value of only one value, or values are incorrect type.")
+                exit()
+        else:
+            max_list = []
+            for i in args:
+                if i.typ == "NUM":
+                    max_list.append(i.sol)
+                else:
+                    print("TYPE ERROR: Trying to get a MAX value of mutlitple non NUM type values.")
+                    exit()
+            return max(max_list)
+        
+    elif command == "min":
+        if len(args) == 1:
+            if type(args[0].sol) == list:
+                return min(args[0].sol)
+            else:
+                print("ARGUMENT/TYPE ERROR: Trying to get a MIN of only one value or values are incorrect type.")
+                exit()
+        else:
+            min_list = []
+            for i in args:
+                if i.typ == "NUM":
+                    min_list.append(i.sol)
+                else:
+                    print("TYPE ERROR: Trying to get a MIN value of mutlitple non NUM type values.")
+                    exit()
+            return min(min_list)
     
     elif command == "disjunction":
         if type(args[0].sol) == list and type(args[1].sol) == list:
@@ -523,13 +573,14 @@ def run(file_path):
     EXECUTE_MESSAGE =f"Flow v{FLOW_VERSION} running, {file_path.split('/')[-1]}"
 
     file = open(file_path)
-    file = file.read()
-    file = '(' + file + ')'
+    file_content = file.read()
+    file.close()  #closing the file
+    file_content = '(' + file_content + ')'
     
     # Removing " " in file
     n_catcher = 0
     i_spaces = []
-    for i,f in enumerate(file):
+    for i,f in enumerate(file_content):
         if  f == '"':
             n_catcher += 1
             if n_catcher == 2:
@@ -538,19 +589,26 @@ def run(file_path):
         if n_catcher==0 and f == " ":
             i_spaces.append(i)
     
-    file = list(file)
+    file_content = list(file_content)
     for i in i_spaces:
-        file[i] = "~"
-    file = "".join(file)
-    file = file.replace("~", "")
+        file_content[i] = "~"
+    file_content = "".join(file_content)
+    file_content = file_content.replace("~", "")
+
+    # Adding comments
+    file_content = file_content.split("\n")
+    for i,e in enumerate(file_content):
+        if COMMENT in e:
+            file_content[i] = e.split(COMMENT)[0]
+    file_content = "".join(file_content)
     
     # Additional cleanup
-    file = file.replace("\n", "")
-    file = file.replace("\t", "")
+    file_content = file_content.replace("\n", "")
+    file_content = file_content.replace("\t", "")
     
     # Execute program
     TOKENS = []
-    token_root = tokenize(file, TOKENS)
+    token_root = tokenize(file_content, TOKENS)
     token_root.evaluate(forced=True)
  
     return VARS, EXECUTE_MESSAGE

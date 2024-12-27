@@ -38,7 +38,7 @@ class InteractiveConsole(tk.Frame):
             bufsize=1,
         )
 
-        self.text.insert(tk.END, f"EXECUTING: {file.name.split('/')[-1]}\n{'═'*37}\n")
+        self.text.insert(tk.END, f"EXECUTING: {file.split('/')[-1]}\n{'═'*37}\n")
         self.text.see(tk.END)
 
         threading.Thread(target=self.read_output, daemon=True).start()
@@ -94,6 +94,9 @@ green_keywords = ['+', '*', "-", "/"]
 red_keywords = ['var', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len"]
 orange_keywords = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"', "num", "set"]
 blue_keywords = [";", "(", ")"]
+purple_keywords = ["$"] # COMMENT
+
+# FLOW path
 flow_path = "./FLOW.py"
 
 
@@ -129,7 +132,6 @@ def interpreter_configuration(event=None):
     change_path.place(relx=0.5,rely=0.7, anchor=tk.CENTER)
     
 def update_variables_textbox(variables):
-    print(variables)
     global variable_box
     variable_box.config(state="normal")
     variable_box.delete("1.0", tk.END)
@@ -174,6 +176,8 @@ def update_text(a=None):
     textbox.tag_remove("GREEN", 1.0, tk.END)
     textbox.tag_remove("RED", 1.0, tk.END)
     textbox.tag_remove("BLUE", 1.0, tk.END)
+    textbox.tag_remove("ORANGE", 1.0, tk.END)
+    textbox.tag_remove("PURPLE", 1.0, tk.END)
 
     for word in green_keywords:
         highlight(word, "GREEN")
@@ -183,6 +187,10 @@ def update_text(a=None):
         highlight(word, "BLUE")
     for word in orange_keywords:
         highlight(word, "ORANGE")
+    for word in purple_keywords:
+        highlight(word, "PURPLE")
+
+    # WORDS INSIDE ""
 
     bucket = ""
     inside_n = []
@@ -199,9 +207,16 @@ def update_text(a=None):
             if bucket != "":
                 inside_n.append(bucket)
                 bucket = ""
-
     for word in inside_n:
         highlight(word, "ORANGE")
+    
+    # WORDS AFTER $
+    seperated_by_comment = []
+    for l in textbox.get("1.0", tk.END).split("\n"):
+        if "$" in l:
+            seperated_by_comment.append(l[l.index("$")::])
+    for word in seperated_by_comment:
+        highlight(word, "PURPLE")
 
     update_line_counter()
 
@@ -239,14 +254,13 @@ def save_file(event=None):
     global file
 
     if file:
-        with open(file.name, 'a') as f:
+        with open(file, 'a') as f:
             f.truncate(0)
             f.write(textbox.get("1.0", tk.END))
-            file.close()
     else:
-        file = asksaveasfile(defaultextension=".flow", filetypes=[("Flow files", "*.flow")])
+        file = asksaveasfile(defaultextension=".flow", filetypes=[("Flow files", "*.flow")]).name
         if file:
-            app.title(file.name.split("/")[-1])
+            app.title(file.split("/")[-1])
             file.write(textbox.get("1.0", tk.END))
             file.close()
 
@@ -256,7 +270,7 @@ def run_file(event=None):
     save_file()
     if file:
         VARS = {}
-        terminal.start_process(["python", os.path.normpath(flow_path), os.path.normpath(file.name), "FIDE"])
+        terminal.start_process(["python", os.path.normpath(flow_path), os.path.normpath(file), "FIDE"])
 
 def exita(event=None):
     sys.exit()
@@ -359,6 +373,7 @@ textbox.tag_config("GREEN", foreground="green")
 textbox.tag_config("RED", foreground="red")
 textbox.tag_config("ORANGE", foreground="orange")
 textbox.tag_config("BLUE", foreground="lightblue")
+textbox.tag_config("PURPLE", foreground="purple")
 textbox.config(spacing1=10)
 
 variable_box = tk.Text(app, width=24, height=8, font=("Consolas 16"))

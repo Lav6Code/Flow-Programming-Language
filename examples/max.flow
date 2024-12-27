@@ -1,0 +1,3 @@
+output(max(1,2,3)); //This should work
+output(max(set(1,2,3)));
+//output("SIGMA");
