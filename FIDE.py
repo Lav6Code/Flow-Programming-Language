@@ -258,8 +258,9 @@ def save_file(event=None):
             f.truncate(0)
             f.write(textbox.get("1.0", tk.END))
     else:
-        file = asksaveasfile(defaultextension=".flow", filetypes=[("Flow files", "*.flow")]).name
-        if file:
+        file = asksaveasfile(defaultextension=".flow", filetypes=[("Flow files", "*.flow")])
+        if file is not None:
+            file = file.name
             app.title(file.split("/")[-1])
             with open(file, "w") as file_t:
                 file_t.write(textbox.get("1.0", tk.END))
