@@ -1,3 +1,4 @@
 C:/Users/Valchichi/Documents/Flow-Programming-Language/examples/disjunction.flow
-C:/Users/Valchichi/Documents/Flow-Programming-Language/examples/for_in_for.flow
-C:/Users/Valchichi/Documents/Flow-Programming-Language/examples/dasd.flow
+C:/Users/Valchichi/Documents/Flow-Programming-Language/examples/function.flow
+C:/Users/Valchichi/Documents/Flow-Programming-Language/examples/afdsfsdfGAERG.flow
+C:/Users/Valchichi/Documents/Flow-Programming-Language/examples/dasdasfds.flow

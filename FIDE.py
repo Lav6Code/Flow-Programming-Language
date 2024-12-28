@@ -291,6 +291,18 @@ def save_file(event=None):
     if recents_changed:
         with open('fide/recents.txt', 'w') as recents_file:
             recents_file.write("\n".join(recents))
+    # Update recents
+    update_recents()
+
+def update_recents():
+    global recent_files_menu
+    # load recent files
+    with open("fide/recents.txt","r") as recents:
+        recent_files_menu.delete(0,4)
+        for r in recents.readlines():
+            r = r.rstrip()
+            recent_files_menu.add_command(label=r.split("/")[-1], command=lambda fname=r: open_file(fname))
+
 
 def run_file(event=None):
     global terminal, flow_path, file, VARS
@@ -308,17 +320,18 @@ def clear_console(event=None):
     terminal.text.delete('1.0', tk.END)
     terminal.text.configure(state="disabled")
 
-def open_file(filename):
+def open_file(filenames):
     global textbox, file, recent_files_menu, filename
-
+    filename = filenames
+    file = filename
     if not filename.endswith(".flow"):
-        response = tk.messagebox.showwarning(title=f"⚠️ {filename} is not compatible",
-                                         message=f"{filename} should have an extension .flow, its not compatible")
+        response = tk.messagebox.showwarning(title=f"⚠️ {filenames} is not compatible",
+                                         message=f"{filenames} should have an extension .flow, its not compatible")
         return
 
-    if not os.path.exists(filename):
-        response = tk.messagebox.showwarning(title=f"⚠️ can't find {filename} directory ⚠️",
-                                                message=f"{filename} does not exist")
+    if not os.path.exists(filenames):
+        response = tk.messagebox.showwarning(title=f"⚠️ can't find {filenames} directory ⚠️",
+                                                message=f"{filenames} does not exist")
         return
 
     # RECENTS MANAGEMENT
@@ -326,8 +339,8 @@ def open_file(filename):
     with open('fide/recents.txt', 'r') as recents_file:
         recents = recents_file.readlines()
         recents = [line.rstrip() for line in recents]
-        if filename not in recents:
-            recents.insert(0, filename)
+        if filenames not in recents:
+            recents.insert(0, filenames)
             if len(recents) > 4:
                 recents.pop(4)
             recents_changed = True
@@ -349,12 +362,7 @@ def open_file(filename):
     
     # set recent files to menu
     if recents_changed:
-        with open("fide/recents.txt","r") as recents:
-            recent_files_menu.delete(0,4)
-            for r in recents.readlines():
-                r = r.rstrip()
-                recent_files_menu.add_command(label=r.split("/")[-1], command=lambda fname=r: open_file(fname))
-
+        update_recents()
 
 def open_file_from_dialog(event=None):
     global file
@@ -429,12 +437,6 @@ file_menu.add_command(label="Open", accelerator="Ctrl+o", command=open_file_from
 recent_files_menu = tk.Menu(file_menu, tearoff=False)
 file_menu.add_cascade(menu=recent_files_menu, label="Open Recents", accelerator="Ctrl+O")
 
-# load recent files
-with open("fide/recents.txt","r") as recents:
-    for r in recents.readlines():
-        r = r.rstrip()
-        recent_files_menu.add_command(label=r.split("/")[-1], command=lambda fname=r: open_file(fname))
-
 file_menu.add_command(label="Save", accelerator="Ctrl+s", command=save_file)
 file_menu.add_separator()
 file_menu.add_command(label="Exit", accelerator="Ctrl+e", command=exit)
@@ -449,6 +451,10 @@ configuration_menu.add_command(label = "Intepreter",  accelerator="Ctrl + i", co
 menubar.add_cascade(menu=configuration_menu, label="Configure")
 
 app.config(menu=menubar)
+
+# Recents
+
+update_recents()
 
 # Bindings (Unchanged)
 app.bind("<Control-n>", new_file)
