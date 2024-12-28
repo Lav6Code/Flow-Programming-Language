@@ -627,6 +627,7 @@ if len(sys.argv) < 3:
 filename = sys.argv[1]
 RUNNER = sys.argv[2]
 VARS_CONNECTION_KEY = "[SENDING_VARS_TO_FIDE]"
+FUNS_CONNECTION_KEY = "[SENDING_FUNS_TO_FIDE]"
 INPUT_CONNECTION_KEY = "[RUNNING_IN_FIDE]"
 
 run(filename)
@@ -634,3 +635,9 @@ run(filename)
 # sending vars to FIDE
 if RUNNER == "FIDE":
     print(VARS_CONNECTION_KEY+str(VARS))
+
+    #formating FUNS
+    formated_funs = []
+    for i in FUNS:
+        formated_funs.append(i)
+    print(FUNS_CONNECTION_KEY+str(formated_funs))

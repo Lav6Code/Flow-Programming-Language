@@ -1,4 +1,3 @@
-C:/Users/Valchichi/Documents/Flow-Programming-Language/examples/sum.flow
-C:/Users/Valchichi/Documents/Flow-Programming-Language/examples/comments.flow
-C:/Users/Valchichi/Documents/Flow-Programming-Language/examples/max.flow
-C:/Users/Valchichi/Documents/Flow-Programming-Language/examples/equality.flow
+C:/Users/Valchichi/Documents/Flow-Programming-Language/examples/disjunction.flow
+C:/Users/Valchichi/Documents/Flow-Programming-Language/examples/for_in_for.flow
+C:/Users/Valchichi/Documents/Flow-Programming-Language/examples/dasd.flow

@@ -1,8 +1,5 @@
 func("Print", 
 (
-output("Less go");
+output("This is a function.");
 ));
 call("Print");
-
-
-
