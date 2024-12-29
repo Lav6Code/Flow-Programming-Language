@@ -1,4 +1,5 @@
 import tkinter as tk
+import customtkinter as ctk
 from tkinter.filedialog import *
 import importlib.util
 import sys
@@ -37,7 +38,7 @@ class InteractiveConsole(tk.Frame):
             bufsize=1,
         )
 
-        self.text.insert(tk.END, f"EXECUTING: {file.name.split('/')[-1]}\n{'═'*37}\n")
+        self.text.insert(tk.END, f"EXECUTING: {file.split('/')[-1]}\n{'═'*37}\n")
         self.text.see(tk.END)
 
         threading.Thread(target=self.read_output, daemon=True).start()
@@ -45,16 +46,17 @@ class InteractiveConsole(tk.Frame):
     def read_output(self):
         """Reads utput from the subprocess."""
         for line in iter(self.process.stdout.readline, ""):
-            if line.startswith(VARS_CONNECTION_KEY+"{"):
+            if line.startswith(VARS_CONNECTION_KEY):
                 dicts = line[len(VARS_CONNECTION_KEY):-1]
                 dicts.split(",")
                 VARS = eval(dicts)
                 update_variables_textbox(VARS)
 
-            elif line.startswith(INPUT_CONNECTION_KEY):
-                line = line.replace(INPUT_CONNECTION_KEY, '')
-                self.text.insert(tk.END, line)
-                self.text.see(tk.END)
+            elif line.startswith(FUNS_CONNECTION_KEY):
+                dicts = line[len(FUNS_CONNECTION_KEY):-1]
+                dicts.split(",")
+                FUNS = eval(dicts)
+                update_functions_textbox(FUNS)
 
             else:
                 self.text.insert(tk.END, line)
@@ -93,6 +95,9 @@ green_keywords = ['+', '*', "-", "/"]
 red_keywords = ['var', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len"]
 orange_keywords = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"', "num", "set"]
 blue_keywords = [";", "(", ")"]
+purple_keywords = ["$"] # COMMENT
+
+# FLOW path
 flow_path = "./FLOW.py"
 
 
@@ -128,7 +133,6 @@ def interpreter_configuration(event=None):
     change_path.place(relx=0.5,rely=0.7, anchor=tk.CENTER)
     
 def update_variables_textbox(variables):
-    print(variables)
     global variable_box
     variable_box.config(state="normal")
     variable_box.delete("1.0", tk.END)
@@ -138,10 +142,24 @@ def update_variables_textbox(variables):
         if type(variables[v]) == int:
             insert_text += f"{v}={variables[v]}\n"
         elif type(variables[v]) == str:
-            insert_text += f"{v}='{variables[v]}'\n"
+            insert_text += f"{v}='{variables[v]}'\n" # ' for representing string(TXT)
+        elif type(variables[v]) == list:
+            insert_text += f"{v}={variables[v]}\n"
 
     variable_box.insert("1.0",insert_text)
     variable_box.config(state="disabled")
+
+def update_functions_textbox(functions):
+    global function_box
+    function_box.config(state="normal")
+    function_box.delete("1.0", tk.END)
+    insert_text = ""
+    
+    for v in functions:
+        insert_text += (v + "\n")
+
+    function_box.insert("1.0",insert_text)
+    function_box.config(state="disabled")
 
 def highlight(keyword, tag_name):
     start = "1.0"
@@ -173,6 +191,8 @@ def update_text(a=None):
     textbox.tag_remove("GREEN", 1.0, tk.END)
     textbox.tag_remove("RED", 1.0, tk.END)
     textbox.tag_remove("BLUE", 1.0, tk.END)
+    textbox.tag_remove("ORANGE", 1.0, tk.END)
+    textbox.tag_remove("PURPLE", 1.0, tk.END)
 
     for word in green_keywords:
         highlight(word, "GREEN")
@@ -182,6 +202,10 @@ def update_text(a=None):
         highlight(word, "BLUE")
     for word in orange_keywords:
         highlight(word, "ORANGE")
+    for word in purple_keywords:
+        highlight(word, "PURPLE")
+
+    # WORDS INSIDE ""
 
     bucket = ""
     inside_n = []
@@ -198,9 +222,16 @@ def update_text(a=None):
             if bucket != "":
                 inside_n.append(bucket)
                 bucket = ""
-
     for word in inside_n:
         highlight(word, "ORANGE")
+    
+    # WORDS AFTER $
+    seperated_by_comment = []
+    for l in textbox.get("1.0", tk.END).split("\n"):
+        if "$" in l:
+            seperated_by_comment.append(l[l.index("$")::])
+    for word in seperated_by_comment:
+        highlight(word, "PURPLE")
 
     update_line_counter()
 
@@ -219,7 +250,7 @@ def focus_text_widget():
     textbox.focus_force()
 
 def new_file(event=None):
-    global file
+    global filename, textbox
     response = tk.messagebox.askquestion(title="⚠️ File will not be saved! ⚠️",
                                              message="Save file before opening another file?", type="yesnocancel")
     if response == "yes":
@@ -234,51 +265,44 @@ def new_file(event=None):
     file = None
     app.title("Untitled.flow")
 
-def open_file(event=None):
-    global file
-    if textbox.get("1.0", tk.END).replace("\n", "") == "":
-        file = askopenfile(mode='r', filetypes=[('Flow Files', '*.flow')])
-        if file is not None:
-            file_content = file.read()
-            textbox.delete("1.0", tk.END)
-            textbox.insert(tk.INSERT, file_content[:-1])
-            update_text()
-            terminal.text.delete("1.0", tk.END)
-    else:
-        response = tk.messagebox.askquestion(title="⚠️ File will not be saved! ⚠️",
-                                             message="Save file before opening another file?", type="yesnocancel")
-        if response == "yes":
-            save_file()
-            textbox.delete("1.0", tk.END)
-            app.update()
-            open_file()
-        elif response == "cancel":
-            pass
-        else:
-            textbox.delete("1.0", tk.END)
-            app.update()
-            open_file()
-
-    if file is not None:
-        app.title(file.name.split("/")[-1])
-    else:
-        app.title("untitled.flow")
-
-
 def save_file(event=None):
-    global file
+    global recent_files_menu, recents, recents_changed, filename, file
 
     if file:
-        with open(file.name, 'a') as f:
+        with open(filename, 'a') as f:
             f.truncate(0)
             f.write(textbox.get("1.0", tk.END))
-            file.close()
     else:
         file = asksaveasfile(defaultextension=".flow", filetypes=[("Flow files", "*.flow")])
-        if file:
-            app.title(file.name.split("/")[-1])
-            file.write(textbox.get("1.0", tk.END))
-            file.close()
+        if file is not None:
+            filename = file.name
+            app.title(filename.split("/")[-1])
+            with open(filename, "w") as file_t:
+                file_t.write(textbox.get("1.0", tk.END))
+    # RECENTS MANAGEMENT
+    recents_changed = False
+    with open('fide/recents.txt', 'r') as recents_file:
+        recents = recents_file.readlines()
+        recents = [line.rstrip() for line in recents]
+        if file not in recents:
+            recents.insert(0, filename)
+            if len(recents) > 4:
+                recents.pop(4)
+            recents_changed = True
+    if recents_changed:
+        with open('fide/recents.txt', 'w') as recents_file:
+            recents_file.write("\n".join(recents))
+    # Update recents
+    update_recents()
+
+def update_recents():
+    global recent_files_menu
+    # load recent files
+    with open("fide/recents.txt","r") as recents:
+        recent_files_menu.delete(0,4)
+        for r in recents.readlines():
+            r = r.rstrip()
+            recent_files_menu.add_command(label=r.split("/")[-1], command=lambda fname=r: open_file(fname))
 
 
 def run_file(event=None):
@@ -286,7 +310,7 @@ def run_file(event=None):
     save_file()
     if file:
         VARS = {}
-        terminal.start_process(["python", os.path.normpath(flow_path), os.path.normpath(file.name), "FIDE"])
+        terminal.start_process(["python", os.path.normpath(flow_path), os.path.normpath(file), "FIDE"])
 
 def exita(event=None):
     sys.exit()
@@ -296,9 +320,74 @@ def clear_console(event=None):
     terminal.text.configure(state="normal")
     terminal.text.delete('1.0', tk.END)
     terminal.text.configure(state="disabled")
+
+def open_file(filenames):
+    global textbox, file, recent_files_menu, filename
+    filename = filenames
+    file = filename
+    if not filename.endswith(".flow"):
+        response = tk.messagebox.showwarning(title=f"⚠️ {filenames} is not compatible",
+                                         message=f"{filenames} should have an extension .flow, its not compatible")
+        return
+
+    if not os.path.exists(filenames):
+        response = tk.messagebox.showwarning(title=f"⚠️ can't find {filenames} directory ⚠️",
+                                                message=f"{filenames} does not exist")
+        return
+
+    # RECENTS MANAGEMENT
+    recents_changed = False
+    with open('fide/recents.txt', 'r') as recents_file:
+        recents = recents_file.readlines()
+        recents = [line.rstrip() for line in recents]
+        if filenames not in recents:
+            recents.insert(0, filenames)
+            if len(recents) > 4:
+                recents.pop(4)
+            recents_changed = True
+    if recents_changed:
+        with open('fide/recents.txt', 'w') as recents_file:
+            recents_file.write("\n".join(recents))
+
+    if file is not None:
+        with open(filename, 'r') as file_content:
+            file_content = file_content.read()
+            textbox.delete("1.0", tk.END)
+            textbox.insert(tk.INSERT, file_content[:-1])
+            update_text()
+            terminal.text.delete("1.0", tk.END)
+            app.title(filename.split("/")[-1])
+        file = filename
+    else:
+        app.title("untitled.flow")
     
+    # set recent files to menu
+    if recents_changed:
+        update_recents()
+
+def open_file_from_dialog(event=None):
+    global file
+    # take filename from dialog box
+    file = askopenfile(mode='r', filetypes=[('Flow Files', '*.flow')])
+    if file is not None: 
+        filename=file.name
+        # open it
+        open_file(filename)
+
+
+############
+### MAIN ###
+############
+
+print("\nrunning FIDE...")
+
 #Setting file to NONE
-file=None
+file = None
+
+# check if recents exist
+if not os.path.exists("fide/recents.txt"):
+    f = open("fide/recents.txt", "x")
+    f.close()
 
 # WIDGETS (Same as original code, except terminal replaced)
 textbox = tk.Text(app, width=57, height=23, font=("Consolas 20"), undo=True, wrap="none")
@@ -307,16 +396,27 @@ textbox.tag_config("GREEN", foreground="green")
 textbox.tag_config("RED", foreground="red")
 textbox.tag_config("ORANGE", foreground="orange")
 textbox.tag_config("BLUE", foreground="lightblue")
+textbox.tag_config("PURPLE", foreground="purple")
 textbox.config(spacing1=10)
 
-variable_box = tk.Text(app, width=24, height=8, font=("Consolas 16"))
-variable_box.place(rely=0.105, relx=0.755)
+# VARIABLE TEXTBOX
+variable_box = tk.Text(app, width=11, height=8, font=("Consolas 16"))
+variable_box.place(rely=0.105, relx=0.7511)
 variable_box.config(state="disabled")
 
-variable_label = tk.Label(app, text="║VARIABLES║\n╚=========╝", font=("Consolas 20"), fg="lightblue")
-variable_label.place(relx=0.81, rely=-0)
+variable_label = tk.Label(app, text="║VARS║\n╚====╝", font=("Consolas 20"), fg="lightblue")
+variable_label.place(relx=0.76, rely=-0)
+
+# FUNCTION TEXTBOX
+function_box = tk.Text(app, width=11, height=8, font=("Consolas 16"))
+function_box.place(rely=0.105, relx=0.887)
+function_box.config(state="disabled")
+
+function_label = tk.Label(app, text="║FUNS║\n╚====╝", font=("Consolas 20"), fg="lightblue")
+function_label.place(relx=0.91, rely=0)
 
 VARS_CONNECTION_KEY = "[SENDING_VARS_TO_FIDE]"
+FUNS_CONNECTION_KEY = "[SENDING_FUNS_TO_FIDE]"
 INPUT_CONNECTION_KEY = "[RUNNING_IN_FIDE]"
 
 line_counter = tk.Text(app, width=3, height=23, font=("Consolas 20"), fg="lightblue", state="disabled")
@@ -336,11 +436,16 @@ console_label.place(relx=0.81, rely=0.46799)
 # MENU BAR (Unchanged)
 menubar = tk.Menu()
 file_menu = tk.Menu(menubar, tearoff=False)
-file_menu.add_command(label="New", accelerator="Ctrl+N", command=new_file)
-file_menu.add_command(label="Open", accelerator="Ctrl+O", command=open_file)
-file_menu.add_command(label="Save", accelerator="Ctrl+S", command=save_file)
+file_menu.add_command(label="New", accelerator="Ctrl+n", command=new_file)
+file_menu.add_command(label="Open", accelerator="Ctrl+o", command=open_file_from_dialog)
+
+# RECENT FILES
+recent_files_menu = tk.Menu(file_menu, tearoff=False)
+file_menu.add_cascade(menu=recent_files_menu, label="Open Recents", accelerator="Ctrl+O")
+
+file_menu.add_command(label="Save", accelerator="Ctrl+s", command=save_file)
 file_menu.add_separator()
-file_menu.add_command(label="Exit", accelerator="Ctrl+E", command=exit)
+file_menu.add_command(label="Exit", accelerator="Ctrl+e", command=exit)
 menubar.add_cascade(menu=file_menu, label="File")
 
 run_menu = tk.Menu(menubar, tearoff=False)
@@ -348,14 +453,18 @@ run_menu.add_command(label="Run", accelerator="F5", command=run_file)
 menubar.add_cascade(menu=run_menu, label="Run")
 
 configuration_menu = tk.Menu(menubar, tearoff=False)
-configuration_menu.add_command(label = "Intepreter",  accelerator="Ctrl + I", command = interpreter_configuration)
+configuration_menu.add_command(label = "Intepreter",  accelerator="Ctrl + i", command = interpreter_configuration)
 menubar.add_cascade(menu=configuration_menu, label="Configure")
 
 app.config(menu=menubar)
 
+# Recents
+
+update_recents()
+
 # Bindings (Unchanged)
 app.bind("<Control-n>", new_file)
-app.bind("<Control-o>", open_file)
+app.bind("<Control-o>", open_file_from_dialog)
 app.bind("<Control-s>", save_file)
 app.bind("<Control-e>", exit)
 app.bind("<F5>", run_file)

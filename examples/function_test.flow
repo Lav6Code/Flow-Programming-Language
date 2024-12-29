@@ -1,0 +1,9 @@
+var("N", 15);
+func("Print N",(
+output(N);
+));
+call("Print N");
+func("Print Nx2",(
+output(*(N,2));
+));
+call("Print Nx2");

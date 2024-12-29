@@ -1,0 +1,2 @@
+output(min(1,2,3));
+output(min(set(1,2,3)));

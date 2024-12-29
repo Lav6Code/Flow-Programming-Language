@@ -1,0 +1,8 @@
+func("Print",  $DECLARING THE FUNCTION "PRINT"
+(
+output("This is a function.");
+));
+$IN FOR LOOP
+for(5,(
+call("Print");
+));

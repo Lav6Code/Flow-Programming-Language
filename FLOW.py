@@ -6,15 +6,18 @@ FLOW_VERSION = 0.1
 FORBIDDEN_CHARS = ['~']
 
 VARS = {}       
-FUNCTIONS = {}
-COMMANDS = [None, '+', '*', "-", "/", 
-            ">", "<", "=", ">=", "<=", "!=", 
-            'var', 'output', "input", "if", "for", "set",
-            "num", "txt", "disjunction", "subset", "superset", "add", "union", "func",
-            "len", "fetch", "intersection"
+FUNS = {}
+COMMANDS = [None, '+', '*', "-", "/","sum",  # MATH
+            ">", "<", "=", ">=", "<=", "!=", "max", "min", # LOGIC
+            'output', "input", # USER INTERACTION
+            "if", "for", "while",  # FLOW
+            "set", 'var', # OBJECT CREATIONS
+            "num", "txt",  #TYPES
+            "disjunction", "subset", "superset", "add", "union", #SET RELATED
+            "len", "fetch", "intersection",  #SET RELATED
+            "func", "call", # FUNCTION RELATED
             ]
-COMMENT = "//"
-
+COMMENT = "$"
 
 def repeating_el(lists):
     non_repeating_elements = []
@@ -66,7 +69,6 @@ class Token:
             
         self.sol = None
         self.typ = None
-        
         if self.com:
             self.typ = "COM"
         else: 
@@ -91,15 +93,12 @@ class Token:
             elif '"' not in argstr[0]:
                 self.typ = "VAR"
 
-            elif argstr in FUNCTIONS:
-                self.typ = "FUNC"
 
         if self.typ is None:
             print(f'error in Token {self.dsc}')
             print("SYNTAX ERROR: wrong type declaration")
         
-        # print('  ...created', self)
-            
+        # print('  ...created', self)            
             
     def __repr__(self):
         return f"{self.typ} Token {self.dsc} (sol: {self.sol})"
@@ -124,17 +123,11 @@ class Token:
                 a.evaluate()
             if self.com in COMMANDS:
                 self.sol = execute(self.com, self.arg)
-    
+
         elif self.typ == "BLK" and forced:
             for a in self.arg:
                 a.evaluate()
             self.sol = True # execute(None, self.arg)
-        
-        elif self.typ == "FUNC" and forced:
-            for a in self.arg:
-                a.evaluate()
-            self.sol = True # execute(None, self.arg)
-
 
 def parse_arg(sstr):
     
@@ -194,11 +187,8 @@ def parse_block(sstr):
 
 
 def execute(command, args): # args with ,
-    global VARS, FUNCTIONS
-    # argstr = []
-    # for a in args:
-    #     argstr.append(a.sol)
-    # Function
+    global VARS, FUNS
+
     # Operators
     if command == "+":
         if type(args[0].sol) == str:
@@ -292,6 +282,7 @@ def execute(command, args): # args with ,
         else:
             print("ARGUMENT ERROR: Trying to execute a argument that does not have the abilty to be intepreted.")
             exit()
+
     # Other commands
 
     elif command == "output":
@@ -388,6 +379,56 @@ def execute(command, args): # args with ,
             print("ARGUMENT ERROR: trying to detect subsets of elements that are wrong TYPE, both elements should be SET")
             exit()
         return False
+    elif command == "sum":
+        if len(args) == 1:
+            if type(args[0].sol) == list:
+                return sum(args[0].sol)
+            else:
+                print("ARGUMENT/TYPE ERROR: Trying to get a SUM of only one value, or values are incorrect type.")
+                exit()
+        else:
+            sum_list = []
+            for i in args:
+                if i.typ == "NUM":
+                    sum_list.append(i.sol)
+                else:
+                    print("TYPE ERROR: Trying to get a SUM of mutlitple non NUM type values.")
+                    exit()
+            return sum(sum_list)
+        
+    elif command == "max":
+        if len(args) == 1:
+            if type(args[0].sol) == list:
+                return max(args[0].sol)
+            else:
+                print("ARGUMENT/TYPE ERROR: Trying to get a MAX value of only one value, or values are incorrect type.")
+                exit()
+        else:
+            max_list = []
+            for i in args:
+                if i.typ == "NUM":
+                    max_list.append(i.sol)
+                else:
+                    print("TYPE ERROR: Trying to get a MAX value of mutlitple non NUM type values.")
+                    exit()
+            return max(max_list)
+        
+    elif command == "min":
+        if len(args) == 1:
+            if type(args[0].sol) == list:
+                return min(args[0].sol)
+            else:
+                print("ARGUMENT/TYPE ERROR: Trying to get a MIN of only one value or values are incorrect type.")
+                exit()
+        else:
+            min_list = []
+            for i in args:
+                if i.typ == "NUM":
+                    min_list.append(i.sol)
+                else:
+                    print("TYPE ERROR: Trying to get a MIN value of mutlitple non NUM type values.")
+                    exit()
+            return min(min_list)
     
     elif command == "disjunction":
         if type(args[0].sol) == list and type(args[1].sol) == list:
@@ -421,12 +462,14 @@ def execute(command, args): # args with ,
         return True
     
     elif command == "func":
-        FUNCTIONS[args[0].sol] = args[1]
-        print(f"{FUNCTIONS=}")
+        FUNS[args[0].sol] = args[1]
         return True
-   
-    elif command in FUNCTIONS:
-        FUNCTIONS[command].evaluate(forced=False)
+
+    elif command == "call":
+        # TODO check if arg in FUNS
+        FUNS[args[0].sol].evaluate(forced=True)
+        return True
+    
     # Type conversions:
         
     elif command == "num":
@@ -437,11 +480,13 @@ def execute(command, args): # args with ,
             exit()
 
     elif command == "txt":
-        if not is_int(args[0].sol):
+        if is_int(args[0].sol):
             return str(args[0].sol)
         else:
-            print("TYPE ERROR: Error while handling conversion from this argument's type to TXT type")
-            exit()
+            if type(args[0].sol) != str:
+                print("TYPE ERROR: Trying to convert non-convertable value into TXT type.")
+                exit()
+            return str(args[0].sol)
 
     elif command == "set":
         lst = []
@@ -530,13 +575,14 @@ def run(file_path):
     EXECUTE_MESSAGE =f"Flow v{FLOW_VERSION} running, {file_path.split('/')[-1]}"
 
     file = open(file_path)
-    file = file.read()
-    file = '(' + file + ')'
+    file_content = file.read()
+    file.close()  #closing the file
+    file_content = '(' + file_content + ')'
     
     # Removing " " in file
     n_catcher = 0
     i_spaces = []
-    for i,f in enumerate(file):
+    for i,f in enumerate(file_content):
         if  f == '"':
             n_catcher += 1
             if n_catcher == 2:
@@ -545,19 +591,26 @@ def run(file_path):
         if n_catcher==0 and f == " ":
             i_spaces.append(i)
     
-    file = list(file)
+    file_content = list(file_content)
     for i in i_spaces:
-        file[i] = "~"
-    file = "".join(file)
-    file = file.replace("~", "")
+        file_content[i] = "~"
+    file_content = "".join(file_content)
+    file_content = file_content.replace("~", "")
+
+    # Adding comments
+    file_content = file_content.split("\n")
+    for i,e in enumerate(file_content):
+        if COMMENT in e:
+            file_content[i] = e.split(COMMENT)[0]
+    file_content = "".join(file_content)
     
     # Additional cleanup
-    file = file.replace("\n", "")
-    file = file.replace("\t", "")
+    file_content = file_content.replace("\n", "")
+    file_content = file_content.replace("\t", "")
     
     # Execute program
     TOKENS = []
-    token_root = tokenize(file, TOKENS)
+    token_root = tokenize(file_content, TOKENS)
     token_root.evaluate(forced=True)
  
     return VARS, EXECUTE_MESSAGE
@@ -574,6 +627,7 @@ if len(sys.argv) < 3:
 filename = sys.argv[1]
 RUNNER = sys.argv[2]
 VARS_CONNECTION_KEY = "[SENDING_VARS_TO_FIDE]"
+FUNS_CONNECTION_KEY = "[SENDING_FUNS_TO_FIDE]"
 INPUT_CONNECTION_KEY = "[RUNNING_IN_FIDE]"
 
 run(filename)
@@ -581,3 +635,9 @@ run(filename)
 # sending vars to FIDE
 if RUNNER == "FIDE":
     print(VARS_CONNECTION_KEY+str(VARS))
+
+    #formating FUNS
+    formated_funs = []
+    for i in FUNS:
+        formated_funs.append(i)
+    print(FUNS_CONNECTION_KEY+str(formated_funs))
