@@ -46,7 +46,7 @@ class InteractiveConsole(tk.Frame):
     def read_output(self):
         """Reads utput from the subprocess."""
         for line in iter(self.process.stdout.readline, ""):
-            if line.startswith(VARS_CONNECTION_KEY+"{"): # { beacuse its a dictionary, just for safety purposes
+            if line.startswith(VARS_CONNECTION_KEY):
                 dicts = line[len(VARS_CONNECTION_KEY):-1]
                 dicts.split(",")
                 VARS = eval(dicts)
@@ -142,7 +142,9 @@ def update_variables_textbox(variables):
         if type(variables[v]) == int:
             insert_text += f"{v}={variables[v]}\n"
         elif type(variables[v]) == str:
-            insert_text += f"{v}='{variables[v]}'\n"
+            insert_text += f"{v}='{variables[v]}'\n" # ' for representing string(TXT)
+        elif type(variables[v]) == list:
+            insert_text += f"{v}={variables[v]}\n"
 
     variable_box.insert("1.0",insert_text)
     variable_box.config(state="disabled")
@@ -152,7 +154,6 @@ def update_functions_textbox(functions):
     function_box.config(state="normal")
     function_box.delete("1.0", tk.END)
     insert_text = ""
-    print(functions)
     
     for v in functions:
         insert_text += (v + "\n")
@@ -382,6 +383,11 @@ print("\nrunning FIDE...")
 
 #Setting file to NONE
 file = None
+
+# check if recents exist
+if not os.path.exists("fide/recents.txt"):
+    f = open("fide/recents.txt", "x")
+    f.close()
 
 # WIDGETS (Same as original code, except terminal replaced)
 textbox = tk.Text(app, width=57, height=23, font=("Consolas 20"), undo=True, wrap="none")
