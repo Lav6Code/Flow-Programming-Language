@@ -612,8 +612,8 @@ def run(file_path):
     TOKENS = []
     token_root = tokenize(file_content, TOKENS)
     token_root.evaluate(forced=True)
- 
-    return VARS, EXECUTE_MESSAGE
+
+    return TOKENS
 
 
 # RUNNING
@@ -630,7 +630,7 @@ VARS_CONNECTION_KEY = "[SENDING_VARS_TO_FIDE]"
 FUNS_CONNECTION_KEY = "[SENDING_FUNS_TO_FIDE]"
 INPUT_CONNECTION_KEY = "[RUNNING_IN_FIDE]"
 
-run(filename)
+print(run(filename)) # printing tokens
 
 # sending vars to FIDE
 if RUNNER == "FIDE":

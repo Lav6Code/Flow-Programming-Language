@@ -24,6 +24,8 @@ class InteractiveConsole(tk.Frame):
         self.input_queue = queue.Queue()
 
     def start_process(self, command):
+        global FILENAME
+
         """Starts a subprocess with the specified command."""
         if self.process is not None and self.process.poll() is None:
             self.text.insert(tk.END, "A process is already running.\n")
@@ -38,7 +40,7 @@ class InteractiveConsole(tk.Frame):
             bufsize=1,
         )
 
-        self.text.insert(tk.END, f"EXECUTING: {file.split('/')[-1]}\n{'═'*37}\n")
+        self.text.insert(tk.END, f"EXECUTING: {FILENAME.split('/')[-1]}\n{'═'*37}\n")
         self.text.see(tk.END)
 
         threading.Thread(target=self.read_output, daemon=True).start()
@@ -98,18 +100,21 @@ blue_keywords = [";", "(", ")"]
 purple_keywords = ["$"] # COMMENT
 
 # FLOW path
-flow_path = "./FLOW.py"
+FLOW_PATH = "./FLOW.py"
+
+# Opened file
+FILENAME = None
 
 
 # FUNCTIONS (Unchanged from your original implementation)
 def change_path_f():
-    global flow_path, intpreter_configuration_window
+    global FLOW_PATH, intpreter_configuration_window
     
     flow_file = askopenfile(title="Select Flow Intpereter", mode ='r', filetypes =[('Python', '*.py')])
     if flow_file is not None:
-        flow_path = flow_file.name
+        FLOW_PATH = flow_file.name
     else:
-        flow_path = None
+        FLOW_PATH = None
     intpreter_configuration_window.destroy()
 
 def interpreter_configuration(event=None):
@@ -123,8 +128,8 @@ def interpreter_configuration(event=None):
     current_intepreter_title.pack()
     
     current_path = tk.Label(master=intpreter_configuration_window, text="", font = "Consolas 12", bg = "#8f99a1", fg = "#000")
-    if flow_path:
-        current_path.config(text=flow_path)
+    if FLOW_PATH:
+        current_path.config(text=FLOW_PATH)
     else:
         current_path.config(text="⚠️NO INTEPRETER SELECTED⚠️")
     current_path.pack()
@@ -172,7 +177,6 @@ def highlight(keyword, tag_name):
         if keyword == textbox.get(pos, end):
             textbox.tag_add(tag_name, pos, end)
 
-
 def update_line_counter():
     global line_counter
     n = textbox.get("1.0", tk.END).count("\n")
@@ -184,7 +188,6 @@ def update_line_counter():
     line_counter.delete('1.0', tk.END)
     line_counter.insert("1.0", text)
     line_counter.config(state="disabled")
-
 
 def update_text(a=None):
     global line_counter
@@ -235,7 +238,6 @@ def update_text(a=None):
 
     update_line_counter()
 
-
 def auto_finish(event=None):
     char_mapping = {"(": ")", '"': '"', "[": "]", "{": "}"}
     if event.char in char_mapping.keys():
@@ -245,12 +247,11 @@ def auto_finish(event=None):
 
     update_text()
 
-
 def focus_text_widget():
     textbox.focus_force()
 
 def new_file(event=None):
-    global filename, textbox
+    global FILENAME, textbox
     response = tk.messagebox.askquestion(title="⚠️ File will not be saved! ⚠️",
                                              message="Save file before opening another file?", type="yesnocancel")
     if response == "yes":
@@ -262,30 +263,31 @@ def new_file(event=None):
     else:
         textbox.delete("1.0", tk.END)
         app.update()
-    file = None
+    FILENAME = None
     app.title("Untitled.flow")
 
 def save_file(event=None):
-    global recent_files_menu, recents, recents_changed, filename, file
+    global recent_files_menu, recents, recents_changed, FILENAME
 
-    if file:
-        with open(filename, 'a') as f:
+    if FILENAME:
+        with open(FILENAME, 'a') as f:
             f.truncate(0)
             f.write(textbox.get("1.0", tk.END))
     else:
         file = asksaveasfile(defaultextension=".flow", filetypes=[("Flow files", "*.flow")])
         if file is not None:
-            filename = file.name
-            app.title(filename.split("/")[-1])
-            with open(filename, "w") as file_t:
+            FILENAME = file.name
+            app.title(FILENAME.split("/")[-1])
+            with open(FILENAME, "w") as file_t:
                 file_t.write(textbox.get("1.0", tk.END))
+
     # RECENTS MANAGEMENT
     recents_changed = False
     with open('fide/recents.txt', 'r') as recents_file:
         recents = recents_file.readlines()
         recents = [line.rstrip() for line in recents]
-        if file not in recents:
-            recents.insert(0, filename)
+        if FILENAME not in recents:
+            recents.insert(0, FILENAME)
             if len(recents) > 4:
                 recents.pop(4)
             recents_changed = True
@@ -304,13 +306,13 @@ def update_recents():
             r = r.rstrip()
             recent_files_menu.add_command(label=r.split("/")[-1], command=lambda fname=r: open_file(fname))
 
-
 def run_file(event=None):
-    global terminal, flow_path, file, VARS
+    global terminal, FLOW_PATH, FILENAME, VARS
     save_file()
-    if file:
+    if FILENAME:
         VARS = {}
-        terminal.start_process(["python", os.path.normpath(flow_path), os.path.normpath(file), "FIDE"])
+        #print(FILENAME)
+        terminal.start_process(["python", os.path.normpath(FLOW_PATH), os.path.normpath(FILENAME), "FIDE"])
 
 def exita(event=None):
     sys.exit()
@@ -321,27 +323,28 @@ def clear_console(event=None):
     terminal.text.delete('1.0', tk.END)
     terminal.text.configure(state="disabled")
 
-def open_file(filenames):
-    global textbox, file, recent_files_menu, filename
-    filename = filenames
-    file = filename
+def open_file(filename):
+    global textbox, FILENAME, recent_files_menu
+    
     if not filename.endswith(".flow"):
-        response = tk.messagebox.showwarning(title=f"⚠️ {filenames} is not compatible",
-                                         message=f"{filenames} should have an extension .flow, its not compatible")
+        response = tk.messagebox.showwarning(title=f"⚠️ {filename} is not compatible",
+                                         message=f"{filename} should have an extension .flow, its not compatible")
         return
 
-    if not os.path.exists(filenames):
-        response = tk.messagebox.showwarning(title=f"⚠️ can't find {filenames} directory ⚠️",
-                                                message=f"{filenames} does not exist")
+    if not os.path.exists(filename):
+        response = tk.messagebox.showwarning(title=f"⚠️ can't find {filename} directory ⚠️",
+                                                message=f"{filename} does not exist")
         return
+
+    FILENAME = filename
 
     # RECENTS MANAGEMENT
     recents_changed = False
     with open('fide/recents.txt', 'r') as recents_file:
         recents = recents_file.readlines()
         recents = [line.rstrip() for line in recents]
-        if filenames not in recents:
-            recents.insert(0, filenames)
+        if FILENAME not in recents:
+            recents.insert(0, FILENAME)
             if len(recents) > 4:
                 recents.pop(4)
             recents_changed = True
@@ -349,15 +352,15 @@ def open_file(filenames):
         with open('fide/recents.txt', 'w') as recents_file:
             recents_file.write("\n".join(recents))
 
-    if file is not None:
-        with open(filename, 'r') as file_content:
+    # reading the file
+    if FILENAME is not None:
+        with open(FILENAME, 'r') as file_content:
             file_content = file_content.read()
             textbox.delete("1.0", tk.END)
             textbox.insert(tk.INSERT, file_content[:-1])
             update_text()
             terminal.text.delete("1.0", tk.END)
-            app.title(filename.split("/")[-1])
-        file = filename
+            app.title(FILENAME.split("/")[-1])
     else:
         app.title("untitled.flow")
     
@@ -366,11 +369,10 @@ def open_file(filenames):
         update_recents()
 
 def open_file_from_dialog(event=None):
-    global file
     # take filename from dialog box
     file = askopenfile(mode='r', filetypes=[('Flow Files', '*.flow')])
     if file is not None: 
-        filename=file.name
+        filename = file.name
         # open it
         open_file(filename)
 
@@ -380,9 +382,6 @@ def open_file_from_dialog(event=None):
 ############
 
 print("\nrunning FIDE...")
-
-#Setting file to NONE
-file = None
 
 # check if recents exist
 if not os.path.exists("fide/recents.txt"):
