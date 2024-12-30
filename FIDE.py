@@ -40,7 +40,7 @@ class InteractiveConsole(tk.Frame):
             bufsize=1,
         )
 
-        self.text.insert(tk.END, f"EXECUTING: {FILENAME.split('/')[-1]}\n{'═'*37}\n")
+        self.text.insert(tk.END, f"\n\nEXECUTING: {FILENAME.split('/')[-1]}\n{'═'*37}\n")
         self.text.see(tk.END)
 
         threading.Thread(target=self.read_output, daemon=True).start()
@@ -311,7 +311,15 @@ def run_file(event=None):
     save_file()
     if FILENAME:
         VARS = {}
-        #print(FILENAME)
+        #CLEANING BOXS
+        variable_box.config(state="normal")
+        function_box.config(state="normal")
+        variable_box.delete("1.0", tk.END)
+        function_box.delete("1.0", tk.END)
+        variable_box.config(state="disabled")
+        function_box.config(state="disabled")
+
+        # ACTUALLY RUNNING
         terminal.start_process(["python", os.path.normpath(FLOW_PATH), os.path.normpath(FILENAME), "FIDE"])
 
 def exita(event=None):

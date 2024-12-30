@@ -1,0 +1,4 @@
+func("Print",(
+output("Function Print");
+));
+call("Print");

@@ -7,7 +7,8 @@ FORBIDDEN_CHARS = ['~']
 
 VARS = {}       
 FUNS = {}
-COMMANDS = [None, '+', '*', "-", "/","sum",  # MATH
+COMMANDS = [None,
+            '+', '*', "-", "/","sum",  # MATH
             ">", "<", "=", ">=", "<=", "!=", "max", "min", # LOGIC
             'output', "input", # USER INTERACTION
             "if", "for", "while",  # FLOW
@@ -52,9 +53,10 @@ class Token:
     
     def __init__(self, command, arg):
 
-        # print(f'- creating token with {command=}, {arg=}')
-        self.com = command
+        #print(f'- creating token with {command=}, {arg=}')
+
         self.arg = arg  # list
+        self.com = command
         
         argstr = []
         for a in arg:
@@ -66,47 +68,47 @@ class Token:
             self.dsc = command + "(" + ','.join(argstr) + ")"
         else:
             self.dsc = ';'.join(argstr)
+    
+        # print(argstr)
             
         self.sol = None
         self.typ = None
+
         if self.com:
             self.typ = "COM"
-        else: 
-            
-            # is it BLK?
-            nr_coms = 0
-            for a in arg:
-                if type(a) == Token and a.typ == "COM":
-                    nr_coms += 1
-            if nr_coms == len(arg):
-                self.typ = "BLK"
-        
-            elif ";" in argstr[0]:
-                self.typ = "BLK"
-                
-            elif is_int(argstr[0]):
-                self.typ = "NUM"
-            
-            elif '"' in argstr[0]:
+
+        elif argstr[0][0] == '"' and argstr[0][-1] == '"':
                 self.typ = "TXT"
-                    
-            elif '"' not in argstr[0]:
+        
+        elif is_int(argstr[0]):
+                self.typ = "NUM"
+        
+        elif '"' not in argstr[0]:
                 self.typ = "VAR"
 
+        else: 
+            # nr_coms = 0
+            # for a in arg:
+            #     if type(a) == Token and a.typ == "COM":
+            #         nr_coms += 1
+            # if nr_coms == len(arg):
+            #     self.typ = "BLK"
 
-        if self.typ is None:
-            print(f'error in Token {self.dsc}')
-            print("SYNTAX ERROR: wrong type declaration")
-        
-        # print('  ...created', self)            
+            self.typ = "BLK"
+            
+        #print('  ...created', self)            
             
     def __repr__(self):
         return f"{self.typ} Token {self.dsc} (sol: {self.sol})"
         
     
     def evaluate(self, forced=False):
-        
-        # if not self.sol:
+
+        global VARS
+        #print(f"{self.arg=}")
+        #print(f"{self.typ=}")
+
+        #print(f'...evaluating {self}')
             
         if self.typ == "NUM": 
             if is_int(self.arg[0]):
@@ -116,8 +118,12 @@ class Token:
             self.sol = self.arg[0][1:-1]
                 
         elif self.typ == "VAR":
-            self.sol = VARS[self.arg[0]]
-            
+            if self.arg[0] in VARS:
+                self.sol = VARS[self.arg[0]]
+            else:
+                print(f'SYNTAX ERROR: {self.dsc} is not recognized as any FUNCTION, VARIABLE or COMMAND')
+                exit()
+
         elif self.typ == "COM":
             for a in self.arg:
                 a.evaluate()
@@ -128,6 +134,7 @@ class Token:
             for a in self.arg:
                 a.evaluate()
             self.sol = True # execute(None, self.arg)
+    
 
 def parse_arg(sstr):
     
@@ -570,8 +577,9 @@ def tokenize(code, tokens_list=None):
             
 
 def run(file_path):
-    global VARS, FIDE_PATH
+    global VARS, FIDE_PATH, FILE_PATH
   
+    FILE_PATH = file_path
     EXECUTE_MESSAGE =f"Flow v{FLOW_VERSION} running, {file_path.split('/')[-1]}"
 
     file = open(file_path)
@@ -613,24 +621,32 @@ def run(file_path):
     token_root = tokenize(file_content, TOKENS)
     token_root.evaluate(forced=True)
 
-    return TOKENS
+    return TOKENS, file_path
 
 
 # RUNNING
 
 # Check if a .flow file is provided as an argument
-if len(sys.argv) < 3:
-    print("Usage: python flow.py <filename>.flow")
+if not (len(sys.argv) == 2 or len(sys.argv) == 3):
+    print(f"Usage: python FLOW.py <filename>.flow")
     sys.exit(1)
 
-# Get the filename from the command line
-filename = sys.argv[1]
-RUNNER = sys.argv[2]
+# Extract arguments
+if len(sys.argv) == 3:
+    RUNNER = sys.argv[2]
+else:
+    RUNNER = None
+FILENAME = sys.argv[1]
 VARS_CONNECTION_KEY = "[SENDING_VARS_TO_FIDE]"
 FUNS_CONNECTION_KEY = "[SENDING_FUNS_TO_FIDE]"
 INPUT_CONNECTION_KEY = "[RUNNING_IN_FIDE]"
 
-print(run(filename)) # printing tokens
+TOKENS, _ = run(FILENAME)
+
+# printing tokens
+for T in TOKENS:
+    ...
+    #print(T)
 
 # sending vars to FIDE
 if RUNNER == "FIDE":
