@@ -1,0 +1,7 @@
+var("index", 0);
+while(<(index, 10000),
+(
+var("index", +(index,1));
+output(index);
+));
+output("DONE");

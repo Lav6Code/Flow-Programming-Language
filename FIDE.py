@@ -94,7 +94,7 @@ app.resizable(True, True)
 
 # FLOW SETUP
 green_keywords = ['+', '*', "-", "/"]
-red_keywords = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len"]
+red_keywords = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len","schoo"]
 orange_keywords = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"', "num", "set"]
 blue_keywords = [";", "(", ")"]
 purple_keywords = ["$"] # COMMENT
@@ -384,6 +384,23 @@ def open_file_from_dialog(event=None):
         # open it
         open_file(filename)
 
+def insert_new_variable(event = None):
+    global textbox
+
+    new_variable_text = 'var("N", 0);\n'
+    textbox.insert(textbox.index(tk.INSERT), new_variable_text)
+    update_text()
+
+def insert_new_function(event = None):
+    global textbox
+
+    new_function_test = '''func("FUN",(
+
+));
+call("FUN");
+'''
+    textbox.insert(textbox.index(tk.INSERT), new_function_test)
+    update_text()
 
 ############
 ### MAIN ###
@@ -462,6 +479,12 @@ menubar.add_cascade(menu=run_menu, label="Run")
 configuration_menu = tk.Menu(menubar, tearoff=False)
 configuration_menu.add_command(label = "Intepreter",  accelerator="Ctrl + i", command = interpreter_configuration)
 menubar.add_cascade(menu=configuration_menu, label="Configure")
+
+insert_menu = tk.Menu(menubar, tearoff=False)
+insert_menu.add_command(label = "New Variable",  accelerator="Ctrl + n + v", command = insert_new_variable)
+insert_menu.add_command(label = "New Function",  accelerator="Ctrl + n + f", command = insert_new_function)
+
+menubar.add_cascade(menu=insert_menu, label="Insert")
 
 app.config(menu=menubar)
 

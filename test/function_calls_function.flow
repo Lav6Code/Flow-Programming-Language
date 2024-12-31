@@ -1,0 +1,11 @@
+var("a",0);
+func("FUNCTION1",(
+output("A is increased by 3");
+var("a", +(a,3));
+));
+func("FUNCTION2",(
+output("A is decreased by 1");
+var("a", -(a,1));
+call("FUNCTION1");
+));
+call("FUNCTION2");

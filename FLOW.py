@@ -296,17 +296,12 @@ def execute(command, args): # args with ,
             exit()
 
     elif command == "while":
-        if args[0].typ == "BLK":
-            while True:
-                TOKENS = []
-                token_root = tokenize(args[0].dsc, TOKENS)
-                token_root.evaluate(forced=True)
-                if token_root.sol == True:
-                    args[1].evaluate(forced=True)
-                else:
-                    break
+        if args[1].typ == "BLK" and type(args[0].sol) == bool:
+            while args[0].sol:
+                args[1].evaluate(forced=True)
+                args[0].evaluate()
         else:
-            print("ARGUMENT ERROR: Trying to execute a argument that does not have the abilty to be intepreted.")
+            print("ARGUMENT ERROR: Trying to execute a argument that does not have the ability to be intepreted.")
             exit()
 
     # Other commands
@@ -496,7 +491,10 @@ def execute(command, args): # args with ,
 
     elif command == "call":
         # TODO check if arg in FUNS
-        FUNS[args[0].sol].evaluate(forced=True)
+        if args[0].sol in FUNS:
+            FUNS[args[0].sol].evaluate(forced=True)
+        else:
+            print("ARGUMENT ERROR: Trying to run a nononexisent function.")
         #return True
     
     # Type conversions:
