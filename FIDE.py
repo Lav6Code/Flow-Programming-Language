@@ -94,7 +94,7 @@ app.resizable(True, True)
 
 # FLOW SETUP
 green_keywords = ['+', '*', "-", "/"]
-red_keywords = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len","schoo"]
+red_keywords = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call"]
 orange_keywords = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"', "num", "set"]
 blue_keywords = [";", "(", ")"]
 purple_keywords = ["$"] # COMMENT
