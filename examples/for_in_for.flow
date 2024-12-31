@@ -1,6 +1,6 @@
-for(5,(
-	for(5,(
-		output("SIGMA");
+for(5,( $ For loop 1
+	for(5,( $ For loop 2
+		output("This will print 25 times");
 		)
 	);
 ));

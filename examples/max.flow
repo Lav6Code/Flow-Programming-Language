@@ -1,3 +1,2 @@
-output(max(1,2,3)); //This should work
-output(max(set(1,2,3)));
-//output("SIGMA");
+output(max(1,2,3)); $Outputting max value of 1,2,3
+output(max(set(1,2,3))); $ Outputting max value of set which values are 1,2,3

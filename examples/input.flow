@@ -1,2 +1,2 @@
-output(input("txt"));
-
+output(input("txt")); $ Converts input into TXT type
+output(input("num")); $ Converts input into NUM type

@@ -1,3 +1,4 @@
-var("a", 1);
-if(>(a,1),(output("a=1"););
-
+var("a", 10); $ Creating the variable a
+if(>(a,1), $ If for checking equality between variable A and 1
+(output("a>1"); $ This code will run if A is equal to 1
+));

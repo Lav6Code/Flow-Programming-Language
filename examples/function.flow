@@ -1,1 +1,4 @@
-sldakjsdlè
+func("Square of 2",( $ Creating a function
+output(*(2,2)); $ Outputing square of 2
+));
+call("Square of 2"); $ Calling the function

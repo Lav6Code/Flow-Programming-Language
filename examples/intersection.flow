@@ -1,4 +1,4 @@
-var("S", set(1,2,3));
-var("S1", set(2));
-output(intersection(S,S1));
+var("S", set(1,2,3)); $ Creating set
+var("S1", set(2)); $ Creating set1
+output(intersection(S,S1)); $ Gets all arguments that are in both of the sets
 

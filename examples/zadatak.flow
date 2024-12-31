@@ -1,2 +1,0 @@
-var("n", input("txt"));
-output("SIGMA");

@@ -1,2 +1,2 @@
-output(min(1,2,3));
-output(min(set(1,2,3)));
+output(min(1,2,3)); $Outputting min value of 1,2,3
+output(min(set(1,2,3))); $Outputting min value of set which values are 1,2,3

@@ -14,8 +14,8 @@ COMMANDS = [None,
             "if", "for", "while",  # FLOW
             "set", 'var', # OBJECT CREATIONS
             "num", "txt",  #TYPES
-            "disjunction", "subset", "superset", "add", "union", #SET RELATED
-            "len", "fetch", "intersection",  #SET RELATED
+            "disjunction", "subset", "superset", "add", "union", # SET RELATED
+            "len", "fetch", "intersection",  # SET RELATED
             "func", "call", # FUNCTION RELATED
             ]
 COMMENT = "$"
@@ -74,28 +74,31 @@ class Token:
         self.sol = None
         self.typ = None
 
+        # this is needed for BLK
+        nr_coms = 0
+        for a in arg:
+            if type(a) == Token and a.typ == "COM":
+                nr_coms += 1
+
         if self.com:
             self.typ = "COM"
 
         elif argstr[0][0] == '"' and argstr[0][-1] == '"':
-                self.typ = "TXT"
+            self.typ = "TXT"
         
         elif is_int(argstr[0]):
-                self.typ = "NUM"
+            self.typ = "NUM"
+
+        elif ';' in argstr[0] or nr_coms == len(arg):
+            self.typ = "BLK"
         
         elif '"' not in argstr[0]:
-                self.typ = "VAR"
+            self.typ = "VAR"
 
         else: 
-            # nr_coms = 0
-            # for a in arg:
-            #     if type(a) == Token and a.typ == "COM":
-            #         nr_coms += 1
-            # if nr_coms == len(arg):
-            #     self.typ = "BLK"
+            print(f'SYNTAX ERROR: {self.dsc} is not a legal FLOW code structure.')
+            exit()
 
-            self.typ = "BLK"
-            
         #print('  ...created', self)            
             
     def __repr__(self):
@@ -105,8 +108,6 @@ class Token:
     def evaluate(self, forced=False):
 
         global VARS
-        #print(f"{self.arg=}")
-        #print(f"{self.typ=}")
 
         #print(f'...evaluating {self}')
             
@@ -133,7 +134,7 @@ class Token:
         elif self.typ == "BLK" and forced:
             for a in self.arg:
                 a.evaluate()
-            self.sol = True # execute(None, self.arg)
+            # self.sol = True # execute(None, self.arg)
     
 
 def parse_arg(sstr):
@@ -221,52 +222,70 @@ def execute(command, args): # args with ,
             exit()
 
     elif command == ">":
-        if type(args[0].sol) == int and type(args[0].sol) == int:
+        if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol > args[1].sol
         else:
             print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
             exit()
 
     elif command == ">=":
-        if type(args[0].sol) == int and type(args[0].sol) == int:
+        if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol >= args[1].sol
         else:
             print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
             exit()
 
     elif command == "<":
-        if type(args[0].sol) == int and type(args[0].sol) == int:
+        if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol < args[1].sol
         else:
             print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
             exit()
 
     elif command == "<=":
-        if type(args[0].sol) == int and type(args[0].sol) == int:
+        if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol <= args[1].sol
         else:
             print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
             exit()
 
     elif command == "=":
-        if type(args[0].sol) == int and type(args[0].sol) == int:
+        if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol == args[1].sol
         else:
             print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
             exit()
 
     elif command == "!=":
-        if type(args[0].sol) == int and type(args[0].sol) == int:
+        if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol != args[1].sol
         else:
             print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
             exit()
     
+    elif command == "not":
+        if type(args[0].sol) == bool:
+            return not(args[0].sol)
+        else:
+            print("ARGUMENT ERROR: Trying to do a NOT operation on a non bool value.")
+    
     # Loops Ifs Elifs Whiles
     
     elif command == "if":
-        if args[0].sol == True:
-            args[1].evaluate(forced=True)
+        if type(args[0].sol) == bool:
+            if args[0].sol == True:
+                if args[1].typ == "BLK":
+                    args[1].evaluate(forced=True)
+                else:
+                    print("ARGUMENT ERROR: Trying to run IF's THEN code, but it is not a BLK.")
+            else:
+                if len(args) == 3:
+                    if args[2].typ == "BLK":
+                        args[2].evaluate(forced=True)
+                    else:
+                        print("ARGUMENT ERROR: Trying to run ELSE's THEN code, but it is not a BLK.")
+        else:
+            print("ARGUMENT ERROR: Condition is non bool type")
     
     elif command == "for":
         if type(args[0].sol) == int:
@@ -294,7 +313,7 @@ def execute(command, args): # args with ,
 
     elif command == "output":
         print(args[0].sol)
-        return True
+        #return True
     
     elif command == "fetch":
         if len(args) == 2:
@@ -381,11 +400,14 @@ def execute(command, args): # args with ,
             
             strS1 = "".join(str(x) for x in args[0].sol)
             strS2 = "".join(str(x) for x in args[1].sol)  
-            if strS2 in strS1: return True
+            if strS2 in strS1: 
+                return True
+            
         else:
             print("ARGUMENT ERROR: trying to detect subsets of elements that are wrong TYPE, both elements should be SET")
             exit()
         return False
+    
     elif command == "sum":
         if len(args) == 1:
             if type(args[0].sol) == list:
@@ -466,16 +488,16 @@ def execute(command, args): # args with ,
 
     elif command == "var":
         VARS[args[0].sol] = args[1].sol
-        return True
+        #return True
     
     elif command == "func":
         FUNS[args[0].sol] = args[1]
-        return True
+        #return True
 
     elif command == "call":
         # TODO check if arg in FUNS
         FUNS[args[0].sol].evaluate(forced=True)
-        return True
+        #return True
     
     # Type conversions:
         
@@ -509,7 +531,7 @@ def execute(command, args): # args with ,
     
 def tokenize(code, tokens_list=None):
     
-    # f' - tokenizing: {code}')
+    #print(f' - tokenizing: {code}')
 
     first_bracket = None
     last_bracket = None
