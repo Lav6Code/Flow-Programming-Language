@@ -394,12 +394,29 @@ def insert_new_variable(event = None):
 def insert_new_function(event = None):
     global textbox
 
-    new_function_test = '''func("FUN",(
-
+    new_function_text = '''func("FUN",(
 ));
-call("FUN");
-'''
-    textbox.insert(textbox.index(tk.INSERT), new_function_test)
+call("FUN");\n'''
+    textbox.insert(textbox.index(tk.INSERT), new_function_text)
+    update_text()
+
+def insert_new_while_loop(event = None):
+    global textbox
+
+    new_while_loop_text = '''
+while( ,(
+
+));\n'''
+    textbox.insert(textbox.index(tk.INSERT), new_while_loop_text)
+    update_text()
+
+def insert_new_for_loop(event = None):
+    global textbox
+
+    new_for_loop_test = '''for( ,(
+
+));\n'''
+    textbox.insert(textbox.index(tk.INSERT), new_for_loop_test)
     update_text()
 
 ############
@@ -477,12 +494,14 @@ run_menu.add_command(label="Run", accelerator="F5", command=run_file)
 menubar.add_cascade(menu=run_menu, label="Run")
 
 configuration_menu = tk.Menu(menubar, tearoff=False)
-configuration_menu.add_command(label = "Intepreter",  accelerator="Ctrl + i", command = interpreter_configuration)
+configuration_menu.add_command(label = "Intepreter",  accelerator="Ctrl+i", command = interpreter_configuration)
 menubar.add_cascade(menu=configuration_menu, label="Configure")
 
 insert_menu = tk.Menu(menubar, tearoff=False)
-insert_menu.add_command(label = "New Variable",  accelerator="Ctrl + n + v", command = insert_new_variable)
-insert_menu.add_command(label = "New Function",  accelerator="Ctrl + n + f", command = insert_new_function)
+insert_menu.add_command(label = "New Variable",  accelerator="Ctrl+Shift+v", command = insert_new_variable)
+insert_menu.add_command(label = "New Function",  accelerator="Ctrl+Shift+f", command = insert_new_function)
+insert_menu.add_command(label = "New For Loop",  accelerator="Ctrl+Alt+o", command = insert_new_for_loop)
+insert_menu.add_command(label = "New While Loop",  accelerator="Ctrl+Shift+w", command = insert_new_while_loop)
 
 menubar.add_cascade(menu=insert_menu, label="Insert")
 
@@ -498,6 +517,10 @@ app.bind("<Control-o>", open_file_from_dialog)
 app.bind("<Control-s>", save_file)
 app.bind("<Control-e>", exit)
 app.bind("<F5>", run_file)
+app.bind("<Control-V>", insert_new_variable)
+app.bind("<Control-F>", insert_new_function)
+app.bind("<Control-O>", insert_new_for_loop)
+app.bind("<Control-W>", insert_new_while_loop)
 
 app.bind_all('<Key>', update_text)
 app.bind_all('<Return>', update_text)
