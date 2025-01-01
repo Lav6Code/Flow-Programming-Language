@@ -419,6 +419,18 @@ def insert_new_for_loop(event = None):
     textbox.insert(textbox.index(tk.INSERT), new_for_loop_test)
     update_text()
 
+def insert_new_if_else(event = None):
+    global textbox
+
+    new_for_if_else = '''if(  ,(
+
+),
+(
+
+));\n'''
+    textbox.insert(textbox.index(tk.INSERT), new_for_if_else)
+    update_text()
+
 ############
 ### MAIN ###
 ############
@@ -502,6 +514,8 @@ insert_menu.add_command(label = "New Variable",  accelerator="Ctrl+Shift+v", com
 insert_menu.add_command(label = "New Function",  accelerator="Ctrl+Shift+f", command = insert_new_function)
 insert_menu.add_command(label = "New For Loop",  accelerator="Ctrl+Alt+o", command = insert_new_for_loop)
 insert_menu.add_command(label = "New While Loop",  accelerator="Ctrl+Shift+w", command = insert_new_while_loop)
+insert_menu.add_command(label = "New If Else",  accelerator="Ctrl+Shift+I", command = insert_new_while_loop)
+
 
 menubar.add_cascade(menu=insert_menu, label="Insert")
 
@@ -517,10 +531,12 @@ app.bind("<Control-o>", open_file_from_dialog)
 app.bind("<Control-s>", save_file)
 app.bind("<Control-e>", exit)
 app.bind("<F5>", run_file)
+app.bind("<Control-i>", interpreter_configuration)
 app.bind("<Control-V>", insert_new_variable)
 app.bind("<Control-F>", insert_new_function)
 app.bind("<Control-O>", insert_new_for_loop)
 app.bind("<Control-W>", insert_new_while_loop)
+app.bind("<Control-I>", insert_new_if_else)
 
 app.bind_all('<Key>', update_text)
 app.bind_all('<Return>', update_text)
