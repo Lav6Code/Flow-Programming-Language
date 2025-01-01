@@ -29,7 +29,6 @@ def repeating_el(lists):
             non_repeating_elements.append(i)
     return list(set(non_repeating_elements))
         
-
 def is_int(strs):
     if len(str(strs)) == 0:
         return False
@@ -330,7 +329,7 @@ def execute(command, args): # args with ,
             try:
                 return set_[i_]
             except:
-                print(f"INDEX ERROR: trying to FETCH inexistent value at {i_} position in {set_} SET.")
+                print(f"INDEX ERROR: Trying to FETCH inexistent value at {i_} position in {set_} SET.")
                 exit()
         elif len(args) == 3:
             set_ = args[0]
@@ -495,7 +494,7 @@ def execute(command, args): # args with ,
             exit()
 
     elif command == "var":
-        if args[0].typ in ["NUM", "STR"]:
+        if args[1].typ in ["NUM", "STR"]:
             if args[0].sol not in BOOLS:
                 VARS[args[0].sol] = args[1].sol
         else:
