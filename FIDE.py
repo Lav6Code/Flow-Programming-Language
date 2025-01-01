@@ -97,6 +97,7 @@ green_keywords = ['+', '*', "-", "/"]
 red_keywords = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call"]
 orange_keywords = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"', "num", "set"]
 blue_keywords = [";", "(", ")"]
+pink_keywords = ["True", "False"]
 purple_keywords = ["$"] # COMMENT
 
 # FLOW path
@@ -196,6 +197,7 @@ def update_text(a=None):
     textbox.tag_remove("BLUE", 1.0, tk.END)
     textbox.tag_remove("ORANGE", 1.0, tk.END)
     textbox.tag_remove("PURPLE", 1.0, tk.END)
+    textbox.tag_remove("PINK", 1.0, tk.END)
 
     for word in green_keywords:
         highlight(word, "GREEN")
@@ -207,6 +209,8 @@ def update_text(a=None):
         highlight(word, "ORANGE")
     for word in purple_keywords:
         highlight(word, "PURPLE")
+    for word in pink_keywords:
+        highlight(word, "PINK")
 
     # WORDS INSIDE ""
 
@@ -449,7 +453,8 @@ textbox.tag_config("GREEN", foreground="green")
 textbox.tag_config("RED", foreground="red")
 textbox.tag_config("ORANGE", foreground="orange")
 textbox.tag_config("BLUE", foreground="lightblue")
-textbox.tag_config("PURPLE", foreground="purple")
+textbox.tag_config("PURPLE", foreground="#634a7f")
+textbox.tag_config("PINK", foreground="#e57bff")
 textbox.config(spacing1=10)
 
 # VARIABLE TEXTBOX

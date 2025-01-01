@@ -18,6 +18,8 @@ COMMANDS = [None,
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", # FUNCTION RELATED
             ]
+BOOLS = ["True", "False"]
+
 COMMENT = "$"
 
 def repeating_el(lists):
@@ -73,6 +75,7 @@ class Token:
             
         self.sol = None
         self.typ = None
+        print(argstr)
 
         # this is needed for BLK
         nr_coms = 0
@@ -92,6 +95,9 @@ class Token:
         elif ';' in argstr[0] or nr_coms == len(arg):
             self.typ = "BLK"
         
+        elif argstr[0] in BOOLS:
+            self.typ = "BLN"
+
         elif '"' not in argstr[0]:
             self.typ = "VAR"
 
@@ -99,7 +105,7 @@ class Token:
             print(f'SYNTAX ERROR: {self.dsc} is not a legal FLOW code structure.')
             exit()
 
-        #print('  ...created', self)            
+        print('  ...created', self)            
             
     def __repr__(self):
         return f"{self.typ} Token {self.dsc} (sol: {self.sol})"
@@ -135,6 +141,13 @@ class Token:
             for a in self.arg:
                 a.evaluate()
             # self.sol = True # execute(None, self.arg)
+        
+        elif self.typ == "BLN":
+            if self.arg[0] in BOOLS: # IT NEEDS TO BE FOR SAFETY PURPOSES
+                self.sol = eval(self.arg[0])
+            else:
+                print(f'SYNTAX ERROR: {self.dsc} is not recognized as any FUNCTION, VARIABLE or COMMAND')
+                exit()
     
 
 def parse_arg(sstr):
@@ -482,8 +495,12 @@ def execute(command, args): # args with ,
             exit()
 
     elif command == "var":
-        VARS[args[0].sol] = args[1].sol
-        #return True
+        if args[0].typ in ["NUM", "STR"]:
+            if args[0].sol not in BOOLS:
+                VARS[args[0].sol] = args[1].sol
+        else:
+            print("ARGUMENT ERROR: Trying to set a variable by the incorrect name.")
+        #return True---
     
     elif command == "func":
         FUNS[args[0].sol] = args[1]
