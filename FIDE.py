@@ -85,6 +85,7 @@ class InteractiveConsole(tk.Frame):
 
 
 # SETUP
+DEVELOPER_MODE = False
 WIDTH, HEIGHT = 1207, 700
 app = tk.Tk()
 app.geometry(str(WIDTH) + "x" + str(HEIGHT))
@@ -97,7 +98,7 @@ green_keywords = ['+', '*', "-", "/"]
 red_keywords = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call"]
 orange_keywords = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"', "num", "set"]
 blue_keywords = [";", "(", ")"]
-pink_keywords = ["True", "False"]
+pink_keywords = ["TRUE", "FALSE"]
 purple_keywords = ["$"] # COMMENT
 
 # FLOW path
@@ -117,6 +118,16 @@ def change_path_f():
     else:
         FLOW_PATH = None
     intpreter_configuration_window.destroy()
+
+def developer_mode(event=None):
+    global DEVELOPER_MODE, configuration_menu
+
+    DEVELOPER_MODE = not(DEVELOPER_MODE)
+
+    if DEVELOPER_MODE:
+        configuration_menu.entryconfigure(1, label="Developer Mode ✓")
+    else:
+        configuration_menu.entryconfigure(1, label="Developer Mode ✗")
 
 def interpreter_configuration(event=None):
     global intpreter_configuration_window
@@ -496,23 +507,13 @@ menubar = tk.Menu()
 file_menu = tk.Menu(menubar, tearoff=False)
 file_menu.add_command(label="New", accelerator="Ctrl+n", command=new_file)
 file_menu.add_command(label="Open", accelerator="Ctrl+o", command=open_file_from_dialog)
-
 # RECENT FILES
 recent_files_menu = tk.Menu(file_menu, tearoff=False)
 file_menu.add_cascade(menu=recent_files_menu, label="Open Recents", accelerator="Ctrl+O")
-
 file_menu.add_command(label="Save", accelerator="Ctrl+s", command=save_file)
 file_menu.add_separator()
 file_menu.add_command(label="Exit", accelerator="Ctrl+e", command=exit)
 menubar.add_cascade(menu=file_menu, label="File")
-
-run_menu = tk.Menu(menubar, tearoff=False)
-run_menu.add_command(label="Run", accelerator="F5", command=run_file)
-menubar.add_cascade(menu=run_menu, label="Run")
-
-configuration_menu = tk.Menu(menubar, tearoff=False)
-configuration_menu.add_command(label = "Intepreter",  accelerator="Ctrl+i", command = interpreter_configuration)
-menubar.add_cascade(menu=configuration_menu, label="Configure")
 
 insert_menu = tk.Menu(menubar, tearoff=False)
 insert_menu.add_command(label = "New Variable",  accelerator="Ctrl+Shift+v", command = insert_new_variable)
@@ -520,9 +521,18 @@ insert_menu.add_command(label = "New Function",  accelerator="Ctrl+Shift+f", com
 insert_menu.add_command(label = "New For Loop",  accelerator="Ctrl+Alt+o", command = insert_new_for_loop)
 insert_menu.add_command(label = "New While Loop",  accelerator="Ctrl+Shift+w", command = insert_new_while_loop)
 insert_menu.add_command(label = "New If Else",  accelerator="Ctrl+Shift+I", command = insert_new_while_loop)
-
-
 menubar.add_cascade(menu=insert_menu, label="Insert")
+
+
+run_menu = tk.Menu(menubar, tearoff=False)
+run_menu.add_command(label="Run", accelerator="F5", command=run_file)
+menubar.add_cascade(menu=run_menu, label="Run")
+
+configuration_menu = tk.Menu(menubar, tearoff=False)
+configuration_menu.add_command(label = "Intepreter",  accelerator="Ctrl+i", command = interpreter_configuration)
+configuration_menu.add_command(label = "Developer Mode ✗",  accelerator="Ctrl+d", command = developer_mode)
+menubar.add_cascade(menu=configuration_menu, label="Configure")
+
 
 app.config(menu=menubar)
 
@@ -537,6 +547,7 @@ app.bind("<Control-s>", save_file)
 app.bind("<Control-e>", exit)
 app.bind("<F5>", run_file)
 app.bind("<Control-i>", interpreter_configuration)
+app.bind("<Control-d>", developer_mode)
 app.bind("<Control-V>", insert_new_variable)
 app.bind("<Control-F>", insert_new_function)
 app.bind("<Control-O>", insert_new_for_loop)

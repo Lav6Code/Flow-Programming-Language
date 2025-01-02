@@ -18,7 +18,7 @@ COMMANDS = [None,
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", # FUNCTION RELATED
             ]
-BOOLS = ["True", "False"]
+BOOLS = ["TRUE", "FALSE"]
 
 COMMENT = "$"
 
@@ -74,7 +74,7 @@ class Token:
             
         self.sol = None
         self.typ = None
-        print(argstr)
+        #print(argstr)
 
         # this is needed for BLK
         nr_coms = 0
@@ -104,7 +104,8 @@ class Token:
             print(f'SYNTAX ERROR: {self.dsc} is not a legal FLOW code structure.')
             exit()
 
-        print('  ...created', self)            
+
+        #    print('  ...created', self)            
             
     def __repr__(self):
         return f"{self.typ} Token {self.dsc} (sol: {self.sol})"
@@ -143,7 +144,7 @@ class Token:
         
         elif self.typ == "BLN":
             if self.arg[0] in BOOLS: # IT NEEDS TO BE FOR SAFETY PURPOSES
-                self.sol = eval(self.arg[0])
+                self.sol = eval(self.arg[0].lower().capitalize())
             else:
                 print(f'SYNTAX ERROR: {self.dsc} is not recognized as any FUNCTION, VARIABLE or COMMAND')
                 exit()
@@ -478,27 +479,44 @@ def execute(command, args): # args with ,
         return False
 
     elif command == "input":
+        if len(args) > 1:
+            print("ARGUMENT ERROR: Input command only takes in one of the following arguments: txt, num, bln")
         a = input()
         type_conversion = args[0].sol
-        if type_conversion == "num":
+        if type_conversion.lower() == "num":
             if is_int(a):
                 return int(a)
             else:
                 print("TYPE ERROR: Error while handling conversion from this argument's type to NUM type")
                 exit()
-        elif type_conversion == "txt":
+        elif type_conversion.lower() == "txt":
             return a
 
+        elif type_conversion.lower() == "bln":
+            print(a)
+            if a in [0, "0"]:
+                return False
+            elif a in [1, "1"]:
+                return True
+            
+            else:
+                return True
+        
         else:
             print("ARGUMENT ERROR: Input's arguments should only be 'num' or 'txt' depending on what type does a user wants to convert value into.")
             exit()
 
     elif command == "var":
-        if args[1].typ in ["NUM", "STR"]:
+        print(args[1].sol)
+        if type(args[1].sol) in [int, str, bool]:
             if args[0].sol not in BOOLS:
                 VARS[args[0].sol] = args[1].sol
+            else:
+                print("ARGUMENT ERROR: Trying to set a variable's name to TRUE or FALSE, which can't be used as variables names.")
+                exit()                
         else:
             print("ARGUMENT ERROR: Trying to set a variable by the incorrect name.")
+            exit()
         #return True---
     
     elif command == "func":
@@ -663,7 +681,7 @@ def run(file_path):
 # RUNNING
 
 # Check if a .flow file is provided as an argument
-if not (len(sys.argv) == 2 or len(sys.argv) == 3):
+if not (len(sys.argv) == 2 or len(sys.argv) == 3 or len(sys.argv) == 4):
     print(f"Usage: python FLOW.py <filename>.flow")
     sys.exit(1)
 
@@ -676,13 +694,14 @@ FILENAME = sys.argv[1]
 VARS_CONNECTION_KEY = "[SENDING_VARS_TO_FIDE]"
 FUNS_CONNECTION_KEY = "[SENDING_FUNS_TO_FIDE]"
 INPUT_CONNECTION_KEY = "[RUNNING_IN_FIDE]"
-
+print(len(sys.argv))
 TOKENS, _ = run(FILENAME)
 
 # printing tokens
 for T in TOKENS:
     ...
-    #print(T)
+    # if DEVELOPER_MODE:
+    #     print(T)
 
 # sending vars to FIDE
 if RUNNER == "FIDE":
