@@ -3,6 +3,3 @@ var("B",set(1,2));
 if(subset(B,A),
 (output("B is subset of A");
 ));
-
-
-

@@ -1,0 +1,2 @@
+var("SET", set(1,2,3)); $ Creating set
+output(fetch(SET, 0)); $ Fetching the i-th element

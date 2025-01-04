@@ -1,0 +1,2 @@
+var("SET1", set(1,2,4)); $ Creating SET and setting it to a variable
+output(SET1); $ Outputting set

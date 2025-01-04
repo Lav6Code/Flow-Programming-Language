@@ -10,7 +10,7 @@ import threading
 import queue
 from pathlib import Path
 import sv_ttk
-
+import time
 # Interactive Console Definition
 class InteractiveConsole(tk.Frame):
     def __init__(self, master=None, **kwargs):
@@ -53,19 +53,11 @@ class InteractiveConsole(tk.Frame):
                 # read VARS
                 VARS = {}
                 vars_ = line[len(VARS_CONNECTION_KEY):-1]
-                vars_ = vars_[1:-1]
-                vars_ = vars_.split(', ')
-                for pair in vars_:
-                    key, value = pair.split(': ')
-                    if value == "True":
-                        value = "TRUE"
-                    elif value == "False":
-                        value = "FALSE"
-                    elif value[0] != "'" and value[0] != '"':
-                        value = int(value)
-                    else:
-                        value = value[1:-1] # it's str
-                    VARS[key[1:-1]] = value
+                vars_ = vars_.replace("True", "'TRUE'")
+                vars_ = vars_.replace("False", "'False'")
+                VARS = eval(vars_)
+                #print(VARS)
+
                 update_variables_textbox(VARS)
 
             elif line.startswith(FUNS_CONNECTION_KEY):
@@ -105,16 +97,16 @@ app = tk.Tk()
 app.geometry(str(WIDTH) + "x" + str(HEIGHT))
 app.lift()
 app.title("untitled.flow")
-app.resizable(True, True)
+app.resizable(False, False)
 
 # FLOW SETUP
-green_keywords = ['+', '*', "-", "/"]
-red_keywords = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call"]
-orange_keywords = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"', "num", "set"]
-blue_keywords = [";", "(", ")"]
-pink_keywords = ["TRUE", "FALSE"]
-purple_keywords = ["$"] # COMMENT
-
+GRERN_KEYWORDS = ['+', '*', "-", "/", "<", "<=", ">", ">=", "="]
+RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call"]
+ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"', "num", "set", "txt", "bln"]
+BLUE_KEYWORDS = [";", "(", ")"]
+PINK_KEYWORDS = ["TRUE", "FALSE"]
+PURPLE_KEYWORDS = ["$"] # COMMENT
+COMMANDS = GRERN_KEYWORDS+ RED_KEYWORDS + BLUE_KEYWORDS + PINK_KEYWORDS + PURPLE_KEYWORDS + ORANGE_KEYWORDS
 # FLOW path
 FLOW_PATH = "./FLOW.py"
 
@@ -218,7 +210,8 @@ def update_line_counter():
     line_counter.config(state="disabled")
 
 def update_text(a=None):
-    global line_counter
+    global line_counter, textbox
+    textbox.edit_modified(False)
     textbox.tag_remove("GREEN", 1.0, tk.END)
     textbox.tag_remove("RED", 1.0, tk.END)
     textbox.tag_remove("BLUE", 1.0, tk.END)
@@ -226,17 +219,17 @@ def update_text(a=None):
     textbox.tag_remove("PURPLE", 1.0, tk.END)
     textbox.tag_remove("PINK", 1.0, tk.END)
 
-    for word in green_keywords:
+    for word in GRERN_KEYWORDS:
         highlight(word, "GREEN")
-    for word in red_keywords:
+    for word in RED_KEYWORDS:
         highlight(word, "RED")
-    for word in blue_keywords:
+    for word in BLUE_KEYWORDS:
         highlight(word, "BLUE")
-    for word in orange_keywords:
+    for word in ORANGE_KEYWORDS:
         highlight(word, "ORANGE")
-    for word in purple_keywords:
+    for word in PURPLE_KEYWORDS:
         highlight(word, "PURPLE")
-    for word in pink_keywords:
+    for word in PINK_KEYWORDS:
         highlight(word, "PINK")
 
     # WORDS INSIDE ""
@@ -267,16 +260,17 @@ def update_text(a=None):
     for word in seperated_by_comment:
         highlight(word, "PURPLE")
 
+    check_autocompletion()
     update_line_counter()
 
 def auto_finish(event=None):
+    global textbox
+    textbox.edit_modified(False)
     char_mapping = {"(": ")", '"': '"', "[": "]", "{": "}"}
     if event.char in char_mapping.keys():
         current_position = textbox.index(tk.INSERT)
         textbox.insert(current_position, char_mapping[event.char])
         textbox.mark_set(tk.INSERT, current_position)
-
-    update_text()
 
 def focus_text_widget():
     textbox.focus_force()
@@ -466,6 +460,103 @@ def insert_new_if_else(event = None):
     textbox.insert(textbox.index(tk.INSERT), new_for_if_else)
     update_text()
 
+def show_autocomplete(x,y, commands):
+    global autocomplete, textbox
+
+    if autocomplete is not None:
+        autocomplete.destroy()
+        #print("autocomplete destroyed")
+    
+    if commands == []:
+        return
+
+    # Create a Listbox for autocomplete
+    autocomplete = tk.Listbox(app, height=len(commands), bg="lightgrey", fg="black", selectbackground="blue")
+    autocomplete.place(x=x, y=y)
+    
+    for command in commands:
+        autocomplete_suggestions = autocomplete.get(0,tk.END)
+        if command not in autocomplete_suggestions:
+            autocomplete.insert(tk.END, command)
+    autocomplete.select_set(0)
+    #('new autocpomplete created and select 0')
+
+def autocompletion(event=None):
+    global autocomplete, textbox, app
+
+    if app.focus_get() == textbox:
+        ...
+    else:
+        return
+
+    if autocomplete:
+        app.update()
+        index = textbox.index(tk.INSERT)
+        line_number = str(index.split('.')[0])
+        line_text = textbox.get(line_number+".0", index)[::-1]
+        #print(autocomplete.curselection())
+        word_to_complete = autocomplete.get(0, tk.END)[autocomplete.curselection()[0]]
+        #print(word_to_complete)
+
+    user_typed = ""
+    for s in line_text:
+        user_typed += s
+        #print(user_typed)
+        if word_to_complete.startswith(user_typed[::-1]):
+            textbox.insert(index, word_to_complete[len(user_typed)::])
+    
+    autocomplete.destroy()
+    app.update()
+            
+
+def check_autocompletion(event=None):
+    global autocomplete, textbox, app
+
+    textbox.edit_modified(False)
+
+    if app.focus_get() == textbox:
+        ...
+    else:
+        return
+
+    index = textbox.index(tk.INSERT)
+    line_number = str(index.split('.')[0])
+    line_text = textbox.get(line_number+".0", index)[::-1]
+    bbox = textbox.bbox(index)
+    auto_complete_threshold = 2
+    if bbox:
+        # bbox returns (x, y, width, height); we take x, y for the position
+        x, y = bbox[0], bbox[1]
+        y += 30
+        x += 55
+        user_typed = ""
+        possible_commands = []
+        longest_command = len(max(COMMANDS, key = len))
+        #print(longest_command)
+        for s in line_text:
+            user_typed += s
+            for c in COMMANDS:
+                if c.startswith(user_typed[::-1]) and len(user_typed) >= auto_complete_threshold and c != user_typed[::-1]:
+                    possible_commands.append(c)
+
+        if possible_commands:
+            show_autocomplete(x,y,possible_commands)
+        elif autocomplete:
+            autocomplete.destroy()
+
+def shuffle_complete_suggestions(event=None):
+
+    global autocomplete, app
+
+    if autocomplete:
+        Noptions = len(autocomplete.get(0, tk.END))
+        index_sel = autocomplete.curselection()[0]
+        index_new = (index_sel + 1) % Noptions
+        autocomplete.select_clear(0, tk.END)
+        autocomplete.select_set(index_new)
+        
+        autocomplete.update()
+
 ############
 ### MAIN ###
 ############
@@ -483,7 +574,7 @@ textbox.place(rely=0, relx=0.04)
 textbox.tag_config("GREEN", foreground="green")
 textbox.tag_config("RED", foreground="red")
 textbox.tag_config("ORANGE", foreground="orange")
-textbox.tag_config("BLUE", foreground="lightblue")
+textbox.tag_config("BLUE", foreground="blue")
 textbox.tag_config("PURPLE", foreground="#634a7f")
 textbox.tag_config("PINK", foreground="#e57bff")
 textbox.config(spacing1=10)
@@ -494,7 +585,7 @@ variable_box.place(rely=0.105, relx=0.7511)
 variable_box.config(state="disabled")
 
 variable_label = tk.Label(app, text="║VARS║\n╚====╝", font=("Consolas 20"), fg="lightblue")
-variable_label.place(relx=0.76, rely=-0)
+variable_label.place(relx=0.77, rely=-0)
 
 # FUNCTION TEXTBOX
 function_box = tk.Text(app, width=11, height=8, font=("Consolas 16"))
@@ -502,7 +593,7 @@ function_box.place(rely=0.105, relx=0.887)
 function_box.config(state="disabled")
 
 function_label = tk.Label(app, text="║FUNS║\n╚====╝", font=("Consolas 20"), fg="lightblue")
-function_label.place(relx=0.91, rely=0)
+function_label.place(relx=0.905, rely=0)
 
 VARS_CONNECTION_KEY = "[SENDING_VARS_TO_FIDE]"
 FUNS_CONNECTION_KEY = "[SENDING_FUNS_TO_FIDE]"
@@ -514,13 +605,13 @@ line_counter.config(spacing1=10)
 
 # Replace the tkterminal with the new InteractiveConsole
 terminal = InteractiveConsole(app)
-terminal.place(relx=0.751, rely=0.57)
+terminal.place(relx=0.751, rely=0.53)
 
 clear_console = tk.Button(app, text="CLEAR ×", fg="red", command = clear_console, font=("Consolas 7"))
-clear_console.place(relx=0.97, rely=0.55,anchor=tk.CENTER)
+clear_console.place(relx=0.97, rely=0.50,anchor=tk.CENTER)
 
 console_label = tk.Label(app, text="║ CONSOLE ║\n╚=========╝", font=("Consolas 20"), fg="lightblue")
-console_label.place(relx=0.81, rely=0.46799)
+console_label.place(relx=0.81, rely=0.42)
 
 # MENU BAR (Unchanged)
 menubar = tk.Menu()
@@ -543,7 +634,6 @@ insert_menu.add_command(label = "New While Loop",  accelerator="Ctrl+Shift+w", c
 insert_menu.add_command(label = "New If Else",  accelerator="Ctrl+Shift+I", command = insert_new_while_loop)
 menubar.add_cascade(menu=insert_menu, label="Insert")
 
-
 run_menu = tk.Menu(menubar, tearoff=False)
 run_menu.add_command(label="Run", accelerator="F5", command=run_file)
 menubar.add_cascade(menu=run_menu, label="Run")
@@ -553,8 +643,10 @@ configuration_menu.add_command(label = "Intepreter",  accelerator="Ctrl+i", comm
 configuration_menu.add_command(label = "Developer Mode ✗",  accelerator="Ctrl+d", command = developer_mode)
 menubar.add_cascade(menu=configuration_menu, label="Configure")
 
-
 app.config(menu=menubar)
+
+# assigning autocomplete to None, so it does not crash when trying to check if autocomplete exists
+autocomplete = None
 
 # Recents
 
@@ -574,8 +666,11 @@ app.bind("<Control-O>", insert_new_for_loop)
 app.bind("<Control-W>", insert_new_while_loop)
 app.bind("<Control-I>", insert_new_if_else)
 
-app.bind_all('<Key>', update_text)
-app.bind_all('<Return>', update_text)
+app.bind("<Control-space>", autocompletion)
+app.bind("<Control-q>", shuffle_complete_suggestions)
+textbox.bind_all('<<Modified>>', check_autocompletion)
+textbox.bind_all('<<Modified>>', auto_finish)
+textbox.bind_all('<<Modified>>', update_text)
 
 # THEME AND MAIN LOOP
 sv_ttk.set_theme("dark")

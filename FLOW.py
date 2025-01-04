@@ -9,6 +9,7 @@ FORBIDDEN_CHARS = ['~']
 
 VARS = {}       
 FUNS = {}
+# Same as in the FIDE.py
 COMMANDS = [None,
             '+', '*', "-", "/","sum",  # MATH
             ">", "<", "=", ">=", "<=", "!=", "max", "min", # LOGIC
@@ -503,7 +504,7 @@ def execute(token): # args with ,
             
 
     elif command == "var":
-        if type(args[1].sol) in [int, str, bool]:
+        if type(args[1].sol) in [int, str, bool, list]:
             if args[0].sol not in BOOLS:
                 #print(VARS)
                 VARS[args[0].sol] = args[1].sol
