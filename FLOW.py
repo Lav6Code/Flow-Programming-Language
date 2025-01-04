@@ -1,7 +1,9 @@
 import importlib.util
 import sys
 
-FLOW_VERSION = 0.1
+FLOW_VERSION = "1.0"
+
+DEVELOPER_MODE = False
 
 FORBIDDEN_CHARS = ['~']
 
@@ -54,7 +56,8 @@ class Token:
     
     def __init__(self, command, arg):
 
-        #print(f'- creating token with {command=}, {arg=}')
+        if DEVELOPER_MODE:
+            print(f'DEBUG: creating token with {command=}, {arg=}')
 
         self.arg = arg  # list
         self.com = command
@@ -101,11 +104,10 @@ class Token:
             self.typ = "VAR"
 
         else: 
-            print(f'SYNTAX ERROR: {self.dsc} is not a legal FLOW code structure.')
-            exit()
+            raise_error(f'SYNTAX ERROR: {self.dsc} is not a legal FLOW code structure.', self)
 
-
-        #    print('  ...created', self)            
+        if DEVELOPER_MODE:
+            print('DEBUG:  ...created', self)            
             
     def __repr__(self):
         return f"{self.typ} Token {self.dsc} (sol: {self.sol})"
@@ -128,14 +130,13 @@ class Token:
             if self.arg[0] in VARS:
                 self.sol = VARS[self.arg[0]]
             else:
-                print(f'SYNTAX ERROR: {self.dsc} is not recognized as any FUNCTION, VARIABLE or COMMAND')
-                exit()
+                raise_error(f'SYNTAX ERROR: {self.dsc} is not recognized as any FUNCTION, VARIABLE or COMMAND', self)
 
         elif self.typ == "COM":
             for a in self.arg:
                 a.evaluate()
             if self.com in COMMANDS:
-                self.sol = execute(self.com, self.arg)
+                self.sol = execute(self)
 
         elif self.typ == "BLK" and forced:
             for a in self.arg:
@@ -146,8 +147,13 @@ class Token:
             if self.arg[0] in BOOLS: # IT NEEDS TO BE FOR SAFETY PURPOSES
                 self.sol = eval(self.arg[0].lower().capitalize())
             else:
-                print(f'SYNTAX ERROR: {self.dsc} is not recognized as any FUNCTION, VARIABLE or COMMAND')
-                exit()
+                raise_error(f'SYNTAX ERROR: {self.dsc} is not recognized as any FUNCTION, VARIABLE or COMMAND', self)
+
+def raise_error(erorr_msg, token=False):
+    print(erorr_msg)
+    if token:
+        print(f"ERROR FOUND IN {token.dsc}")
+    exit()
     
 
 def parse_arg(sstr):
@@ -207,9 +213,10 @@ def parse_block(sstr):
     return "".join(sstr).split("~")
 
 
-def execute(command, args): # args with ,
+def execute(token): # args with ,
     global VARS, FUNS
-
+    command = token.com
+    args = token.arg
     # Operators
     if command == "+":
         if type(args[0].sol) == str:
@@ -217,70 +224,61 @@ def execute(command, args): # args with ,
         if type(args[0].sol)==int and type(args[1].sol)==int:
             return int(args[0].sol) + int(args[1].sol)
         else:
-            print("ARGUMENT ERROR: Trying to add(+) two values with different type.")
-            exit()
-
+            raise_error("ARGUMENT ERROR: Trying to add(+) two values with different type.", token)
+            
     elif command == "*":
         if is_int(args[0].sol) and is_int(args[1].sol):
             return int(args[0].sol) * int(args[1].sol)
         else:
-            print("ARGUMENT ERORR: Trying to multiply(*) two values with wrong type.")
-            exit()
-
+            raise_error("ARGUMENT ERORR: Trying to multiply(*) two values with wrong type.", token)
+            
     elif command == "-":
         if is_int(args[0].sol) and is_int(args[1].sol):
             return int(args[0].sol) - int(args[1].sol)
         else:
-            print("ARGUMENT ERORR: Trying to substract(-) two values with wrong type.")
-            exit()
+            raise_error("ARGUMENT ERORR: Trying to substract(-) two values with wrong type.", token)
 
     elif command == ">":
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol > args[1].sol
         else:
-            print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
-            exit()
+            raise_error("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM", token)
 
     elif command == ">=":
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol >= args[1].sol
         else:
-            print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
-            exit()
+            raise_error("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM", token)
 
     elif command == "<":
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol < args[1].sol
         else:
-            print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
-            exit()
+            raise_error("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM", token)
 
     elif command == "<=":
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol <= args[1].sol
         else:
-            print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
-            exit()
+            raise_error("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM", token)
 
     elif command == "=":
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol == args[1].sol
         else:
-            print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
-            exit()
+            raise_error("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM", token)
 
     elif command == "!=":
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol != args[1].sol
         else:
-            print("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM")
-            exit()
-    
+            raise_error("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM", token)
+            
     elif command == "not":
         if type(args[0].sol) == bool:
             return not(args[0].sol)
         else:
-            print("ARGUMENT ERROR: Trying to do a NOT operation on a non bool value.")
+            raise_error("ARGUMENT ERROR: Trying to do a NOT operation on a non bool value.", token)
     
     # Loops Ifs Elifs Whiles
     
@@ -290,23 +288,22 @@ def execute(command, args): # args with ,
                 if args[1].typ == "BLK":
                     args[1].evaluate(forced=True)
                 else:
-                    print("ARGUMENT ERROR: Trying to run IF's THEN code, but it is not a BLK.")
+                    raise_error("ARGUMENT ERROR: Trying to run IF's THEN code, but it is not a BLK.", token)
             else:
                 if len(args) == 3:
                     if args[2].typ == "BLK":
                         args[2].evaluate(forced=True)
                     else:
-                        print("ARGUMENT ERROR: Trying to run ELSE's THEN code, but it is not a BLK.")
+                        raise_error("ARGUMENT ERROR: Trying to run ELSE's THEN code, but it is not a BLK.", token)
         else:
-            print("ARGUMENT ERROR: Condition is non bool type")
+            raise_error("ARGUMENT ERROR: Condition is non bool type", token)
     
     elif command == "for":
         if type(args[0].sol) == int:
             for i in range(args[0].sol):
                 args[1].evaluate(forced=True)
         else:
-            print("ARGUMENT ERROR: Trying to use non NUM value for FOR loop.")
-            exit()
+            raise_error("ARGUMENT ERROR: Trying to use non NUM value for FOR loop.", token)
 
     elif command == "while":
         if args[1].typ == "BLK" and type(args[0].sol) == bool:
@@ -314,13 +311,15 @@ def execute(command, args): # args with ,
                 args[1].evaluate(forced=True)
                 args[0].evaluate()
         else:
-            print("ARGUMENT ERROR: Trying to execute a argument that does not have the ability to be intepreted.")
-            exit()
-
+            raise_error("ARGUMENT ERROR: Trying to execute a argument that does not have the ability to be intepreted.", token)
+            
     # Other commands
 
     elif command == "output":
-        print(args[0].sol)
+        if type(args[0].sol) == bool:
+            print(str(args[0].sol).upper())
+        else:
+            print(args[0].sol)
         #return True
     
     elif command == "fetch":
@@ -330,8 +329,8 @@ def execute(command, args): # args with ,
             try:
                 return set_[i_]
             except:
-                print(f"INDEX ERROR: Trying to FETCH inexistent value at {i_} position in {set_} SET.")
-                exit()
+                raise_error(f"INDEX ERROR: Trying to FETCH inexistent value at {i_} position in {set_} SET.", token)
+                
         elif len(args) == 3:
             set_ = args[0]
             i_ = args[1].sol
@@ -339,8 +338,8 @@ def execute(command, args): # args with ,
             try:
                 return set_.sol[i_:j_]
             except:
-                print(f"INDEX ERROR: trying to FETCH inexistent value from {i_} position to {j_} in {set_} SET.")
-                exit()
+                raise_error(f"INDEX ERROR: trying to FETCH inexistent value from {i_} position to {j_} in {set_} SET.", token)
+                
 
     elif command == "add":
         if type(args[0].sol) == list:
@@ -353,8 +352,8 @@ def execute(command, args): # args with ,
                 SET_UPDATED.insert(args[1].sol, args[2].sol)
                 VARS[args[0].dsc] = SET_UPDATED
         else:
-            print(f"ARGUMENT ERROR: trying to add an element into a wrong TYPE, should be SET")
-            exit()
+            raise_error("ARGUMENT ERROR: trying to add an element into a wrong TYPE, should be SET", token)
+            
 
     elif command == "union":
         UNION_SET = []
@@ -362,8 +361,8 @@ def execute(command, args): # args with ,
             if type(a.sol) == list:
                 UNION_SET += a.sol
             else:
-                print("ARGUMENT ERROR: trying to unionize elements that are wrong TYPE, both elements should be SET")
-                exit()
+                raise_error("ARGUMENT ERROR: trying to unionize elements that are wrong TYPE, both elements should be SET", token)
+                
         UNION_SET = list(set(UNION_SET))
         return UNION_SET
     
@@ -371,8 +370,8 @@ def execute(command, args): # args with ,
         if type(a.sol) == list:
             return len(a.sol)
         else:
-            print("ARGUMENT ERROR: Trying to get a lentgh of a wrong type, should be SET.")
-            exit()
+            raise_error("ARGUMENT ERROR: Trying to get a lentgh of a wrong type, should be SET.", token)
+            
 
     elif command == "intersection":
         INTERSECTED = []
@@ -383,8 +382,8 @@ def execute(command, args): # args with ,
                         INTERSECTED.append(E1)
             return list(set(INTERSECTED))
         else:
-            print("ARGUMENT ERROR: trying to intersect elements that are wrong TYPE, both elements should be SET")
-            exit()
+            raise_error("ARGUMENT ERROR: trying to intersect elements that are wrong TYPE, both elements should be SET", token)
+            
 
     elif command == "subset":
         if type(args[0].sol) == list and type(args[1].sol) == list:
@@ -396,8 +395,8 @@ def execute(command, args): # args with ,
             strS2 = "".join(str(x) for x in args[1].sol)  
             if strS1 in strS2: return True
         else:
-            print("ARGUMENT ERROR: trying to detect subsets of elements that are wrong TYPE, both elements should be SET")
-            exit()
+            raise_error("ARGUMENT ERROR: trying to detect subsets of elements that are wrong TYPE, both elements should be SET", token)
+            
         return False
     
     elif command == "superset":
@@ -412,8 +411,8 @@ def execute(command, args): # args with ,
                 return True
             
         else:
-            print("ARGUMENT ERROR: trying to detect subsets of elements that are wrong TYPE, both elements should be SET")
-            exit()
+            raise_error("ARGUMENT ERROR: trying to detect subsets of elements that are wrong TYPE, both elements should be SET", token)
+            
         return False
     
     elif command == "sum":
@@ -421,16 +420,16 @@ def execute(command, args): # args with ,
             if type(args[0].sol) == list:
                 return sum(args[0].sol)
             else:
-                print("ARGUMENT/TYPE ERROR: Trying to get a SUM of only one value, or values are incorrect type.")
-                exit()
+                raise_error("ARGUMENT/TYPE ERROR: Trying to get a SUM of only one value, or values are incorrect type.", token)
+                
         else:
             sum_list = []
             for i in args:
                 if i.typ == "NUM":
                     sum_list.append(i.sol)
                 else:
-                    print("TYPE ERROR: Trying to get a SUM of mutlitple non NUM type values.")
-                    exit()
+                    raise_error("TYPE ERROR: Trying to get a SUM of mutlitple non NUM type values.", token)
+                    
             return sum(sum_list)
         
     elif command == "max":
@@ -438,16 +437,16 @@ def execute(command, args): # args with ,
             if type(args[0].sol) == list:
                 return max(args[0].sol)
             else:
-                print("ARGUMENT/TYPE ERROR: Trying to get a MAX value of only one value, or values are incorrect type.")
-                exit()
+                raise_error("ARGUMENT/TYPE ERROR: Trying to get a MAX value of only one value, or values are incorrect type.", token)
+                
         else:
             max_list = []
             for i in args:
                 if i.typ == "NUM":
                     max_list.append(i.sol)
                 else:
-                    print("TYPE ERROR: Trying to get a MAX value of mutlitple non NUM type values.")
-                    exit()
+                    raise_error("TYPE ERROR: Trying to get a MAX value of mutlitple non NUM type values.", token)
+                    
             return max(max_list)
         
     elif command == "min":
@@ -455,16 +454,16 @@ def execute(command, args): # args with ,
             if type(args[0].sol) == list:
                 return min(args[0].sol)
             else:
-                print("ARGUMENT/TYPE ERROR: Trying to get a MIN of only one value or values are incorrect type.")
-                exit()
+                raise_error("ARGUMENT/TYPE ERROR: Trying to get a MIN of only one value or values are incorrect type.", token)
+                
         else:
             min_list = []
             for i in args:
                 if i.typ == "NUM":
                     min_list.append(i.sol)
                 else:
-                    print("TYPE ERROR: Trying to get a MIN value of mutlitple non NUM type values.")
-                    exit()
+                    raise_error("TYPE ERROR: Trying to get a MIN value of mutlitple non NUM type values.", token)
+                    
             return min(min_list)
     
     elif command == "disjunction":
@@ -474,49 +473,47 @@ def execute(command, args): # args with ,
             return a
             
         else:
-            print("ARGUMENT ERROR: trying to disjunct of elements that are wrong TYPE, both elements should be SET")
-            exit()
+            raise_error("ARGUMENT ERROR: trying to disjunct of elements that are wrong TYPE, both elements should be SET", token)
+            
         return False
 
     elif command == "input":
         if len(args) > 1:
-            print("ARGUMENT ERROR: Input command only takes in one of the following arguments: txt, num, bln")
+            raise_error("ARGUMENT ERROR: Input command only takes in one of the following arguments: txt, num, bln", token)
         a = input()
         type_conversion = args[0].sol
         if type_conversion.lower() == "num":
             if is_int(a):
                 return int(a)
             else:
-                print("TYPE ERROR: Error while handling conversion from this argument's type to NUM type")
-                exit()
+                raise_error("TYPE ERROR: Error while handling conversion from this argument's type to NUM type", token)
+                
         elif type_conversion.lower() == "txt":
             return a
 
         elif type_conversion.lower() == "bln":
-            print(a)
+            # print(a)
             if a in [0, "0"]:
                 return False
-            elif a in [1, "1"]:
-                return True
-            
             else:
                 return True
         
         else:
-            print("ARGUMENT ERROR: Input's arguments should only be 'num' or 'txt' depending on what type does a user wants to convert value into.")
-            exit()
+            raise_error("ARGUMENT ERROR: Input's arguments should only be 'num' or 'txt' depending on what type does a user wants to convert value into.", token)
+            
 
     elif command == "var":
-        print(args[1].sol)
         if type(args[1].sol) in [int, str, bool]:
             if args[0].sol not in BOOLS:
+                #print(VARS)
                 VARS[args[0].sol] = args[1].sol
+                #print(VARS)
             else:
-                print("ARGUMENT ERROR: Trying to set a variable's name to TRUE or FALSE, which can't be used as variables names.")
-                exit()                
+                raise_error("ARGUMENT ERROR: Trying to set a variable's name to TRUE or FALSE, which can't be used as variables names.", token)
+                                
         else:
-            print("ARGUMENT ERROR: Trying to set a variable by the incorrect name.")
-            exit()
+            raise_error("ARGUMENT ERROR: Trying to set a variable by the incorrect name.", token)
+            
         #return True---
     
     elif command == "func":
@@ -528,7 +525,7 @@ def execute(command, args): # args with ,
         if args[0].sol in FUNS:
             FUNS[args[0].sol].evaluate(forced=True)
         else:
-            print("ARGUMENT ERROR: Trying to run a nononexisent function.")
+            raise_error("ARGUMENT ERROR: Trying to run a nononexisent function.", token)
         #return True
     
     # Type conversions:
@@ -537,16 +534,18 @@ def execute(command, args): # args with ,
         if is_int(args[0].sol):
             return int(args[0].sol)
         else:
-            print("TYPE ERROR: Error while handling conversion from this argument's type to NUM type")
-            exit()
+            raise_error("TYPE ERROR: Error while handling conversion from this argument's type to NUM type", token)
+            
 
     elif command == "txt":
-        if is_int(args[0].sol):
+        if is_int(args[0].sol) or type(args[0].sol)==bool:
+            if type(args[0].sol )== bool:
+                return str(args[0].sol).upper()
             return str(args[0].sol)
         else:
             if type(args[0].sol) != str:
-                print("TYPE ERROR: Trying to convert non-convertable value into TXT type.")
-                exit()
+                raise_error("TYPE ERROR: Trying to convert non-convertable value into TXT type.", token)
+                
             return str(args[0].sol)
 
     elif command == "set":
@@ -557,13 +556,14 @@ def execute(command, args): # args with ,
     
     #COMMAND NOT FOUND SYNTAX ERROR
     elif command not in COMMANDS:
-        print(f"SYNTAX ERROR: {command} is not a command or a variable.")
-        exit()
+        raise_error(f"SYNTAX ERROR: {command} is not a command or a variable.", token)
+        
     
     
 def tokenize(code, tokens_list=None):
     
-    #print(f' - tokenizing: {code}')
+    if DEVELOPER_MODE:
+        print(f'DEBUG: - tokenizing: {code}')
 
     first_bracket = None
     last_bracket = None
@@ -580,8 +580,8 @@ def tokenize(code, tokens_list=None):
             
     # FIX CHECKING FOR ERROR IN BRACKETS
     if code.count("(")!=code.count(")"):
-            print('SYNTAX ERROR: brackets are not balanced')
-            exit()
+        print(code)
+        raise_error('SYNTAX ERROR: brackets are not balanced')
     
     # print(f'brackets: {first_bracket}, {last_bracket}')
     if not first_bracket and not last_bracket:
@@ -677,31 +677,41 @@ def run(file_path):
 
     return TOKENS, file_path
 
-
-# RUNNING
+######
+# MAIN
+######
 
 # Check if a .flow file is provided as an argument
-if not (len(sys.argv) == 2 or len(sys.argv) == 3 or len(sys.argv) == 4):
-    print(f"Usage: python FLOW.py <filename>.flow")
+#if not (len(sys.argv) == 2 or len(sys.argv) == 3 or len(sys.argv) == 4):
+if len(sys.argv) < 2 or len(sys.argv) > 4:
+    print(f"Usage: python FLOW.py <filename>.flow [flags]")
     sys.exit(1)
 
 # Extract arguments
-if len(sys.argv) == 3:
-    RUNNER = sys.argv[2]
-else:
-    RUNNER = None
-FILENAME = sys.argv[1]
+_, FILENAME, *flags = sys.argv
+if "FIDE" in flags:
+    RUNNER = "FIDE"
+if "DEVELOPER_MODE" in flags:
+    DEVELOPER_MODE = True
+
+# if len(sys.argv) == 3:
+#     RUNNER = sys.argv[2]
+# else:
+#     RUNNER = None
+# FILENAME = sys.argv[1]
+
 VARS_CONNECTION_KEY = "[SENDING_VARS_TO_FIDE]"
 FUNS_CONNECTION_KEY = "[SENDING_FUNS_TO_FIDE]"
 INPUT_CONNECTION_KEY = "[RUNNING_IN_FIDE]"
-print(len(sys.argv))
+
+# print(len(sys.argv))
 TOKENS, _ = run(FILENAME)
 
 # printing tokens
-for T in TOKENS:
-    ...
-    # if DEVELOPER_MODE:
-    #     print(T)
+if DEVELOPER_MODE:
+    print('DEBUG: List of created tokens:')
+    for T in TOKENS:
+        print(T)
 
 # sending vars to FIDE
 if RUNNER == "FIDE":

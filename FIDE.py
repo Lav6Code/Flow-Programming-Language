@@ -46,12 +46,26 @@ class InteractiveConsole(tk.Frame):
         threading.Thread(target=self.read_output, daemon=True).start()
 
     def read_output(self):
-        """Reads utput from the subprocess."""
+        """Reads output from the subprocess."""
+
         for line in iter(self.process.stdout.readline, ""):
             if line.startswith(VARS_CONNECTION_KEY):
-                dicts = line[len(VARS_CONNECTION_KEY):-1]
-                dicts.split(",")
-                VARS = eval(dicts)
+                # read VARS
+                VARS = {}
+                vars_ = line[len(VARS_CONNECTION_KEY):-1]
+                vars_ = vars_[1:-1]
+                vars_ = vars_.split(', ')
+                for pair in vars_:
+                    key, value = pair.split(': ')
+                    if value == "True":
+                        value = "TRUE"
+                    elif value == "False":
+                        value = "FALSE"
+                    elif value[0] != "'" and value[0] != '"':
+                        value = int(value)
+                    else:
+                        value = value[1:-1] # it's str
+                    VARS[key[1:-1]] = value
                 update_variables_textbox(VARS)
 
             elif line.startswith(FUNS_CONNECTION_KEY):
@@ -156,7 +170,9 @@ def update_variables_textbox(variables):
     insert_text = ""
     
     for v in variables:
-        if type(variables[v]) == int:
+        if variables[v] in "TRUE FALSE".split(" "):
+            insert_text += f"{v}={variables[v]}\n"
+        elif type(variables[v]) == int:
             insert_text += f"{v}={variables[v]}\n"
         elif type(variables[v]) == str:
             insert_text += f"{v}='{variables[v]}'\n" # ' for representing string(TXT)
@@ -335,7 +351,11 @@ def run_file(event=None):
         function_box.config(state="disabled")
 
         # ACTUALLY RUNNING
-        terminal.start_process(["python", os.path.normpath(FLOW_PATH), os.path.normpath(FILENAME), "FIDE"])
+        if not DEVELOPER_MODE:
+            developer_mode_arg = ""
+        else:
+            developer_mode_arg = "DEVELOPER_MODE"
+        terminal.start_process(["python", os.path.normpath(FLOW_PATH), os.path.normpath(FILENAME), "FIDE",developer_mode_arg])
 
 def exita(event=None):
     sys.exit()

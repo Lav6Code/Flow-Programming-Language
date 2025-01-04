@@ -1,2 +1,3 @@
 output(input("txt")); $ Converts input into TXT type
 output(input("num")); $ Converts input into NUM type
+output(input("bln")); $ Converts input into BLN type
