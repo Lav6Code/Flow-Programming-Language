@@ -197,16 +197,21 @@ def highlight(keyword, tag_name):
         if keyword == textbox.get(pos, end):
             textbox.tag_add(tag_name, pos, end)
 
-def update_line_counter():
-    global line_counter
+def update_line_counter(event=None):
+    global line_counter, textbox
+
     n = textbox.get("1.0", tk.END).count("\n")
     text = ""
     for i in range(n):
-        text += f"{i + 1}.\n"
-
+        text += f"{i + 1}\n"
+    text = text[:-1]
+    
     line_counter.config(state="normal")
     line_counter.delete('1.0', tk.END)
-    line_counter.insert("1.0", text)
+    line_counter.insert('1.0', text)
+    line_counter.yview_moveto(textbox.yview()[0])
+    yview_real = line_counter.yview()[0]
+    
     line_counter.config(state="disabled")
 
 def update_text(a=None):
@@ -225,10 +230,6 @@ def update_text(a=None):
         highlight(word, "RED")
     for word in BLUE_KEYWORDS:
         highlight(word, "BLUE")
-    for word in ORANGE_KEYWORDS:
-        highlight(word, "ORANGE")
-    for word in PURPLE_KEYWORDS:
-        highlight(word, "PURPLE")
     for word in PINK_KEYWORDS:
         highlight(word, "PINK")
 
@@ -424,6 +425,7 @@ def insert_new_function(event = None):
     global textbox
 
     new_function_text = '''func("FUN",(
+
 ));
 call("FUN");\n'''
     textbox.insert(textbox.index(tk.INSERT), new_function_text)
@@ -569,15 +571,20 @@ if not os.path.exists("fide/recents.txt"):
     f.close()
 
 # WIDGETS (Same as original code, except terminal replaced)
-textbox = tk.Text(app, width=57, height=23, font=("Consolas 20"), undo=True, wrap="none")
+
+textbox = tk.Text(app, width=57, height=18, font=("Consolas 20"), undo=True, wrap="none")
 textbox.place(rely=0, relx=0.04)
 textbox.tag_config("GREEN", foreground="green")
-textbox.tag_config("RED", foreground="red")
-textbox.tag_config("ORANGE", foreground="orange")
-textbox.tag_config("BLUE", foreground="blue")
+textbox.tag_config("RED", foreground="#d1644a")
+textbox.tag_config("ORANGE", foreground="#FFC300")
+textbox.tag_config("BLUE", foreground="#57c1d9")
 textbox.tag_config("PURPLE", foreground="#634a7f")
 textbox.tag_config("PINK", foreground="#e57bff")
-textbox.config(spacing1=10)
+textbox.config(spacing1=5)
+
+line_counter = tk.Text(app, width=3, height=18, font=("Consolas 20"), fg="lightblue", state="disabled", wrap="none")
+line_counter.place(rely=0, relx=0)
+line_counter.config(spacing1=5)
 
 # VARIABLE TEXTBOX
 variable_box = tk.Text(app, width=11, height=8, font=("Consolas 16"))
@@ -598,10 +605,6 @@ function_label.place(relx=0.905, rely=0)
 VARS_CONNECTION_KEY = "[SENDING_VARS_TO_FIDE]"
 FUNS_CONNECTION_KEY = "[SENDING_FUNS_TO_FIDE]"
 INPUT_CONNECTION_KEY = "[RUNNING_IN_FIDE]"
-
-line_counter = tk.Text(app, width=3, height=23, font=("Consolas 20"), fg="lightblue", state="disabled")
-line_counter.place(rely=-0, relx=0)
-line_counter.config(spacing1=10)
 
 # Replace the tkterminal with the new InteractiveConsole
 terminal = InteractiveConsole(app)
@@ -652,6 +655,10 @@ autocomplete = None
 
 update_recents()
 
+# Line counter
+
+update_line_counter()
+
 # Bindings (Unchanged)
 app.bind("<Control-n>", new_file)
 app.bind("<Control-o>", open_file_from_dialog)
@@ -671,6 +678,8 @@ app.bind("<Control-q>", shuffle_complete_suggestions)
 textbox.bind_all('<<Modified>>', check_autocompletion)
 textbox.bind_all('<<Modified>>', auto_finish)
 textbox.bind_all('<<Modified>>', update_text)
+textbox.bind_all('<MouseWheel>', update_line_counter)
+textbox.bind_all("<Key>", update_line_counter)
 
 # THEME AND MAIN LOOP
 sv_ttk.set_theme("dark")
