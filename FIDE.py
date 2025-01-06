@@ -100,13 +100,47 @@ app.title("untitled.flow")
 app.resizable(False, False)
 
 # FLOW SETUP
-GRERN_KEYWORDS = ['+', '*', "-", "/", "<", "<=", ">", ">=", "="]
-RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call"]
+GREEN_KEYWORDS = ['+', '*', "-", "/", "<", "<=", ">", ">=", "="]
+RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call", "add"]
 ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"', "num", "set", "txt", "bln"]
 BLUE_KEYWORDS = [";", "(", ")"]
 PINK_KEYWORDS = ["TRUE", "FALSE"]
 PURPLE_KEYWORDS = ["$"] # COMMENT
-COMMANDS = GRERN_KEYWORDS+ RED_KEYWORDS + BLUE_KEYWORDS + PINK_KEYWORDS + PURPLE_KEYWORDS + ORANGE_KEYWORDS
+COMMANDS = GREEN_KEYWORDS+ RED_KEYWORDS + BLUE_KEYWORDS + PINK_KEYWORDS + PURPLE_KEYWORDS + ORANGE_KEYWORDS
+COMMANDS_DESCRIPTION = {"+":"+(num┃txt, num┃txt) -> values that are going to be added",
+                        "-":"-(num, num) -> values that are going to be subtracted",
+                        "*":"+(num, num) -> values that are going to be multiplied",
+                        "/":"/(num, num) -> values that are going to be divided",
+                        "<":"<(num1, num2) -> returns TRUE if num2 is greater than num1",
+                        ">":">(num1, num2) -> returns TRUE if num2 is smaller than num1",
+                        "<=":"<=(num1, num2) -> returns TRUE if num2 is equal or greater than num1",
+                        ">=":">?(num1, num2) -> returns TRUE if num2 is equal or smaller than num1",
+                        "=":"=(num1, num2) -> returns TRUE if num2 is equal to num1",
+                        "var":"var(txt, txt┃num┃bln┃set) -> saves a variable with value as the second argument by the name of first argument",
+                        "func":"func(txt, blk) -> saves a function with code as the second argument by the name of first argument",
+                        "output":"output(txt) -> outputs the txt into console",
+                        "input":"input(txt) -> txt argument needs to be either BLK, NUM, TXT, depending on what type you want to convert the value into",
+                        "if":"if(bln, blk, blk*) -> if the bln is TRUE the blk will run, ELSE the blk* will run, blk* is optional",
+                        "for":"for(num, blk) -> runs the blk num-times",
+                        "while":"while(bln, blk) -> while the bln is TRUE, programm will run the blk",
+                        "fetch":"fetch(set, num) -> returns the num-th element of the set",
+                        "intersection":"intersection(set1, set2) -> returns the intersection of the 2 sets; set of elements that are present in input sets",
+                        "union":"union(set1, set2) -> return union of two sets; set of unique elements of both sets combined",
+                        "disjunction":"disjunction(set1, set2) -> returns the disjunction of the 2 sets; set of elements that are uniqe to each input set",
+                        "superset":"superset(set1, set2) -> returns TRUE if all elements of set1 are in set2, otherwise returns FALSE",
+                        "subset":"subset(set1, set2) -> returns TRUE if all elements of set2 are in set1, otherwise returns FALSE",
+                        "len":"len(set) -> returns the lentgh of the set",
+                        "add":"add(set1, txt┃num┃bln┃set) -> appends the set1 with txt┃num┃bln┃set",
+                        "call":"call(txt) -> calls(runs) the function by the name of txt",
+                        "set":"set(txt1┃num1┃bln1┃set1, txt2┃num2┃bln2┃set2...) -> returns the set which elements are arguments of this command",
+                        "num":"num(txt) -> converts txt into num, if possible",
+                        "txt":"txt(num) -> converts num into txt, if possible",
+                        "bln":"bln(txt┃num) -> converts txt into bln, if possible"
+                        }
+
+if len(COMMANDS_DESCRIPTION) != len(GREEN_KEYWORDS+ RED_KEYWORDS):
+    print("INSUFFICENT COMMANDS")
+
 # FLOW path
 FLOW_PATH = "./FLOW.py"
 
@@ -186,16 +220,20 @@ def update_functions_textbox(functions):
     function_box.insert("1.0",insert_text)
     function_box.config(state="disabled")
 
-def highlight(keyword, tag_name):
+def highlight(keyword, tag_name, widget):
     start = "1.0"
     while True:
-        pos = textbox.search(keyword, start, stopindex=tk.END)
+        pos = widget.search(keyword, start, stopindex=tk.END)
         end = f"{pos}+{len(keyword)}c"
         start = end
         if not pos:
             break
-        if keyword == textbox.get(pos, end):
-            textbox.tag_add(tag_name, pos, end)
+        if keyword == widget.get(pos, end):
+            widget.tag_add(tag_name, pos, end)
+            if tag_name == "RED":
+                widget.tag_add("BOLD", pos, end)
+            if tag_name == "ORANGE":
+                widget.tag_add("ITALIC", pos, end)
 
 def update_line_counter(event=None):
     global line_counter, textbox
@@ -215,7 +253,7 @@ def update_line_counter(event=None):
     line_counter.config(state="disabled")
 
 def update_text(a=None):
-    global line_counter, textbox
+    global line_counter, textbox, command_description
     textbox.edit_modified(False)
     textbox.tag_remove("GREEN", 1.0, tk.END)
     textbox.tag_remove("RED", 1.0, tk.END)
@@ -224,14 +262,16 @@ def update_text(a=None):
     textbox.tag_remove("PURPLE", 1.0, tk.END)
     textbox.tag_remove("PINK", 1.0, tk.END)
 
-    for word in GRERN_KEYWORDS:
-        highlight(word, "GREEN")
+    for word in GREEN_KEYWORDS:
+        highlight(word, "GREEN", textbox)
     for word in RED_KEYWORDS:
-        highlight(word, "RED")
+        highlight(word, "RED", textbox)
     for word in BLUE_KEYWORDS:
-        highlight(word, "BLUE")
+        highlight(word, "BLUE", textbox)
     for word in PINK_KEYWORDS:
-        highlight(word, "PINK")
+        highlight(word, "PINK", textbox)
+    for word in ORANGE_KEYWORDS:
+        highlight(word, "ORANGE", textbox)
 
     # WORDS INSIDE ""
 
@@ -251,7 +291,7 @@ def update_text(a=None):
                 inside_n.append(bucket)
                 bucket = ""
     for word in inside_n:
-        highlight(word, "ORANGE")
+        highlight(word, "ORANGE", textbox)
     
     # WORDS AFTER $
     seperated_by_comment = []
@@ -259,7 +299,11 @@ def update_text(a=None):
         if "$" in l:
             seperated_by_comment.append(l[l.index("$")::])
     for word in seperated_by_comment:
-        highlight(word, "PURPLE")
+        highlight(word, "PURPLE", textbox)
+
+    # Clear hint
+    command_description.config(text="")
+
 
     check_autocompletion()
     update_line_counter()
@@ -462,6 +506,28 @@ def insert_new_if_else(event = None):
     textbox.insert(textbox.index(tk.INSERT), new_for_if_else)
     update_text()
 
+def command_hint(c):
+
+    global command_description
+    
+    # check if c is: "", TRUE, FALSE
+
+
+
+    string = COMMANDS_DESCRIPTION[c]
+
+    # splitting
+
+    for i in range(len(string)):
+        if i == 83:
+            for _, el in enumerate(string[::83][::-1]):
+                if el == " ":
+                    string = list(string)
+                    string.insert(i, "\n")
+                    string = "".join(string)
+
+    command_description.config(text=string)
+
 def show_autocomplete(x,y, commands):
     global autocomplete, textbox
 
@@ -506,6 +572,7 @@ def autocompletion(event=None):
         #print(user_typed)
         if word_to_complete.startswith(user_typed[::-1]):
             textbox.insert(index, word_to_complete[len(user_typed)::])
+            command_hint(word_to_complete)
     
     autocomplete.destroy()
     app.update()
@@ -533,14 +600,19 @@ def check_autocompletion(event=None):
         x += 55
         user_typed = ""
         possible_commands = []
-        longest_command = len(max(COMMANDS, key = len))
+        longest_command = ""
         #print(longest_command)
         for s in line_text:
             user_typed += s
-            for c in COMMANDS:
+            for c in COMMANDS_DESCRIPTION.keys():
                 if c.startswith(user_typed[::-1]) and len(user_typed) >= auto_complete_threshold and c != user_typed[::-1]:
                     possible_commands.append(c)
+                if c == user_typed[::-1]:
+                    if len(longest_command) < len(c):
+                        longest_command = c
 
+        if longest_command != "":
+            command_hint(longest_command)
         if possible_commands:
             show_autocomplete(x,y,possible_commands)
         elif autocomplete:
@@ -572,19 +644,25 @@ if not os.path.exists("fide/recents.txt"):
 
 # WIDGETS (Same as original code, except terminal replaced)
 
-textbox = tk.Text(app, width=57, height=18, font=("Consolas 20"), undo=True, wrap="none")
-textbox.place(rely=0, relx=0.04)
+textbox = tk.Text(app, width=61, height=18, font=("Consolas 19"), undo=True, wrap="none")
+textbox.place(rely=0, relx=0.037)
 textbox.tag_config("GREEN", foreground="green")
 textbox.tag_config("RED", foreground="#d1644a")
 textbox.tag_config("ORANGE", foreground="#FFC300")
 textbox.tag_config("BLUE", foreground="#57c1d9")
 textbox.tag_config("PURPLE", foreground="#634a7f")
 textbox.tag_config("PINK", foreground="#e57bff")
+textbox.tag_config("BOLD", font=("Consolas", 19, "bold"))
+textbox.tag_config("ITALIC", font=("Consolas", 19, "italic"))
+
 textbox.config(spacing1=5)
 
-line_counter = tk.Text(app, width=3, height=18, font=("Consolas 20"), fg="lightblue", state="disabled", wrap="none")
+line_counter = tk.Text(app, width=3, height=18, font=("Consolas 19"), fg="lightblue", state="disabled", wrap="none")
 line_counter.place(rely=0, relx=0)
 line_counter.config(spacing1=5)
+
+command_description = tk.Label(app, text="",  font=("Consolas 14"), justify="left")
+command_description.place(rely=0.95, relx=0.04, anchor= tk.W)
 
 # VARIABLE TEXTBOX
 variable_box = tk.Text(app, width=11, height=8, font=("Consolas 16"))
