@@ -1,5 +1,4 @@
 import tkinter as tk
-import customtkinter as ctk
 from tkinter.filedialog import *
 import importlib.util
 import sys
@@ -93,11 +92,11 @@ class InteractiveConsole(tk.Frame):
 # SETUP
 DEVELOPER_MODE = False
 WIDTH, HEIGHT = 1207, 700
-app = tk.Tk()
-app.geometry(str(WIDTH) + "x" + str(HEIGHT))
-app.lift()
-app.title("untitled.flow")
-app.resizable(False, False)
+APP = tk.Tk()
+APP.geometry(str(WIDTH) + "x" + str(HEIGHT))
+APP.lift()
+APP.title("untitled.flow")
+APP.resizable(False, False)
 
 # FLOW SETUP
 GREEN_KEYWORDS = ['+', '*', "-", "/", "<", "<=", ">", ">=", "="]
@@ -107,46 +106,47 @@ BLUE_KEYWORDS = [";", "(", ")"]
 PINK_KEYWORDS = ["TRUE", "FALSE"]
 PURPLE_KEYWORDS = ["$"] # COMMENT
 COMMANDS = GREEN_KEYWORDS+ RED_KEYWORDS + BLUE_KEYWORDS + PINK_KEYWORDS + PURPLE_KEYWORDS + ORANGE_KEYWORDS
-COMMANDS_DESCRIPTION = {"+":"+(num┃txt, num┃txt) -> values that are going to be added",
-                        "-":"-(num, num) -> values that are going to be subtracted",
-                        "*":"+(num, num) -> values that are going to be multiplied",
-                        "/":"/(num, num) -> values that are going to be divided",
-                        "<":"<(num1, num2) -> returns TRUE if num2 is greater than num1",
-                        ">":">(num1, num2) -> returns TRUE if num2 is smaller than num1",
-                        "<=":"<=(num1, num2) -> returns TRUE if num2 is equal or greater than num1",
-                        ">=":">?(num1, num2) -> returns TRUE if num2 is equal or smaller than num1",
-                        "=":"=(num1, num2) -> returns TRUE if num2 is equal to num1",
-                        "var":"var(txt, txt┃num┃bln┃set) -> saves a variable with value as the second argument by the name of first argument",
-                        "func":"func(txt, blk) -> saves a function with code as the second argument by the name of first argument",
-                        "output":"output(txt) -> outputs the txt into console",
-                        "input":"input(txt) -> txt argument needs to be either BLK, NUM, TXT, depending on what type you want to convert the value into",
+COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concatination of arg1 and arg2",
+                        "-":"-(arg1 [num], arg2 [num]) -> substraction of arg1 and arg2",
+                        "*":"*(arg1 [num], arg2 [num]) -> procuct of arg1 and arg2",
+                        "/":"/(arg1 [num], arg2 [num]) -> values that are going to be divided",
+                        "<":"<(arg1 [num], arg2 [num]) -> TRUE if arg1 is less than arg2",
+                        ">":">(arg1 [num], arg2 [num]) -> TRUE if arg1 is greater than arg2",
+                        "<=":"<=(arg1 [num], arg2 [num]) -> TRUE if arg1 is less or equal than arg2",
+                        ">=":">=(arg1 [num], arg2 [num]) -> TRUE if arg1 is greater or equal than arg2",
+                        "=":"=(arg1 [num], arg2 [num]) -> TRUE if arg1 is equal to arg2",
+                        "var":"var(varname [txt], val [txt|num|bln|set]) -> defines or updates a variable with the name varname with the value val",
+                        "func":"func(fname [txt], codeblock [blk]) -> defines a function with the name fname and body codeblock",
+                        "output":"output(str [txt]) -> outputs the str into console",
+                        "input":'input(datatype ["num"|"txt"|"bln"]) -> takes text from keyboard and converts it into data of type datatype',
                         "if":"if(bln, blk, blk*) -> if the bln is TRUE the blk will run, ELSE the blk* will run, blk* is optional",
-                        "for":"for(num, blk) -> runs the blk num-times",
-                        "while":"while(bln, blk) -> while the bln is TRUE, programm will run the blk",
-                        "fetch":"fetch(set, num) -> returns the num-th element of the set",
-                        "intersection":"intersection(set1, set2) -> returns the intersection of the 2 sets; set of elements that are present in input sets",
-                        "union":"union(set1, set2) -> return union of two sets; set of unique elements of both sets combined",
-                        "disjunction":"disjunction(set1, set2) -> returns the disjunction of the 2 sets; set of elements that are uniqe to each input set",
-                        "superset":"superset(set1, set2) -> returns TRUE if all elements of set1 are in set2, otherwise returns FALSE",
-                        "subset":"subset(set1, set2) -> returns TRUE if all elements of set2 are in set1, otherwise returns FALSE",
-                        "len":"len(set) -> returns the lentgh of the set",
-                        "add":"add(set1, txt┃num┃bln┃set) -> appends the set1 with txt┃num┃bln┃set",
-                        "call":"call(txt) -> calls(runs) the function by the name of txt",
-                        "set":"set(txt1┃num1┃bln1┃set1, txt2┃num2┃bln2┃set2...) -> returns the set which elements are arguments of this command",
-                        "num":"num(txt) -> converts txt into num, if possible",
-                        "txt":"txt(num) -> converts num into txt, if possible",
-                        "bln":"bln(txt┃num) -> converts txt into bln, if possible"
+                        "for":"for(n [num], codeblock [blk]) -> runs the codeblock n times",
+                        "while":"while(condition [bln], codeblock [blk]) -> repeatedly run codeblock, while the condition is TRUE",
+                        "fetch":"fetch(set, num) -> the num-th element of the set",
+                        "intersection":"intersection(set1 [set], set2 [set]) -> the intersection of the two sets (set of elements that are present in both given sets)",
+                        "union":"union(set1 [set], set2 [set]) -> union of two sets (set of unique elements of both sets combined)",
+                        "disjunction":"disjunction(set1 [set], set2 [set]) -> the disjunction of the two sets (set of elements that are uniqe to each given set)",
+                        "superset":"superset(set1 [set], set2 [set]) -> TRUE if all elements of set2 are in set1, otherwise FALSE",
+                        "subset":"subset(set1 [set], set2 [set]) -> TRUE if all elements of set1 are in set2, otherwise FALSE",
+                        "len":"len(arg [set]) -> length of set arg",
+                        "add":"add(arg [set], app [txt|num|bln|set]) -> set produced by appending app to the set arg",
+                        "call":"call(fname [txt]) -> calls (runs) the function by the name of fname",
+                        "set":"set(el1 [txt|num|bln|set], el2 [txt|num|bln|set], ...) -> set with elements el1, el2, ...",
+                        "num":"num(arg [txt]) -> converts arg into type num, if possible",
+                        "txt":"txt(arg [num]) -> converts arg into txt, if possible",
+                        "bln":"bln(arg [txt|num]) -> converts arg into bln, if possible"
                         }
 
-if len(COMMANDS_DESCRIPTION) != len(GREEN_KEYWORDS+ RED_KEYWORDS):
-    print("INSUFFICENT COMMANDS")
-
+# COMMAND HELP HIGHLIGHTS
+HELP_GREEN_KEYWORDS = list(COMMANDS_DESCRIPTION.keys())
+HELP_PINK_KEYWORDS = ["->"]
+HELP_LIGHT_BLUE_KEYWORDS = ["txt","set","num","bln","txt1","set1","num1","bln1","txt2","set2","num2","bln2","blk*","BLK","BLN","SET","sets"]
+HELP_ORANGE_KEYWORDS = ["┃"]
 # FLOW path
 FLOW_PATH = "./FLOW.py"
 
 # Opened file
 FILENAME = None
-
 
 # FUNCTIONS (Unchanged from your original implementation)
 def change_path_f():
@@ -160,18 +160,18 @@ def change_path_f():
     intpreter_configuration_window.destroy()
 
 def developer_mode(event=None):
-    global DEVELOPER_MODE, configuration_menu
+    global DEVELOPER_MODE, GUI_CONFIGURATION_MENU
 
     DEVELOPER_MODE = not(DEVELOPER_MODE)
 
     if DEVELOPER_MODE:
-        configuration_menu.entryconfigure(1, label="Developer Mode ✓")
+        GUI_CONFIGURATION_MENU.entryconfigure(1, label="Developer Mode ✓")
     else:
-        configuration_menu.entryconfigure(1, label="Developer Mode ✗")
+        GUI_CONFIGURATION_MENU.entryconfigure(1, label="Developer Mode ✗")
 
 def interpreter_configuration(event=None):
     global intpreter_configuration_window
-    intpreter_configuration_window = tk.Toplevel(app)
+    intpreter_configuration_window = tk.Toplevel(APP)
     intpreter_configuration_window.geometry("750x150")
     intpreter_configuration_window.title("Configure Intepreter")
     intpreter_configuration_window.after(10, intpreter_configuration_window.lift)
@@ -190,9 +190,9 @@ def interpreter_configuration(event=None):
     change_path.place(relx=0.5,rely=0.7, anchor=tk.CENTER)
     
 def update_variables_textbox(variables):
-    global variable_box
-    variable_box.config(state="normal")
-    variable_box.delete("1.0", tk.END)
+    global GUI_VARIABLE_BOX
+    GUI_VARIABLE_BOX.config(state="normal")
+    GUI_VARIABLE_BOX.delete("1.0", tk.END)
     insert_text = ""
     
     for v in variables:
@@ -205,20 +205,20 @@ def update_variables_textbox(variables):
         elif type(variables[v]) == list:
             insert_text += f"{v}={variables[v]}\n"
 
-    variable_box.insert("1.0",insert_text)
-    variable_box.config(state="disabled")
+    GUI_VARIABLE_BOX.insert("1.0",insert_text)
+    GUI_VARIABLE_BOX.config(state="disabled")
 
 def update_functions_textbox(functions):
-    global function_box
-    function_box.config(state="normal")
-    function_box.delete("1.0", tk.END)
+    global GUI_FUNCTION_BOX
+    GUI_FUNCTION_BOX.config(state="normal")
+    GUI_FUNCTION_BOX.delete("1.0", tk.END)
     insert_text = ""
     
     for v in functions:
         insert_text += (v + "\n")
 
-    function_box.insert("1.0",insert_text)
-    function_box.config(state="disabled")
+    GUI_FUNCTION_BOX.insert("1.0",insert_text)
+    GUI_FUNCTION_BOX.config(state="disabled")
 
 def highlight(keyword, tag_name, widget):
     start = "1.0"
@@ -236,49 +236,49 @@ def highlight(keyword, tag_name, widget):
                 widget.tag_add("ITALIC", pos, end)
 
 def update_line_counter(event=None):
-    global line_counter, textbox
+    global GUI_LINE_COUNTER, GUI_TEXTBOX
 
-    n = textbox.get("1.0", tk.END).count("\n")
+    n = GUI_TEXTBOX.get("1.0", tk.END).count("\n")
     text = ""
     for i in range(n):
         text += f"{i + 1}\n"
     text = text[:-1]
     
-    line_counter.config(state="normal")
-    line_counter.delete('1.0', tk.END)
-    line_counter.insert('1.0', text)
-    line_counter.yview_moveto(textbox.yview()[0])
-    yview_real = line_counter.yview()[0]
+    GUI_LINE_COUNTER.config(state="normal")
+    GUI_LINE_COUNTER.delete('1.0', tk.END)
+    GUI_LINE_COUNTER.insert('1.0', text)
+    GUI_LINE_COUNTER.yview_moveto(GUI_TEXTBOX.yview()[0])
+    yview_real = GUI_LINE_COUNTER.yview()[0]
     
-    line_counter.config(state="disabled")
+    GUI_LINE_COUNTER.config(state="disabled")
 
 def update_text(a=None):
-    global line_counter, textbox, command_description
-    textbox.edit_modified(False)
-    textbox.tag_remove("GREEN", 1.0, tk.END)
-    textbox.tag_remove("RED", 1.0, tk.END)
-    textbox.tag_remove("BLUE", 1.0, tk.END)
-    textbox.tag_remove("ORANGE", 1.0, tk.END)
-    textbox.tag_remove("PURPLE", 1.0, tk.END)
-    textbox.tag_remove("PINK", 1.0, tk.END)
+    global GUI_LINE_COUNTER, GUI_TEXTBOX, GUI_COMMAND_HELP
+    GUI_TEXTBOX.edit_modified(False)
+    GUI_TEXTBOX.tag_remove("GREEN", 1.0, tk.END)
+    GUI_TEXTBOX.tag_remove("RED", 1.0, tk.END)
+    GUI_TEXTBOX.tag_remove("BLUE", 1.0, tk.END)
+    GUI_TEXTBOX.tag_remove("ORANGE", 1.0, tk.END)
+    GUI_TEXTBOX.tag_remove("PURPLE", 1.0, tk.END)
+    GUI_TEXTBOX.tag_remove("PINK", 1.0, tk.END)
 
     for word in GREEN_KEYWORDS:
-        highlight(word, "GREEN", textbox)
+        highlight(word, "GREEN", GUI_TEXTBOX)
     for word in RED_KEYWORDS:
-        highlight(word, "RED", textbox)
+        highlight(word, "RED", GUI_TEXTBOX)
     for word in BLUE_KEYWORDS:
-        highlight(word, "BLUE", textbox)
+        highlight(word, "BLUE", GUI_TEXTBOX)
     for word in PINK_KEYWORDS:
-        highlight(word, "PINK", textbox)
+        highlight(word, "PINK", GUI_TEXTBOX)
     for word in ORANGE_KEYWORDS:
-        highlight(word, "ORANGE", textbox)
+        highlight(word, "ORANGE", GUI_TEXTBOX)
 
     # WORDS INSIDE ""
 
     bucket = ""
     inside_n = []
     n_counter = 0
-    for l in textbox.get("1.0", tk.END):
+    for l in GUI_TEXTBOX.get("1.0", tk.END):
         if l == '"':
             n_counter += 1
             if n_counter == 2:
@@ -291,65 +291,66 @@ def update_text(a=None):
                 inside_n.append(bucket)
                 bucket = ""
     for word in inside_n:
-        highlight(word, "ORANGE", textbox)
+        highlight(word, "ORANGE", GUI_TEXTBOX)
     
     # WORDS AFTER $
     seperated_by_comment = []
-    for l in textbox.get("1.0", tk.END).split("\n"):
+    for l in GUI_TEXTBOX.get("1.0", tk.END).split("\n"):
         if "$" in l:
             seperated_by_comment.append(l[l.index("$")::])
     for word in seperated_by_comment:
-        highlight(word, "PURPLE", textbox)
+        highlight(word, "PURPLE", GUI_TEXTBOX)
 
     # Clear hint
-    command_description.config(text="")
-
+    GUI_COMMAND_HELP.config(state="normal")
+    GUI_COMMAND_HELP.delete("1.0", tk.END)
+    GUI_COMMAND_HELP.config(state="disabled")
 
     check_autocompletion()
     update_line_counter()
 
 def auto_finish(event=None):
-    global textbox
-    textbox.edit_modified(False)
+    global GUI_TEXTBOX
+    GUI_TEXTBOX.edit_modified(False)
     char_mapping = {"(": ")", '"': '"', "[": "]", "{": "}"}
     if event.char in char_mapping.keys():
-        current_position = textbox.index(tk.INSERT)
-        textbox.insert(current_position, char_mapping[event.char])
-        textbox.mark_set(tk.INSERT, current_position)
+        current_position = GUI_TEXTBOX.index(tk.INSERT)
+        GUI_TEXTBOX.insert(current_position, char_mapping[event.char])
+        GUI_TEXTBOX.mark_set(tk.INSERT, current_position)
 
 def focus_text_widget():
-    textbox.focus_force()
+    GUI_TEXTBOX.focus_force()
 
 def new_file(event=None):
-    global FILENAME, textbox
+    global FILENAME, GUI_TEXTBOX
     response = tk.messagebox.askquestion(title="⚠️ File will not be saved! ⚠️",
                                              message="Save file before opening another file?", type="yesnocancel")
     if response == "yes":
         save_file()
-        textbox.delete("1.0", tk.END)
-        app.update()
+        GUI_TEXTBOX.delete("1.0", tk.END)
+        APP.update()
     elif response == "cancel":
         ...
     else:
-        textbox.delete("1.0", tk.END)
-        app.update()
+        GUI_TEXTBOX.delete("1.0", tk.END)
+        APP.update()
     FILENAME = None
-    app.title("Untitled.flow")
+    APP.title("Untitled.flow")
 
 def save_file(event=None):
-    global recent_files_menu, recents, recents_changed, FILENAME
+    global GUI_RECENT_FILES_MENU, recents, recents_changed, FILENAME
 
     if FILENAME:
         with open(FILENAME, 'a') as f:
             f.truncate(0)
-            f.write(textbox.get("1.0", tk.END))
+            f.write(GUI_TEXTBOX.get("1.0", tk.END))
     else:
         file = asksaveasfile(defaultextension=".flow", filetypes=[("Flow files", "*.flow")])
         if file is not None:
             FILENAME = file.name
-            app.title(FILENAME.split("/")[-1])
+            APP.title(FILENAME.split("/")[-1])
             with open(FILENAME, "w") as file_t:
-                file_t.write(textbox.get("1.0", tk.END))
+                file_t.write(GUI_TEXTBOX.get("1.0", tk.END))
 
     # RECENTS MANAGEMENT
     recents_changed = False
@@ -368,45 +369,45 @@ def save_file(event=None):
     update_recents()
 
 def update_recents():
-    global recent_files_menu
+    global GUI_RECENT_FILES_MENU
     # load recent files
     with open("fide/recents.txt","r") as recents:
-        recent_files_menu.delete(0,4)
+        GUI_RECENT_FILES_MENU.delete(0,4)
         for r in recents.readlines():
             r = r.rstrip()
-            recent_files_menu.add_command(label=r.split("/")[-1], command=lambda fname=r: open_file(fname))
+            GUI_RECENT_FILES_MENU.add_command(label=r.split("/")[-1], command=lambda fname=r: open_file(fname))
 
 def run_file(event=None):
-    global terminal, FLOW_PATH, FILENAME, VARS
+    global GUI_TERMINAL, FLOW_PATH, FILENAME, VARS
     save_file()
     if FILENAME:
         VARS = {}
         #CLEANING BOXS
-        variable_box.config(state="normal")
-        function_box.config(state="normal")
-        variable_box.delete("1.0", tk.END)
-        function_box.delete("1.0", tk.END)
-        variable_box.config(state="disabled")
-        function_box.config(state="disabled")
+        GUI_VARIABLE_BOX.config(state="normal")
+        GUI_FUNCTION_BOX.config(state="normal")
+        GUI_VARIABLE_BOX.delete("1.0", tk.END)
+        GUI_FUNCTION_BOX.delete("1.0", tk.END)
+        GUI_VARIABLE_BOX.config(state="disabled")
+        GUI_FUNCTION_BOX.config(state="disabled")
 
         # ACTUALLY RUNNING
         if not DEVELOPER_MODE:
             developer_mode_arg = ""
         else:
             developer_mode_arg = "DEVELOPER_MODE"
-        terminal.start_process(["python", os.path.normpath(FLOW_PATH), os.path.normpath(FILENAME), "FIDE",developer_mode_arg])
+        GUI_TERMINAL.start_process(["python", os.path.normpath(FLOW_PATH), os.path.normpath(FILENAME), "FIDE",developer_mode_arg])
 
 def exita(event=None):
     sys.exit()
 
 def clear_console(event=None):
-    global terminal
-    terminal.text.configure(state="normal")
-    terminal.text.delete('1.0', tk.END)
-    terminal.text.configure(state="disabled")
+    global GUI_TERMINAL
+    GUI_TERMINAL.text.configure(state="normal")
+    GUI_TERMINAL.text.delete('1.0', tk.END)
+    GUI_TERMINAL.text.configure(state="disabled")
 
 def open_file(filename):
-    global textbox, FILENAME, recent_files_menu
+    global GUI_TEXTBOX, FILENAME, GUI_RECENT_FILES_MENU
     
     if not filename.endswith(".flow"):
         response = tk.messagebox.showwarning(title=f"⚠️ {filename} is not compatible",
@@ -438,13 +439,13 @@ def open_file(filename):
     if FILENAME is not None:
         with open(FILENAME, 'r') as file_content:
             file_content = file_content.read()
-            textbox.delete("1.0", tk.END)
-            textbox.insert(tk.INSERT, file_content[:-1])
+            GUI_TEXTBOX.delete("1.0", tk.END)
+            GUI_TEXTBOX.insert(tk.INSERT, file_content[:-1])
             update_text()
-            terminal.text.delete("1.0", tk.END)
-            app.title(FILENAME.split("/")[-1])
+            GUI_TERMINAL.text.delete("1.0", tk.END)
+            APP.title(FILENAME.split("/")[-1])
     else:
-        app.title("untitled.flow")
+        APP.title("untitled.flow")
     
     # set recent files to menu
     if recents_changed:
@@ -459,43 +460,43 @@ def open_file_from_dialog(event=None):
         open_file(filename)
 
 def insert_new_variable(event = None):
-    global textbox
+    global GUI_TEXTBOX
 
     new_variable_text = 'var("N", 0);\n'
-    textbox.insert(textbox.index(tk.INSERT), new_variable_text)
+    GUI_TEXTBOX.insert(GUI_TEXTBOX.index(tk.INSERT), new_variable_text)
     update_text()
 
 def insert_new_function(event = None):
-    global textbox
+    global GUI_TEXTBOX
 
     new_function_text = '''func("FUN",(
 
 ));
 call("FUN");\n'''
-    textbox.insert(textbox.index(tk.INSERT), new_function_text)
+    GUI_TEXTBOX.insert(GUI_TEXTBOX.index(tk.INSERT), new_function_text)
     update_text()
 
 def insert_new_while_loop(event = None):
-    global textbox
+    global GUI_TEXTBOX
 
     new_while_loop_text = '''
 while( ,(
 
 ));\n'''
-    textbox.insert(textbox.index(tk.INSERT), new_while_loop_text)
+    GUI_TEXTBOX.insert(GUI_TEXTBOX.index(tk.INSERT), new_while_loop_text)
     update_text()
 
 def insert_new_for_loop(event = None):
-    global textbox
+    global GUI_TEXTBOX
 
     new_for_loop_test = '''for( ,(
 
 ));\n'''
-    textbox.insert(textbox.index(tk.INSERT), new_for_loop_test)
+    GUI_TEXTBOX.insert(GUI_TEXTBOX.index(tk.INSERT), new_for_loop_test)
     update_text()
 
 def insert_new_if_else(event = None):
-    global textbox
+    global GUI_TEXTBOX
 
     new_for_if_else = '''if(  ,(
 
@@ -503,67 +504,81 @@ def insert_new_if_else(event = None):
 (
 
 ));\n'''
-    textbox.insert(textbox.index(tk.INSERT), new_for_if_else)
+    GUI_TEXTBOX.insert(GUI_TEXTBOX.index(tk.INSERT), new_for_if_else)
     update_text()
 
-def command_hint(c):
+def command_help(c):
 
-    global command_description
-    
-    # check if c is: "", TRUE, FALSE
-
-
+    global GUI_COMMAND_HELP
 
     string = COMMANDS_DESCRIPTION[c]
 
     # splitting
 
     for i in range(len(string)):
-        if i == 83:
-            for _, el in enumerate(string[::83][::-1]):
+        if i == 80:
+            for _, el in enumerate(string[::80][::-1]):
                 if el == " ":
                     string = list(string)
                     string.insert(i, "\n")
                     string = "".join(string)
+    print(string)
+    GUI_COMMAND_HELP.config(state="normal")
+    GUI_COMMAND_HELP.insert("1.0", string)
+    # highlight
+    GUI_COMMAND_HELP.tag_remove("help_blue", 1.0, tk.END)
+    GUI_COMMAND_HELP.tag_remove("help_lightblue", 1.0, tk.END)
+    GUI_COMMAND_HELP.tag_remove("help_pink", 1.0, tk.END)
+    GUI_COMMAND_HELP.tag_remove("help_orange", 1.0, tk.END)
+    GUI_COMMAND_HELP.tag_remove("help_green", 1.0, tk.END)
 
-    command_description.config(text=string)
+
+    for word in HELP_GREEN_KEYWORDS:
+        highlight(word, "help_green", GUI_COMMAND_HELP)
+    for word in HELP_LIGHT_BLUE_KEYWORDS:
+        highlight(word, "help_lightblue", GUI_COMMAND_HELP)
+    for word in HELP_PINK_KEYWORDS:
+        highlight(word, "help_pink", GUI_COMMAND_HELP)
+    for word in HELP_ORANGE_KEYWORDS:
+        highlight(word, "help_orange", GUI_COMMAND_HELP)
+
+    GUI_COMMAND_HELP.config(state="disabled")
 
 def show_autocomplete(x,y, commands):
-    global autocomplete, textbox
+    global GUI_AUTOCOMPLETE, GUI_TEXTBOX
 
-    if autocomplete is not None:
-        autocomplete.destroy()
-        #print("autocomplete destroyed")
+    if GUI_AUTOCOMPLETE is not None:
+        GUI_AUTOCOMPLETE.destroy()
+        #print("GUI_AUTOCOMPLETE destroyed")
     
     if commands == []:
         return
 
-    # Create a Listbox for autocomplete
-    autocomplete = tk.Listbox(app, height=len(commands), bg="lightgrey", fg="black", selectbackground="blue")
-    autocomplete.place(x=x, y=y)
-    
+    # Create a Listbox for GUI_AUTOCOMPLETE
+    GUI_AUTOCOMPLETE = tk.Listbox(APP, height=len(commands), bg="#201c1c", fg="lightgrey", selectbackground="#6399f8", selectforeground="black")
+    GUI_AUTOCOMPLETE.place(x=x, y=y)
     for command in commands:
-        autocomplete_suggestions = autocomplete.get(0,tk.END)
+        autocomplete_suggestions = GUI_AUTOCOMPLETE.get(0,tk.END)
         if command not in autocomplete_suggestions:
-            autocomplete.insert(tk.END, command)
-    autocomplete.select_set(0)
+            GUI_AUTOCOMPLETE.insert(tk.END, command)
+    GUI_AUTOCOMPLETE.select_set(0)
     #('new autocpomplete created and select 0')
 
 def autocompletion(event=None):
-    global autocomplete, textbox, app
+    global GUI_AUTOCOMPLETE, GUI_TEXTBOX, APP
 
-    if app.focus_get() == textbox:
+    if APP.focus_get() == GUI_TEXTBOX:
         ...
     else:
         return
 
-    if autocomplete:
-        app.update()
-        index = textbox.index(tk.INSERT)
+    if GUI_AUTOCOMPLETE:
+        APP.update()
+        index = GUI_TEXTBOX.index(tk.INSERT)
         line_number = str(index.split('.')[0])
-        line_text = textbox.get(line_number+".0", index)[::-1]
-        #print(autocomplete.curselection())
-        word_to_complete = autocomplete.get(0, tk.END)[autocomplete.curselection()[0]]
+        line_text = GUI_TEXTBOX.get(line_number+".0", index)[::-1]
+        #print(GUI_AUTOCOMPLETE.curselection())
+        word_to_complete = GUI_AUTOCOMPLETE.get(0, tk.END)[GUI_AUTOCOMPLETE.curselection()[0]]
         #print(word_to_complete)
 
     user_typed = ""
@@ -571,27 +586,27 @@ def autocompletion(event=None):
         user_typed += s
         #print(user_typed)
         if word_to_complete.startswith(user_typed[::-1]):
-            textbox.insert(index, word_to_complete[len(user_typed)::])
-            command_hint(word_to_complete)
+            GUI_TEXTBOX.insert(index, word_to_complete[len(user_typed)::])
+            command_help(word_to_complete)
     
-    autocomplete.destroy()
-    app.update()
+    GUI_AUTOCOMPLETE.destroy()
+    APP.update()
             
 
 def check_autocompletion(event=None):
-    global autocomplete, textbox, app
+    global GUI_AUTOCOMPLETE, GUI_TEXTBOX, APP
 
-    textbox.edit_modified(False)
+    GUI_TEXTBOX.edit_modified(False)
 
-    if app.focus_get() == textbox:
+    if APP.focus_get() == GUI_TEXTBOX:
         ...
     else:
         return
 
-    index = textbox.index(tk.INSERT)
+    index = GUI_TEXTBOX.index(tk.INSERT)
     line_number = str(index.split('.')[0])
-    line_text = textbox.get(line_number+".0", index)[::-1]
-    bbox = textbox.bbox(index)
+    line_text = GUI_TEXTBOX.get(line_number+".0", index)[::-1]
+    bbox = GUI_TEXTBOX.bbox(index)
     auto_complete_threshold = 2
     if bbox:
         # bbox returns (x, y, width, height); we take x, y for the position
@@ -607,29 +622,29 @@ def check_autocompletion(event=None):
             for c in COMMANDS_DESCRIPTION.keys():
                 if c.startswith(user_typed[::-1]) and len(user_typed) >= auto_complete_threshold and c != user_typed[::-1]:
                     possible_commands.append(c)
-                if c == user_typed[::-1]:
+                if c == user_typed[::-1] or user_typed[::-1][:-1] == c :
                     if len(longest_command) < len(c):
                         longest_command = c
 
         if longest_command != "":
-            command_hint(longest_command)
+            command_help(longest_command)
         if possible_commands:
             show_autocomplete(x,y,possible_commands)
-        elif autocomplete:
-            autocomplete.destroy()
+        elif GUI_AUTOCOMPLETE:
+            GUI_AUTOCOMPLETE.destroy()
 
 def shuffle_complete_suggestions(event=None):
 
-    global autocomplete, app
+    global GUI_AUTOCOMPLETE, APP
 
-    if autocomplete:
-        Noptions = len(autocomplete.get(0, tk.END))
-        index_sel = autocomplete.curselection()[0]
+    if GUI_AUTOCOMPLETE:
+        Noptions = len(GUI_AUTOCOMPLETE.get(0, tk.END))
+        index_sel = GUI_AUTOCOMPLETE.curselection()[0]
         index_new = (index_sel + 1) % Noptions
-        autocomplete.select_clear(0, tk.END)
-        autocomplete.select_set(index_new)
+        GUI_AUTOCOMPLETE.select_clear(0, tk.END)
+        GUI_AUTOCOMPLETE.select_set(index_new)
         
-        autocomplete.update()
+        GUI_AUTOCOMPLETE.update()
 
 ############
 ### MAIN ###
@@ -642,92 +657,97 @@ if not os.path.exists("fide/recents.txt"):
     f = open("fide/recents.txt", "x")
     f.close()
 
-# WIDGETS (Same as original code, except terminal replaced)
+# WIDGETS (Same as original code, except GUI_TERMINAL replaced)
 
-textbox = tk.Text(app, width=61, height=18, font=("Consolas 19"), undo=True, wrap="none")
-textbox.place(rely=0, relx=0.037)
-textbox.tag_config("GREEN", foreground="green")
-textbox.tag_config("RED", foreground="#d1644a")
-textbox.tag_config("ORANGE", foreground="#FFC300")
-textbox.tag_config("BLUE", foreground="#57c1d9")
-textbox.tag_config("PURPLE", foreground="#634a7f")
-textbox.tag_config("PINK", foreground="#e57bff")
-textbox.tag_config("BOLD", font=("Consolas", 19, "bold"))
-textbox.tag_config("ITALIC", font=("Consolas", 19, "italic"))
+GUI_TEXTBOX = tk.Text(APP, width=61, height=18, font=("Consolas 19"), undo=True, wrap="none")
+GUI_TEXTBOX.place(rely=0, relx=0.037)
+GUI_TEXTBOX.tag_config("GREEN", foreground="green")
+GUI_TEXTBOX.tag_config("RED", foreground="#d1644a")
+GUI_TEXTBOX.tag_config("ORANGE", foreground="#FFC300")
+GUI_TEXTBOX.tag_config("BLUE", foreground="#57c1d9")
+GUI_TEXTBOX.tag_config("PURPLE", foreground="#634a7f")
+GUI_TEXTBOX.tag_config("PINK", foreground="#e57bff")
+GUI_TEXTBOX.tag_config("BOLD", font=("Consolas", 19, "bold"))
+GUI_TEXTBOX.tag_config("ITALIC", font=("Consolas", 19, "italic"))
+GUI_TEXTBOX.config(spacing1=5)
 
-textbox.config(spacing1=5)
+GUI_LINE_COUNTER = tk.Text(APP, width=3, height=18, font=("Consolas 19"), fg="lightblue", state="disabled", wrap="none")
+GUI_LINE_COUNTER.place(rely=0, relx=0)
+GUI_LINE_COUNTER.config(spacing1=5)
 
-line_counter = tk.Text(app, width=3, height=18, font=("Consolas 19"), fg="lightblue", state="disabled", wrap="none")
-line_counter.place(rely=0, relx=0)
-line_counter.config(spacing1=5)
-
-command_description = tk.Label(app, text="",  font=("Consolas 14"), justify="left")
-command_description.place(rely=0.95, relx=0.04, anchor= tk.W)
+GUI_COMMAND_HELP = tk.Text(APP,  font=("Consolas 14"), height=2, width=83, undo=True, state="disabled", bd=0)
+GUI_COMMAND_HELP.place(rely=0.951, relx=0.04, anchor= tk.W)
+GUI_COMMAND_HELP.tag_config("help_green", foreground="green")
+GUI_COMMAND_HELP.tag_config("help_pink", foreground="#d1644a")
+GUI_COMMAND_HELP.tag_config("help_blue", foreground="#2f7afe")
+GUI_COMMAND_HELP.tag_config("help_lightblue", foreground="#FFC300")
+GUI_COMMAND_HELP.tag_config("help_orange", foreground="#e19324")
+#GUI_COMMAND_HELP.config()
 
 # VARIABLE TEXTBOX
-variable_box = tk.Text(app, width=11, height=8, font=("Consolas 16"))
-variable_box.place(rely=0.105, relx=0.7511)
-variable_box.config(state="disabled")
+GUI_VARIABLE_BOX = tk.Text(APP, width=11, height=8, font=("Consolas 16"))
+GUI_VARIABLE_BOX.place(rely=0.105, relx=0.7511)
+GUI_VARIABLE_BOX.config(state="disabled")
 
-variable_label = tk.Label(app, text="║VARS║\n╚====╝", font=("Consolas 20"), fg="lightblue")
-variable_label.place(relx=0.77, rely=-0)
+GUI_VARIABLE_LABEl = tk.Label(APP, text="║VARS║\n╚====╝", font=("Consolas 20"), fg="lightblue")
+GUI_VARIABLE_LABEl.place(relx=0.77, rely=-0)
 
 # FUNCTION TEXTBOX
-function_box = tk.Text(app, width=11, height=8, font=("Consolas 16"))
-function_box.place(rely=0.105, relx=0.887)
-function_box.config(state="disabled")
+GUI_FUNCTION_BOX = tk.Text(APP, width=11, height=8, font=("Consolas 16"))
+GUI_FUNCTION_BOX.place(rely=0.105, relx=0.887)
+GUI_FUNCTION_BOX.config(state="disabled")
 
-function_label = tk.Label(app, text="║FUNS║\n╚====╝", font=("Consolas 20"), fg="lightblue")
-function_label.place(relx=0.905, rely=0)
+GUI_FUNCTION_LABEL = tk.Label(APP, text="║FUNS║\n╚====╝", font=("Consolas 20"), fg="lightblue")
+GUI_FUNCTION_LABEL.place(relx=0.905, rely=0)
 
 VARS_CONNECTION_KEY = "[SENDING_VARS_TO_FIDE]"
 FUNS_CONNECTION_KEY = "[SENDING_FUNS_TO_FIDE]"
 INPUT_CONNECTION_KEY = "[RUNNING_IN_FIDE]"
 
 # Replace the tkterminal with the new InteractiveConsole
-terminal = InteractiveConsole(app)
-terminal.place(relx=0.751, rely=0.53)
+GUI_TERMINAL = InteractiveConsole(APP)
+GUI_TERMINAL.place(relx=0.751, rely=0.53)
 
-clear_console = tk.Button(app, text="CLEAR ×", fg="red", command = clear_console, font=("Consolas 7"))
-clear_console.place(relx=0.97, rely=0.50,anchor=tk.CENTER)
+GUI_CLEAR_CONSOLE = tk.Button(APP, text="×", fg="red", command = clear_console, font=("Consolas 15"))
+GUI_CLEAR_CONSOLE.place(relx=0.97, rely=0.4750,anchor=tk.CENTER)
 
-console_label = tk.Label(app, text="║ CONSOLE ║\n╚=========╝", font=("Consolas 20"), fg="lightblue")
-console_label.place(relx=0.81, rely=0.42)
+GUI_CONSOLE_LABEL = tk.Label(APP, text="║ CONSOLE ║\n╚=========╝", font=("Consolas 20"), fg="lightblue")
+GUI_CONSOLE_LABEL.place(relx=0.81, rely=0.42)
 
 # MENU BAR (Unchanged)
-menubar = tk.Menu()
-file_menu = tk.Menu(menubar, tearoff=False)
-file_menu.add_command(label="New", accelerator="Ctrl+n", command=new_file)
-file_menu.add_command(label="Open", accelerator="Ctrl+o", command=open_file_from_dialog)
+GUI_MENUBAR = tk.Menu()
+GUI_FILE_MENU = tk.Menu(GUI_MENUBAR, tearoff=False)
+GUI_FILE_MENU.add_command(label="New", accelerator="Ctrl+n", command=new_file)
+GUI_FILE_MENU.add_command(label="Open", accelerator="Ctrl+o", command=open_file_from_dialog)
 # RECENT FILES
-recent_files_menu = tk.Menu(file_menu, tearoff=False)
-file_menu.add_cascade(menu=recent_files_menu, label="Open Recents", accelerator="Ctrl+O")
-file_menu.add_command(label="Save", accelerator="Ctrl+s", command=save_file)
-file_menu.add_separator()
-file_menu.add_command(label="Exit", accelerator="Ctrl+e", command=exit)
-menubar.add_cascade(menu=file_menu, label="File")
+GUI_RECENT_FILES_MENU = tk.Menu(GUI_FILE_MENU, tearoff=False)
+GUI_FILE_MENU.add_cascade(menu=GUI_RECENT_FILES_MENU, label="Open Recents", accelerator="Ctrl+O")
+GUI_FILE_MENU.add_command(label="Save", accelerator="Ctrl+s", command=save_file)
+GUI_FILE_MENU.add_separator()
+GUI_FILE_MENU.add_command(label="Exit", accelerator="Ctrl+e", command=exit)
+GUI_MENUBAR.add_cascade(menu=GUI_FILE_MENU, label="File")
 
-insert_menu = tk.Menu(menubar, tearoff=False)
-insert_menu.add_command(label = "New Variable",  accelerator="Ctrl+Shift+v", command = insert_new_variable)
-insert_menu.add_command(label = "New Function",  accelerator="Ctrl+Shift+f", command = insert_new_function)
-insert_menu.add_command(label = "New For Loop",  accelerator="Ctrl+Alt+o", command = insert_new_for_loop)
-insert_menu.add_command(label = "New While Loop",  accelerator="Ctrl+Shift+w", command = insert_new_while_loop)
-insert_menu.add_command(label = "New If Else",  accelerator="Ctrl+Shift+I", command = insert_new_while_loop)
-menubar.add_cascade(menu=insert_menu, label="Insert")
+GUI_INSERT_MENU = tk.Menu(GUI_MENUBAR, tearoff=False)
+GUI_INSERT_MENU.add_command(label = "New Variable",  accelerator="Ctrl+Shift+v", command = insert_new_variable)
+GUI_INSERT_MENU.add_command(label = "New Function",  accelerator="Ctrl+Shift+f", command = insert_new_function)
+GUI_INSERT_MENU.add_command(label = "New For Loop",  accelerator="Ctrl+Alt+o", command = insert_new_for_loop)
+GUI_INSERT_MENU.add_command(label = "New While Loop",  accelerator="Ctrl+Shift+w", command = insert_new_while_loop)
+GUI_INSERT_MENU.add_command(label = "New If Else",  accelerator="Ctrl+Shift+I", command = insert_new_while_loop)
+GUI_MENUBAR.add_cascade(menu=GUI_INSERT_MENU, label="Insert")
 
-run_menu = tk.Menu(menubar, tearoff=False)
-run_menu.add_command(label="Run", accelerator="F5", command=run_file)
-menubar.add_cascade(menu=run_menu, label="Run")
+GUI_RUN_MENU = tk.Menu(GUI_MENUBAR, tearoff=False)
+GUI_RUN_MENU.add_command(label="Run", accelerator="F5", command=run_file)
+GUI_MENUBAR.add_cascade(menu=GUI_RUN_MENU, label="Run")
 
-configuration_menu = tk.Menu(menubar, tearoff=False)
-configuration_menu.add_command(label = "Intepreter",  accelerator="Ctrl+i", command = interpreter_configuration)
-configuration_menu.add_command(label = "Developer Mode ✗",  accelerator="Ctrl+d", command = developer_mode)
-menubar.add_cascade(menu=configuration_menu, label="Configure")
+GUI_CONFIGURATION_MENU = tk.Menu(GUI_MENUBAR, tearoff=False)
+GUI_CONFIGURATION_MENU.add_command(label = "Intepreter",  accelerator="Ctrl+i", command = interpreter_configuration)
+GUI_CONFIGURATION_MENU.add_command(label = "Developer Mode ✗",  accelerator="Ctrl+d", command = developer_mode)
+GUI_MENUBAR.add_cascade(menu=GUI_CONFIGURATION_MENU, label="Configure")
 
-app.config(menu=menubar)
+APP.config(menu=GUI_MENUBAR)
 
-# assigning autocomplete to None, so it does not crash when trying to check if autocomplete exists
-autocomplete = None
+# assigning GUI_AUTOCOMPLETE to None, so it does not crash when trying to check if GUI_AUTOCOMPLETE exists
+GUI_AUTOCOMPLETE = None
 
 # Recents
 
@@ -738,27 +758,27 @@ update_recents()
 update_line_counter()
 
 # Bindings (Unchanged)
-app.bind("<Control-n>", new_file)
-app.bind("<Control-o>", open_file_from_dialog)
-app.bind("<Control-s>", save_file)
-app.bind("<Control-e>", exit)
-app.bind("<F5>", run_file)
-app.bind("<Control-i>", interpreter_configuration)
-app.bind("<Control-d>", developer_mode)
-app.bind("<Control-V>", insert_new_variable)
-app.bind("<Control-F>", insert_new_function)
-app.bind("<Control-O>", insert_new_for_loop)
-app.bind("<Control-W>", insert_new_while_loop)
-app.bind("<Control-I>", insert_new_if_else)
+APP.bind("<Control-n>", new_file)
+APP.bind("<Control-o>", open_file_from_dialog)
+APP.bind("<Control-s>", save_file)
+APP.bind("<Control-e>", exit)
+APP.bind("<F5>", run_file)
+APP.bind("<Control-i>", interpreter_configuration)
+APP.bind("<Control-d>", developer_mode)
+APP.bind("<Control-V>", insert_new_variable)
+APP.bind("<Control-F>", insert_new_function)
+APP.bind("<Control-O>", insert_new_for_loop)
+APP.bind("<Control-W>", insert_new_while_loop)
+APP.bind("<Control-I>", insert_new_if_else)
 
-app.bind("<Control-space>", autocompletion)
-app.bind("<Control-q>", shuffle_complete_suggestions)
-textbox.bind_all('<<Modified>>', check_autocompletion)
-textbox.bind_all('<<Modified>>', auto_finish)
-textbox.bind_all('<<Modified>>', update_text)
-textbox.bind_all('<MouseWheel>', update_line_counter)
-textbox.bind_all("<Key>", update_line_counter)
+APP.bind("<Control-space>", autocompletion)
+APP.bind("<Control-q>", shuffle_complete_suggestions)
+GUI_TEXTBOX.bind_all('<<Modified>>', check_autocompletion)
+GUI_TEXTBOX.bind_all('<<Modified>>', auto_finish)
+GUI_TEXTBOX.bind_all('<<Modified>>', update_text)
+GUI_TEXTBOX.bind_all('<MouseWheel>', update_line_counter)
+GUI_TEXTBOX.bind_all("<Key>", update_line_counter)
 
 # THEME AND MAIN LOOP
 sv_ttk.set_theme("dark")
-app.mainloop()
+APP.mainloop()
