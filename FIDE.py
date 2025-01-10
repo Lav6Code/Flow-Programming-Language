@@ -97,7 +97,7 @@ APP.geometry(str(WIDTH) + "x" + str(HEIGHT))
 APP.lift()
 APP.title("untitled.flow")
 APP.resizable(False, False)
-
+APP.iconbitmap(".\\assets\\fide_icon.ico")
 # FLOW SETUP
 GREEN_KEYWORDS = ['+', '*', "-", "/", "<", "<=", ">", ">=", "="]
 RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call", "add"]
@@ -646,6 +646,98 @@ def shuffle_complete_suggestions(event=None):
         
         GUI_AUTOCOMPLETE.update()
 
+def update_menu():
+
+    global GUI_TOOL_MENU, SEARCHING, SELECTION
+
+    GUI_TOOL_MENU.delete(0,"end")
+    if SEARCHING:
+        GUI_TOOL_MENU.add_command(label="Quit Search", command=quit_search)
+    else:
+        GUI_TOOL_MENU.add_command(label="Search", command=search)
+    GUI_TOOL_MENU.add_command(label="Replace", command=open_replace_window) 
+    # other commands ...
+
+def show_menu(event):
+    
+    global SELECTION
+
+    SELECTION = None
+    try:
+        SELECTION = GUI_TEXTBOX.get(tk.SEL_FIRST, tk.SEL_LAST)
+    except:
+        ...
+    GUI_TOOL_MENU.tk_popup(event.x_root, event.y_root)
+
+def search():
+
+    global SELECTION, GUI_TEXTBOX, GUI_TOOL_MENU, SEARCHING
+    if SELECTION:
+        GUI_TEXTBOX.tag_remove("HIGHLIGHT", "1.0", tk.END)
+        highlight(SELECTION, "HIGHLIGHT", GUI_TEXTBOX)
+        SEARCHING = not(SEARCHING)
+        GUI_TEXTBOX.update()
+        update_menu()
+def _():
+
+    GUI_REPLACE_WINDOW.after(1, callback)
+    return True
+
+def callback():
+    global SELECTION
+
+    SELECTION = GUI_FIND_WORD.get()
+    search()
+    return True
+
+def open_replace_window(event=None):
+    global GUI_REPLACE_BUTTON, GUI_REPLACE_WORD, GUI_FIND_WORD, GUI_REPLACE_WINDOW
+
+    GUI_REPLACE_WINDOW = tk.Toplevel(APP)
+    GUI_REPLACE_WINDOW.geometry("300x200")
+    GUI_REPLACE_WINDOW.title("Replace")
+    GUI_REPLACE_WINDOW.iconbitmap(".\\assets\\fide_icon.ico")
+
+    GUI_FIND_WORD_LABEL = tk.Label(GUI_REPLACE_WINDOW, text="Word that will be replaced", font="Consolas 10")
+    GUI_FIND_WORD_LABEL.place(rely=0.15, relx=0.7, anchor=tk.E)
+
+    sv = tk.StringVar()
+    GUI_FIND_WORD = tk.Entry(GUI_REPLACE_WINDOW, textvariable=sv, validate="key", validatecommand=_, font="Consolas 17")
+    GUI_FIND_WORD.place(relx = 0.5, rely = 0.3, anchor=tk.CENTER)
+
+    GUI_REPLACE_WORD_LABEL = tk.Label(GUI_REPLACE_WINDOW, text="Replacement", font="Consolas 10")
+    GUI_REPLACE_WORD_LABEL.place(rely=0.55, relx=0.345, anchor=tk.E)
+
+
+    GUI_REPLACE_WORD = tk.Entry(GUI_REPLACE_WINDOW, font="Consolas 17")
+    GUI_REPLACE_WORD.place(relx = 0.5, rely = 0.7, anchor=tk.CENTER)
+
+    GUI_REPLACE_BUTTON = tk.Button(GUI_REPLACE_WINDOW, text="Replace", command=replace)
+    GUI_REPLACE_BUTTON.place(relx=0.5, rely=0.9, anchor=tk.CENTER)
+
+    # Setting the normal value for tk.Entry
+
+    if SELECTION:
+        GUI_FIND_WORD.insert(0, SELECTION)
+
+def replace():
+    global GUI_TEXTBOX, GUI_REPLACE_WORD, GUI_FIND_WORD, GUI_REPLACE_WINDOW
+
+    textboxcontent = GUI_TEXTBOX.get("1.0", tk.END)
+    textboxcontent = textboxcontent.replace(GUI_FIND_WORD.get(), GUI_REPLACE_WORD.get())
+    GUI_TEXTBOX.delete("1.0", tk.END)
+    GUI_TEXTBOX.insert("1.0", textboxcontent[:-1]) # \n situation
+    GUI_REPLACE_WINDOW.destroy()
+    quit_search()
+
+def quit_search():
+
+    global GUI_TOOL_MENU, SEARCHING, GUI_TEXTBOX
+
+    GUI_TEXTBOX.tag_remove("HIGHLIGHT","1.0", tk.END)
+    SEARCHING = False
+    update_menu()
+
 ############
 ### MAIN ###
 ############
@@ -659,6 +751,8 @@ if not os.path.exists("fide/recents.txt"):
 
 # WIDGETS (Same as original code, except GUI_TERMINAL replaced)
 
+SEARCHING = None
+
 GUI_TEXTBOX = tk.Text(APP, width=61, height=18, font=("Consolas 19"), undo=True, wrap="none")
 GUI_TEXTBOX.place(rely=0, relx=0.037)
 GUI_TEXTBOX.tag_config("GREEN", foreground="green")
@@ -669,6 +763,7 @@ GUI_TEXTBOX.tag_config("PURPLE", foreground="#634a7f")
 GUI_TEXTBOX.tag_config("PINK", foreground="#e57bff")
 GUI_TEXTBOX.tag_config("BOLD", font=("Consolas", 19, "bold"))
 GUI_TEXTBOX.tag_config("ITALIC", font=("Consolas", 19, "italic"))
+GUI_TEXTBOX.tag_config("HIGHLIGHT", background="blue")
 GUI_TEXTBOX.config(spacing1=5)
 
 GUI_LINE_COUNTER = tk.Text(APP, width=3, height=18, font=("Consolas 19"), fg="lightblue", state="disabled", wrap="none")
@@ -746,9 +841,11 @@ GUI_MENUBAR.add_cascade(menu=GUI_CONFIGURATION_MENU, label="Configure")
 
 APP.config(menu=GUI_MENUBAR)
 
+GUI_TOOL_MENU = tk.Menu(tearoff=False)
+update_menu()
 # assigning GUI_AUTOCOMPLETE to None, so it does not crash when trying to check if GUI_AUTOCOMPLETE exists
 GUI_AUTOCOMPLETE = None
-
+SELECTION = None
 # Recents
 
 update_recents()
@@ -757,7 +854,7 @@ update_recents()
 
 update_line_counter()
 
-# Bindings (Unchanged)
+# Bindings
 APP.bind("<Control-n>", new_file)
 APP.bind("<Control-o>", open_file_from_dialog)
 APP.bind("<Control-s>", save_file)
@@ -778,6 +875,8 @@ GUI_TEXTBOX.bind_all('<<Modified>>', auto_finish)
 GUI_TEXTBOX.bind_all('<<Modified>>', update_text)
 GUI_TEXTBOX.bind_all('<MouseWheel>', update_line_counter)
 GUI_TEXTBOX.bind_all("<Key>", update_line_counter)
+GUI_TEXTBOX.bind("<Button-3>", show_menu)
+
 
 # THEME AND MAIN LOOP
 sv_ttk.set_theme("dark")
