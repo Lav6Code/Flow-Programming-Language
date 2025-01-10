@@ -10,6 +10,8 @@ import queue
 from pathlib import Path
 import sv_ttk
 import time
+import locale
+locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 # Interactive Console Definition
 class InteractiveConsole(tk.Frame):
     def __init__(self, master=None, **kwargs):
@@ -88,6 +90,21 @@ class InteractiveConsole(tk.Frame):
 
         return "break"
 
+    def cancel_process(self):
+            """Terminates the running subprocess, if any."""
+            if self.process is not None and self.process.poll() is None:
+                self.process.terminate()  # Attempt to terminate the process
+                self.process.wait()  # Ensure the process has stopped
+                self.text.configure(state="normal")
+                self.text.insert(tk.END, "Process terminated by user.\n")
+                self.text.configure(state="disabled")
+                self.text.see(tk.END)
+                self.process = None  # Reset the process reference
+            else:
+                self.text.configure(state="normal")
+                self.text.insert(tk.END, "No running process to terminate.\n")
+                self.text.configure(state="disabled")
+                self.text.see(tk.END)
 
 # SETUP
 DEVELOPER_MODE = False
@@ -100,8 +117,8 @@ APP.resizable(False, False)
 APP.iconbitmap(".\\assets\\fide_icon.ico")
 # FLOW SETUP
 GREEN_KEYWORDS = ['+', '*', "-", "/", "<", "<=", ">", ">=", "="]
-RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call", "add"]
-ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"', "num", "set", "txt", "bln"]
+RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln"]
+ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"']
 BLUE_KEYWORDS = [";", "(", ")"]
 PINK_KEYWORDS = ["TRUE", "FALSE"]
 PURPLE_KEYWORDS = ["$"] # COMMENT
@@ -309,10 +326,17 @@ def update_text(a=None):
     check_autocompletion()
     update_line_counter()
 
-def auto_finish(event=None):
+def auto_finish(event):
     global GUI_TEXTBOX
     GUI_TEXTBOX.edit_modified(False)
+    
+    if event.keysym == "A":  # For the Enter key, you can do something special
+        print("You pressed Enter!")
+    elif event.keysym == "BackSpace":
+        print("You pressed Backspace!")
+    
     char_mapping = {"(": ")", '"': '"', "[": "]", "{": "}"}
+    
     if event.char in char_mapping.keys():
         current_position = GUI_TEXTBOX.index(tk.INSERT)
         GUI_TEXTBOX.insert(current_position, char_mapping[event.char])
@@ -405,6 +429,7 @@ def clear_console(event=None):
     GUI_TERMINAL.text.configure(state="normal")
     GUI_TERMINAL.text.delete('1.0', tk.END)
     GUI_TERMINAL.text.configure(state="disabled")
+    GUI_TERMINAL.cancel_process()
 
 def open_file(filename):
     global GUI_TEXTBOX, FILENAME, GUI_RECENT_FILES_MENU
@@ -508,7 +533,6 @@ def insert_new_if_else(event = None):
     update_text()
 
 def command_help(c):
-
     global GUI_COMMAND_HELP
 
     string = COMMANDS_DESCRIPTION[c]
@@ -522,7 +546,6 @@ def command_help(c):
                     string = list(string)
                     string.insert(i, "\n")
                     string = "".join(string)
-    print(string)
     GUI_COMMAND_HELP.config(state="normal")
     GUI_COMMAND_HELP.insert("1.0", string)
     # highlight
@@ -634,7 +657,6 @@ def check_autocompletion(event=None):
             GUI_AUTOCOMPLETE.destroy()
 
 def shuffle_complete_suggestions(event=None):
-
     global GUI_AUTOCOMPLETE, APP
 
     if GUI_AUTOCOMPLETE:
@@ -647,7 +669,6 @@ def shuffle_complete_suggestions(event=None):
         GUI_AUTOCOMPLETE.update()
 
 def update_menu():
-
     global GUI_TOOL_MENU, SEARCHING, SELECTION
 
     GUI_TOOL_MENU.delete(0,"end")
@@ -659,7 +680,6 @@ def update_menu():
     # other commands ...
 
 def show_menu(event):
-    
     global SELECTION
 
     SELECTION = None
@@ -670,7 +690,6 @@ def show_menu(event):
     GUI_TOOL_MENU.tk_popup(event.x_root, event.y_root)
 
 def search():
-
     global SELECTION, GUI_TEXTBOX, GUI_TOOL_MENU, SEARCHING
     if SELECTION:
         GUI_TEXTBOX.tag_remove("HIGHLIGHT", "1.0", tk.END)
@@ -770,7 +789,7 @@ GUI_LINE_COUNTER = tk.Text(APP, width=3, height=18, font=("Consolas 19"), fg="li
 GUI_LINE_COUNTER.place(rely=0, relx=0)
 GUI_LINE_COUNTER.config(spacing1=5)
 
-GUI_COMMAND_HELP = tk.Text(APP,  font=("Consolas 14"), height=2, width=83, undo=True, state="disabled", bd=0)
+GUI_COMMAND_HELP = tk.Text(APP,  font=("Consolas 14"), height=2, width=85, undo=True, state="disabled", bd=0)
 GUI_COMMAND_HELP.place(rely=0.951, relx=0.04, anchor= tk.W)
 GUI_COMMAND_HELP.tag_config("help_green", foreground="green")
 GUI_COMMAND_HELP.tag_config("help_pink", foreground="#d1644a")
@@ -871,7 +890,7 @@ APP.bind("<Control-I>", insert_new_if_else)
 APP.bind("<Control-space>", autocompletion)
 APP.bind("<Control-q>", shuffle_complete_suggestions)
 GUI_TEXTBOX.bind_all('<<Modified>>', check_autocompletion)
-GUI_TEXTBOX.bind_all('<<Modified>>', auto_finish)
+GUI_TEXTBOX.bind('<<Modified>>', auto_finish)
 GUI_TEXTBOX.bind_all('<<Modified>>', update_text)
 GUI_TEXTBOX.bind_all('<MouseWheel>', update_line_counter)
 GUI_TEXTBOX.bind_all("<Key>", update_line_counter)

@@ -1,0 +1,2 @@
+var("N", input("TXT"));
+
