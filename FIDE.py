@@ -278,6 +278,7 @@ def update_text(a=None):
     GUI_TEXTBOX.tag_remove("ORANGE", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("PURPLE", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("PINK", 1.0, tk.END)
+    GUI_TEXTBOX.tag_remove("BOLD", 1.0, tk.END)
 
     for word in GREEN_KEYWORDS:
         highlight(word, "GREEN", GUI_TEXTBOX)
@@ -846,7 +847,7 @@ GUI_INSERT_MENU.add_command(label = "New Variable",  accelerator="Ctrl+Shift+v",
 GUI_INSERT_MENU.add_command(label = "New Function",  accelerator="Ctrl+Shift+f", command = insert_new_function)
 GUI_INSERT_MENU.add_command(label = "New For Loop",  accelerator="Ctrl+Alt+o", command = insert_new_for_loop)
 GUI_INSERT_MENU.add_command(label = "New While Loop",  accelerator="Ctrl+Shift+w", command = insert_new_while_loop)
-GUI_INSERT_MENU.add_command(label = "New If Else",  accelerator="Ctrl+Shift+I", command = insert_new_while_loop)
+GUI_INSERT_MENU.add_command(label = "New If Else",  accelerator="Ctrl+Shift+I", command = insert_new_if_else)
 GUI_MENUBAR.add_cascade(menu=GUI_INSERT_MENU, label="Insert")
 
 GUI_RUN_MENU = tk.Menu(GUI_MENUBAR, tearoff=False)
