@@ -117,7 +117,7 @@ APP.resizable(False, False)
 APP.iconbitmap(".\\assets\\fide_icon.ico")
 # FLOW SETUP
 GREEN_KEYWORDS = ['+', '*', "-", "/", "<", "<=", ">", ">=", "="]
-RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln"]
+RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr"]
 ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"']
 BLUE_KEYWORDS = [";", "(", ")"]
 PINK_KEYWORDS = ["TRUE", "FALSE"]
@@ -151,7 +151,10 @@ COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concati
                         "set":"set(el1 [txt|num|bln|set], el2 [txt|num|bln|set], ...) -> set with elements el1, el2, ...",
                         "num":"num(arg [txt]) -> converts arg into type num, if possible",
                         "txt":"txt(arg [num]) -> converts arg into txt, if possible",
-                        "bln":"bln(arg [txt|num]) -> converts arg into bln, if possible"
+                        "bln":"bln(arg [txt|num]) -> converts arg into bln, if possible",
+                        "object":"object(name [txt]) -> creates an emtpy object with no attributes",
+                        "attr":"attr(object [txt], attribute [txt], value [txt|num|bln|set]) -> creates an attribute and adds it into object",
+                        "get":"get(object [txt], attribute [txt]) -> value of attribute inside the object"
                         }
 
 # COMMAND HELP HIGHLIGHTS
@@ -215,6 +218,8 @@ def update_variables_textbox(variables):
     for v in variables:
         if variables[v] in "TRUE FALSE".split(" "):
             insert_text += f"{v}={variables[v]}\n"
+        if type(variables[v]) == dict:
+            insert_text += f"{v}={variables[v]["name"]}\n"
         elif type(variables[v]) == int:
             insert_text += f"{v}={variables[v]}\n"
         elif type(variables[v]) == str:
@@ -279,6 +284,7 @@ def update_text(a=None):
     GUI_TEXTBOX.tag_remove("PURPLE", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("PINK", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("BOLD", 1.0, tk.END)
+    GUI_TEXTBOX.tag_remove("ITALIC", 1.0, tk.END)
 
     for word in GREEN_KEYWORDS:
         highlight(word, "GREEN", GUI_TEXTBOX)

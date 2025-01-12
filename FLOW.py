@@ -1,5 +1,6 @@
 import importlib.util
 import sys
+import math
 
 FLOW_VERSION = "1.0"
 
@@ -9,6 +10,7 @@ FORBIDDEN_CHARS = ['~']
 
 VARS = {}       
 FUNS = {}
+BUILT_IN_OBJECTS = ["Triangle"]
 # Same as in the FIDE.py
 COMMANDS = [None,
             '+', '*', "-", "/","sum",  # MATH
@@ -20,6 +22,7 @@ COMMANDS = [None,
             "disjunction", "subset", "superset", "add", "union", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", # FUNCTION RELATED
+            "get", "object", "attr" # OBJECT RELATED
             ]
 BOOLS = ["TRUE", "FALSE"]
 
@@ -218,8 +221,33 @@ def execute(token): # args with ,
     global VARS, FUNS
     command = token.com
     args = token.arg
+    # Objects
+    if command == "object":
+        if type(args[0].sol) == str:
+            objs = {"name":str(args[0].sol)}
+            return objs
+        else:
+            raise_error("ARGUMENT ERROR: Error while settings objects name attribute, it should be TXT", token)
+
+    elif command == "get":
+        if type(args[0].sol) == dict and type(args[1].sol) == str:
+            if args[1].sol in args[0].sol:
+                return args[0].sol[args[1].sol]
+            else:
+                raise_error("ARGUMENT ERROR: Trying to get nonexistent attribute.", token)
+        else:
+            raise_error("ARGUMENT ERROR: Wrong type declaration while trying to get specific attribute from a object.", token)
+    
+    elif command == "attr":
+        if type(args[0].sol) == dict and type(args[1].sol) == str:
+            obj = args[0].sol
+            var = args[0].dsc
+            obj[args[1].sol] = args[2].sol
+            VARS[var] = obj
+        else:
+            raise_error("ARGUMENT ERROR: Wrong type declaration while trying to set specific attribute to a object.", token)
     # Operators
-    if command == "+":
+    elif command == "+":
         if type(args[0].sol) == str:
             return (args[0].sol) + (args[1].sol)
         if type(args[0].sol)==int and type(args[1].sol)==int:
@@ -354,7 +382,6 @@ def execute(token): # args with ,
                 VARS[args[0].dsc] = SET_UPDATED
         else:
             raise_error("ARGUMENT ERROR: trying to add an element into a wrong TYPE, should be SET", token)
-            
 
     elif command == "union":
         UNION_SET = []
@@ -504,7 +531,7 @@ def execute(token): # args with ,
             
 
     elif command == "var":
-        if type(args[1].sol) in [int, str, bool, list]:
+        if type(args[1].sol) in [int, str, bool, list, dict]:
             if args[0].sol not in BOOLS:
                 #print(VARS)
                 VARS[args[0].sol] = args[1].sol
@@ -513,9 +540,9 @@ def execute(token): # args with ,
                 raise_error("ARGUMENT ERROR: Trying to set a variable's name to TRUE or FALSE, which can't be used as variables names.", token)
                                 
         else:
-            raise_error("ARGUMENT ERROR: Trying to set a variable by the incorrect name.", token)
+            raise_error("ARGUMENT ERROR: Trying to set variable's value to incorrect type.", token)
             
-        #return True---
+        #return True
     
     elif command == "func":
         FUNS[args[0].sol] = args[1]
@@ -559,7 +586,6 @@ def execute(token): # args with ,
     elif command not in COMMANDS:
         raise_error(f"SYNTAX ERROR: {command} is not a command or a variable.", token)
         
-    
     
 def tokenize(code, tokens_list=None):
     
