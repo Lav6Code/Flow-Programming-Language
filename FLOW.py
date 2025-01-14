@@ -10,7 +10,6 @@ FORBIDDEN_CHARS = ['~']
 
 VARS = {}       
 FUNS = {}
-BUILT_IN_OBJECTS = ["Triangle"]
 # Same as in the FIDE.py
 COMMANDS = [None,
             '+', '*', "-", "/","sum",  # MATH
@@ -22,6 +21,7 @@ COMMANDS = [None,
             "disjunction", "subset", "superset", "add", "union", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", # FUNCTION RELATED
+            "Triangle", "Line", #SHAPES
             "get", "object", "attr" # OBJECT RELATED
             ]
 BOOLS = ["TRUE", "FALSE"]
@@ -228,6 +228,60 @@ def execute(token): # args with ,
             return objs
         else:
             raise_error("ARGUMENT ERROR: Error while settings objects name attribute, it should be TXT", token)
+    
+    elif command == "Triangle":
+        for i in args: 
+            if type(i.sol) != list: 
+                raise_error("ARGUMENT ERROR: Trying to create a Triangle object, wrong arguments, should be sets points (X,Y positions).", token)
+        if len(args) != 3:
+            raise_error("ARGUMENT ERROR: Number of points required to create a Triangle is be 3.", token)
+
+        # Making the object's atributes
+
+        # Points
+        points = []
+        for i in args:
+            points.append(i.sol)
+        
+        # Sides
+        sides = []
+    
+        for i in range(len(points)):
+            x1, y1 = points[i]
+            x2, y2 = points[(i + 1) % len(points)]  # Connect to the next point, and wrap around
+            distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            sides.append(distance)
+        # Area
+        area = 0
+        for i in range(len(points)):
+            x1, y1 = points[i]
+            x2, y2 = points[(i + 1) % len(points)]
+            area += x1 * y2 - y1 * x2
+        area = abs(area)/2
+
+        return {
+                "name":"Triangle", 
+                "points":points,
+                "sides":sides,
+                "area":area, 
+                "perimeter":sum(sides)
+                }
+
+    elif command == "Line":
+        for i in args: 
+            if type(i.sol) != list: 
+                raise_error("ARGUMENT ERROR: Trying to create a Line object, wrong arguments, should be 2 sets that represent points (x,y)", token)
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Number of points required to create a Line is be 2.", token)
+        
+        obj = {"name":"Line"}
+        x1, y1 = args[0].sol[0], args[0].sol[1]
+        x2, y2 = args[1].sol[0], args[1].sol[1]
+        dot = [x2, y1]
+        c = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+        obj["lentgh"] = c
+
+        return obj
 
     elif command == "get":
         if type(args[0].sol) == dict and type(args[1].sol) == str:
@@ -566,7 +620,7 @@ def execute(token): # args with ,
             
 
     elif command == "txt":
-        if is_int(args[0].sol) or type(args[0].sol)==bool:
+        if type(args[0].sol)==int or type(args[0].sol)==bool or type(args[0].sol)==float:
             if type(args[0].sol )== bool:
                 return str(args[0].sol).upper()
             return str(args[0].sol)

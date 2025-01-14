@@ -1,0 +1,2 @@
+var("a", Line(set(1,1), set(6,6)));
+output(get(a, "lentgh"));
