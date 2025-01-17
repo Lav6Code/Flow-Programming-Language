@@ -1,6 +1,8 @@
 import importlib.util
 import sys
 import math
+import draw as d
+import time
 
 FLOW_VERSION = "1.0"
 
@@ -20,7 +22,7 @@ COMMANDS = [None,
             "num", "txt",  #TYPES
             "disjunction", "subset", "superset", "add", "union", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
-            "func", "call", # FUNCTION RELATED
+            "func", "call", "draw", # FUNCTION RELATED
             "Triangle", "Line", #SHAPES
             "get", "object", "attr" # OBJECT RELATED
             ]
@@ -228,7 +230,13 @@ def execute(token): # args with ,
             return objs
         else:
             raise_error("ARGUMENT ERROR: Error while settings objects name attribute, it should be TXT", token)
-    
+
+    elif command == "draw":
+        if type(args[0].sol) == list:
+            d.start(args[0].sol)
+        else:
+            raise_error("ARGUMENT ERROR: Trying to execute draw command, arguments should be points (set of sets)")
+
     elif command == "Triangle":
         for i in args: 
             if type(i.sol) != list: 
@@ -280,6 +288,7 @@ def execute(token): # args with ,
         dot = [x2, y1]
         c = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
         obj["lentgh"] = c
+        obj["points"] = [[x1, y1], [x2, y2]]
 
         return obj
 
