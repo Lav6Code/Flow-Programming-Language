@@ -23,7 +23,7 @@ COMMANDS = [None,
             "disjunction", "subset", "superset", "add", "union", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", "draw", # FUNCTION RELATED
-            "Triangle", "Line", #SHAPES
+            "Triangle", "Line", "Circle", #SHAPES
             "get", "object", "attr" # OBJECT RELATED
             ]
 BOOLS = ["TRUE", "FALSE"]
@@ -232,11 +232,22 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: Error while settings objects name attribute, it should be TXT", token)
 
     elif command == "draw":
-        if type(args[0].sol) == list:
+        if type(args[0].sol) == dict:
             d.start(args[0].sol)
-        else:
-            raise_error("ARGUMENT ERROR: Trying to execute draw command, arguments should be points (set of sets)")
 
+        else:
+            raise_error("ARGUMENT ERROR: Trying to execute draw command, arguments should be an geomtric object")
+
+    elif command == "Circle":
+        if type(args[0].sol) == list and type(args[1].sol) == int:
+            objc = {"name":"Circle",
+                    "center":args[0].sol,
+                    "radius":args[1].sol,
+                    "diameter": args[1].sol*2,
+                    "perimeter": args[1].sol*2*math.pi,
+                    "area": args[1].sol**2*math.pi}
+            return objc
+            
     elif command == "Triangle":
         for i in args: 
             if type(i.sol) != list: 

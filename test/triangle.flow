@@ -1,2 +1,3 @@
 var("a", Line(set(1,1), set(6,6)));
-draw(get(a, "points"));
+var("circle", Circle(set(5,5), 7));
+draw(circle);
