@@ -1,3 +1,5 @@
 var("a", Line(set(1,1), set(6,6)));
-var("circle", Circle(set(5,5), 7));
-draw(circle);
+var("circle", Circle(set(5,5), 1));
+var("triangle", Triangle(set(1,1), set(5,3), set(5,5)));
+$draw(triangle);
+draw(circle, triangle);

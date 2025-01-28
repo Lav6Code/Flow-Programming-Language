@@ -216,9 +216,9 @@ def update_variables_textbox(variables):
     insert_text = ""
     
     for v in variables:
-        if variables[v] in "TRUE FALSE".split(" "):
-            insert_text += f"{v}={variables[v]}\n"
-        if type(variables[v]) == dict:
+        if variables[v] in "True False".split(" "):
+            insert_text += f"{v}={variables[v].upper()}\n"
+        elif type(variables[v]) == dict:
             insert_text += f"{v}={variables[v]["name"]}\n"
         elif type(variables[v]) == int:
             insert_text += f"{v}={variables[v]}\n"
@@ -764,6 +764,13 @@ def quit_search():
     SEARCHING = False
     update_menu()
 
+def delete_autocomplete(event=None):
+
+    global GUI_AUTOCOMPLETE
+
+    if GUI_AUTOCOMPLETE:
+        GUI_AUTOCOMPLETE.destroy()
+
 ############
 ### MAIN ###
 ############
@@ -903,7 +910,9 @@ GUI_TEXTBOX.bind_all('<MouseWheel>', update_line_counter)
 GUI_TEXTBOX.bind_all("<Key>", update_line_counter)
 GUI_TEXTBOX.bind("<Button-3>", show_menu)
 
-
+# For autocomplete destruction
+for i in ["<Left>", "<Right>", "<Left>", "<Up>", '<Button-1>'] :
+    GUI_TEXTBOX.bind(i, delete_autocomplete)
 # THEME AND MAIN LOOP
 sv_ttk.set_theme("dark")
 APP.mainloop()

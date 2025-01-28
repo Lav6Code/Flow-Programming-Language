@@ -1,4 +1,8 @@
 var("a", input("BLN"));
 if(a,(
 output("TRUE");
-));
+),
+(
+output("FALSE");
+)
+);

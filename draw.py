@@ -1,88 +1,80 @@
 import turtle
 
-def draw_grid(screen_width, screen_height, margin=50, step=50):
+def calculate_global_extent(objects):
+    """Calculate the maximum extent of all objects to adjust the grid size."""
+    max_x, max_y = 0, 0
+    for obj in objects:
+        if obj["name"] == "Circle":
+            center_x, center_y = obj["center"]
+            radius = obj["radius"]
+            max_x = max(max_x, center_x + radius)
+            max_y = max(max_y, center_y + radius)
+        elif obj["name"] == "Polygon":
+            for x, y in obj["points"]:
+                max_x = max(max_x, x)
+                max_y = max(max_y, y)
+    return max_x, max_y
+
+
+def draw_grid(screen_width, screen_height, max_x, max_y, margin=50):
+    """Draws a grid in the first quadrant, scaled to fit all objects."""
     t.penup()
     t.color("gray")
-    
-    # Draw vertical grid lines
-    for x in range(-screen_width//2 + margin, screen_width//2, step):
-        t.goto(x, screen_height//2 - margin)
+
+    step = (screen_height - margin * 2) // (max(max_x, max_y) - 1)  # Adjust for grid size
+    origin_x = -screen_width // 2 + margin
+    origin_y = -screen_height // 2 + margin
+
+    # Draw horizontal lines
+    for y in range(1, max_y + 1):  # Start from 1 instead of 0
+        t.goto(origin_x, origin_y + (y - 1) * step)
         t.pendown()
-        t.goto(x, -screen_height//2 + margin)
+        t.goto(origin_x + (max_x - 1) * step, origin_y + (y - 1) * step)
         t.penup()
 
-    # Draw horizontal grid lines
-    for y in range(-screen_height//2 + margin, screen_height//2, step):
-        t.goto(screen_width//2 - margin, y)
+    # Draw vertical lines
+    for x in range(1, max_x + 1):  # Start from 1 instead of 0
+        t.goto(origin_x + (x - 1) * step, origin_y)
         t.pendown()
-        t.goto(-screen_width//2 + margin, y)
+        t.goto(origin_x + (x - 1) * step, origin_y + (max_y - 1) * step)
         t.penup()
 
-    # Draw x and y axes
     t.color("black")
-    t.goto(-screen_width//2, 0)
+    t.pensize(3)
+
+    # X-axis
+    t.goto(origin_x, origin_y)
     t.pendown()
-    t.goto(screen_width//2, 0)  # X axis
+    t.goto(origin_x + (max_x - 1) * step, origin_y)
     t.penup()
-    t.goto(0, -screen_height//2)
+
+    # Y-axis
+    t.goto(origin_x, origin_y)
     t.pendown()
-    t.goto(0, screen_height//2)  # Y axis
-
-    # Label x and y axes
+    t.goto(origin_x, origin_y + (max_y - 1) * step)
     t.penup()
-    t.goto(screen_width//2 - 10, -10)
-    t.write("X", font=("Arial", 12, "normal"))
-    t.goto(10, screen_height//2 - 20)
-    t.write("Y", font=("Arial", 12, "normal"))
+
+    # Labels
+    t.goto(origin_x + (max_x - 1) * step + 10, origin_y - 10)
+    t.write("X", font=("Arial", 12, "bold"))
+    t.goto(origin_x - 15, origin_y + (max_y - 1) * step + 5)
+    t.write("Y", font=("Arial", 12, "bold"))
 
 
-# Function to scale points to fit the screen
-def scale_points(points, screen_width, screen_height, margin=50):
-    # If there is only one point, return the center position
-    if len(points) == 1:
-        return [(0,0)]
-    
-    min_x = min(x for x, y in points)
-    max_x = max(x for x, y in points)
-    min_y = min(y for x, y in points)
-    max_y = max(y for x, y in points)
+def scale_points(points, screen_width, screen_height, max_x, max_y, margin=50):
+    """Scales and shifts points to fit the grid."""
+    step = (screen_height - margin * 2) // (max(max_x, max_y) - 1)
+    origin_x = -screen_width // 2 + margin
+    origin_y = -screen_height // 2 + margin
 
-    # Calculate scaling factors
-    point_width = max_x - min_x
-    point_height = max_y - min_y
-    scale_x = (screen_width - 2 * margin) / point_width if point_width > 0 else 1
-    scale_y = (screen_height - 2 * margin) / point_height if point_height > 0 else 1
-    
-    # Use the smaller scale to maintain the aspect ratio
-    scale = min(scale_x, scale_y)
+    return [(origin_x + (x - 1) * step, origin_y + (y - 1) * step) for x, y in points]
 
-    # Scale and center the points
-    scaled_points = [
-        ((x - min_x) * scale + margin - screen_width / 2, 
-         (y - min_y) * scale + margin - screen_height / 2)
-        for x, y in points
-    ]
-    return scaled_points
 
-def scale_length(length, screen_width, screen_height, margin=50):
-    # Assuming we want the length to fit within the available space on the screen
-    available_width = screen_width - 2 * margin
-    available_height = screen_height - 2 * margin
-    
-    # Calculate scaling factors based on both width and height
-    scale_x = available_width / length if length > 0 else 1
-    scale_y = available_height / length if length > 0 else 1
-    
-    # Use the smaller scale factor to maintain the aspect ratio (to prevent distortion)
-    scale = min(scale_x, scale_y)
-    
-    # Return the scaled length
-    return length * scale
+def draw_polygon(points, screen_width, screen_height, max_x, max_y):
+    """Draws a polygon after scaling it properly."""
+    scaled_points = scale_points(points, screen_width, screen_height, max_x, max_y)
 
-def draw_polygon(points, screen_width, screen_height):
-    scaled_points = scale_points(points, screen_width, screen_height)
-
-    t.pensize(5)
+    t.pensize(3)
     t.penup()
     t.goto(scaled_points[0])
     t.pendown()
@@ -90,22 +82,33 @@ def draw_polygon(points, screen_width, screen_height):
         t.goto(x, y)
     t.goto(scaled_points[0])
 
-def draw_circle(object, screen_width, screen_height):
 
-    scaled_points = scale_points([object["center"]], screen_width, screen_height)
-    t.pensize(5)
+def draw_circle(circle_obj, screen_width, screen_height, max_x, max_y, margin=50):
+    """Draws a circle with radius equal to one grid square."""
+    step = (screen_height - 2 * margin) // (max(max_x, max_y) - 1)
+
+    scaled_center = scale_points([circle_obj["center"]], screen_width, screen_height, max_x, max_y)[0]
+    scaled_radius = circle_obj["radius"] * step  # Scale radius to grid
+
     t.penup()
-    diameter = scale_length(object["radius"], screen_width, screen_height)
-    radius = diameter/2
-    center_x, center_y = scaled_points[0]
-    t.goto(center_x, center_y-radius)
+    t.goto(scaled_center[0], scaled_center[1] - scaled_radius)  # Move to bottom of circle
     t.pendown()
-    t.circle(radius)
-    
-def start(object):
+    t.pensize(3)
+    t.circle(scaled_radius)
+
+
+def start(objects):
+    """Initializes Turtle and draws all objects."""
     global t
+    screen_width = 600
+    screen_height = 600
+    margin = 50
+
+    # Calculate global grid extent
+    max_x, max_y = calculate_global_extent(objects)
+
     screen = turtle.Screen()
-    screen.setup(width=600, height=600)
+    screen.setup(width=screen_width, height=screen_height)
 
     t = turtle.Turtle()
     t.hideturtle()
@@ -113,16 +116,15 @@ def start(object):
 
     screen.tracer(0)
 
-    draw_grid(600, 600)
-    print(object)
-    if object["name"] == "Circle":
-        draw_circle(object, 600, 600)
-    else:
-        points = object["points"]
-        draw_polygon(points, 600, 600)
+    # Draw grid
+    draw_grid(screen_width, screen_height, max_x, max_y, margin)
 
-        
+    # Draw each object
+    for obj in objects:
+        if obj["name"] == "Circle":
+            draw_circle(obj, screen_width, screen_height, max_x, max_y, margin)
+        elif obj["name"] in  ["Triangle"]:
+            draw_polygon(obj["points"], screen_width, screen_height, max_x, max_y)
 
     screen.update()
-
     turtle.done()

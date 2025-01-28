@@ -233,7 +233,9 @@ def execute(token): # args with ,
 
     elif command == "draw":
         if type(args[0].sol) == dict:
-            d.start(args[0].sol)
+            argsol = []
+            for i in args: argsol.append(i.sol)
+            d.start(argsol)
 
         else:
             raise_error("ARGUMENT ERROR: Trying to execute draw command, arguments should be an geomtric object")
