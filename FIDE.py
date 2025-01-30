@@ -121,8 +121,9 @@ RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch",
 ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"']
 BLUE_KEYWORDS = [";", "(", ")"]
 PINK_KEYWORDS = ["TRUE", "FALSE"]
+YELLOW_KEYWORDS = ["Circle", "Triangle", "Polyline", "Line"]
 PURPLE_KEYWORDS = ["$"] # COMMENT
-COMMANDS = GREEN_KEYWORDS+ RED_KEYWORDS + BLUE_KEYWORDS + PINK_KEYWORDS + PURPLE_KEYWORDS + ORANGE_KEYWORDS
+COMMANDS = GREEN_KEYWORDS+ RED_KEYWORDS + BLUE_KEYWORDS + PINK_KEYWORDS + PURPLE_KEYWORDS + ORANGE_KEYWORDS + YELLOW_KEYWORDS
 COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concatination of arg1 and arg2",
                         "-":"-(arg1 [num], arg2 [num]) -> substraction of arg1 and arg2",
                         "*":"*(arg1 [num], arg2 [num]) -> procuct of arg1 and arg2",
@@ -154,13 +155,18 @@ COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concati
                         "bln":"bln(arg [txt|num]) -> converts arg into bln, if possible",
                         "object":"object(name [txt]) -> creates an emtpy object with no attributes",
                         "attr":"attr(object [txt], attribute [txt], value [txt|num|bln|set]) -> creates an attribute and adds it into object",
-                        "get":"get(object [txt], attribute [txt]) -> value of attribute inside the object"
+                        "get":"get(object [txt], attribute [txt]) -> value of attribute inside the object",
+                        "Line":"Line(point [set], point [set]) -> object with name, points, length attributes",
+                        "Polyine":"Polyine(point [set], point [set]...) -> object with name, points, length attributes",
+                        "Triangle":"Triangle(point [set], point [set], point [set]) -> object with name, points, perimeter, area, sides attributes",
+                        "Circle":"Triangle(center [set], radius [num]) -> object with name, center, perimeter, area, diameter attributes",
+                        "Draw":"Draw(shape [obj], shape [obj]...) -> object with name, points, perimeter, area, sides attributes",
                         }
 
 # COMMAND HELP HIGHLIGHTS
 HELP_GREEN_KEYWORDS = list(COMMANDS_DESCRIPTION.keys())
 HELP_PINK_KEYWORDS = ["->"]
-HELP_LIGHT_BLUE_KEYWORDS = ["txt","set","num","bln","txt1","set1","num1","bln1","txt2","set2","num2","bln2","blk*","BLK","BLN","SET","sets"]
+HELP_LIGHT_BLUE_KEYWORDS = ["txt","set","num","bln","txt1","set1","num1","bln1","txt2","set2","num2","bln2","blk*","BLK","BLN","SET","sets", "obj", "object"]
 HELP_ORANGE_KEYWORDS = ["┃"]
 # FLOW path
 FLOW_PATH = "./FLOW.py"
@@ -282,6 +288,7 @@ def update_text(a=None):
     GUI_TEXTBOX.tag_remove("BLUE", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("ORANGE", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("PURPLE", 1.0, tk.END)
+    GUI_TEXTBOX.tag_remove("YELLOW", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("PINK", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("BOLD", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("ITALIC", 1.0, tk.END)
@@ -296,6 +303,8 @@ def update_text(a=None):
         highlight(word, "PINK", GUI_TEXTBOX)
     for word in ORANGE_KEYWORDS:
         highlight(word, "ORANGE", GUI_TEXTBOX)
+    for word in YELLOW_KEYWORDS:
+        highlight(word, "YELLOW", GUI_TEXTBOX)
 
     # WORDS INSIDE ""
 
@@ -794,6 +803,7 @@ GUI_TEXTBOX.tag_config("ORANGE", foreground="#FFC300")
 GUI_TEXTBOX.tag_config("BLUE", foreground="#57c1d9")
 GUI_TEXTBOX.tag_config("PURPLE", foreground="#634a7f")
 GUI_TEXTBOX.tag_config("PINK", foreground="#e57bff")
+GUI_TEXTBOX.tag_config("YELLOW", foreground="yellow")
 GUI_TEXTBOX.tag_config("BOLD", font=("Consolas", 19, "bold"))
 GUI_TEXTBOX.tag_config("ITALIC", font=("Consolas", 19, "italic"))
 GUI_TEXTBOX.tag_config("HIGHLIGHT", background="blue")

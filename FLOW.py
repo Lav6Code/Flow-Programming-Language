@@ -23,7 +23,7 @@ COMMANDS = [None,
             "disjunction", "subset", "superset", "add", "union", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", "draw", # FUNCTION RELATED
-            "Triangle", "Line", "Circle", #SHAPES
+            "Triangle", "Line", "Circle", "Polyline", #SHAPES
             "get", "object", "attr" # OBJECT RELATED
             ]
 BOOLS = ["TRUE", "FALSE"]
@@ -298,11 +298,38 @@ def execute(token): # args with ,
         obj = {"name":"Line"}
         x1, y1 = args[0].sol[0], args[0].sol[1]
         x2, y2 = args[1].sol[0], args[1].sol[1]
-        dot = [x2, y1]
         c = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
         obj["lentgh"] = c
         obj["points"] = [[x1, y1], [x2, y2]]
 
+        return obj
+
+    elif command == "Polyline":
+        for i in args: 
+            if type(i.sol) != list: 
+                raise_error("ARGUMENT ERROR: Trying to create a Polyline object, wrong arguments, should be multiple sets that represent points (x,y)", token)
+        if len(args) <= 1:
+            raise_error("ARGUMENT ERROR: Number of points required to create a Line is at least 2.", token)
+        
+        obj = {"name":"Polyline",
+               "points": [],
+               "length": 0}
+        for i,e in enumerate(args):
+            if obj["points"] == []:
+                x1, y1 = e.sol[0], e.sol[1]
+                x2, y2 = e.sol[0], e.sol[1]
+                c = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+                obj["length"] = c
+                obj["points"] = [[x1, y1]]
+            else:
+                x1, y1 = e.sol[0], e.sol[1]
+                x2, y2 = obj["points"][-1]
+                c = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+                obj["length"] = obj["length"] + c
+                obj["points"].append([x1, y1])
+
+
+        print(obj)
         return obj
 
     elif command == "get":
