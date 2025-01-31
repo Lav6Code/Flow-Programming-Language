@@ -159,8 +159,9 @@ COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concati
                         "Line":"Line(point [set], point [set]) -> object with name, points, length attributes",
                         "Polyine":"Polyine(point [set], point [set]...) -> object with name, points, length attributes",
                         "Triangle":"Triangle(point [set], point [set], point [set]) -> object with name, points, perimeter, area, sides attributes",
-                        "Circle":"Triangle(center [set], radius [num]) -> object with name, center, perimeter, area, diameter attributes",
-                        "Draw":"Draw(shape [obj], shape [obj]...) -> object with name, points, perimeter, area, sides attributes",
+                        "Circle":"Circle(center [set], radius [num]) -> object with name, center, perimeter, area, diameter attributes that represent a circle",
+                        "InCircle":"Circle(triangle [obj]) -> object with name, center, perimeter, area, diameter attributes represent a circle inside a triangle",
+                        "Draw":"Draw(shape [obj], shape [obj]...) -> opens new window and visually shows the shapes",
                         }
 
 # COMMAND HELP HIGHLIGHTS

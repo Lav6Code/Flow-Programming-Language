@@ -12,7 +12,7 @@ def calculate_global_extent(objects):
             radius = obj["radius"]
             max_x = max(max_x, center_x + radius)
             max_y = max(max_y, center_y + radius)
-        elif obj["name"] in ["Triangle", "Polyline", "Line"]:
+        elif obj["name"] in ["Triangle", "Polyline", "Line", "Rectangle"]:
             for x, y in obj["points"]:
                 max_x = max(max_x, x)
                 max_y = max(max_y, y)
@@ -96,7 +96,7 @@ def draw_polyline(points, screen_width, screen_height, max_x, max_y):
 def draw_circle(circle_obj, screen_width, screen_height, max_x, max_y, margin=50):
     step = (screen_height - 2 * margin) // (max(max_x, max_y) or 1)
     scaled_center = scale_points([circle_obj["center"]], screen_width, screen_height, max_x, max_y)[0]
-    scaled_radius = circle_obj["radius"] * step
+    scaled_radius = (circle_obj["radius"]) * step
     t.penup()
     t.goto(scaled_center[0], scaled_center[1] - scaled_radius)
     t.pendown()
@@ -129,7 +129,7 @@ def start(objects):
             draw_circle(obj, screen_width, screen_height, max_x, max_y, margin)
         elif obj["name"] in ["Polyline", "Line"]:
             draw_polyline(obj["points"], screen_width, screen_height, max_x, max_y)
-        elif obj["name"] in ["Triangle"]:
+        elif obj["name"] in ["Triangle", "Rectangle"]:
             draw_polygon(obj["points"], screen_width, screen_height, max_x, max_y)
 
     screen.update()

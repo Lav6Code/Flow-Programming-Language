@@ -1,5 +1,4 @@
-var("polyline", Polyline(set(1,1), set(3,2), set(7,7), set(2,4)));
-var("circle", Circle(set(3,3), 1));
-var("triangle", Triangle(set(1,1), set(5,3), set(5,5)));
+var("triangle", Triangle(set(2,5), set(1,8), set(5,5)));
+var("circle", InCircle(triangle));
 $draw(triangle);
-draw(polyline, circle);
+draw(triangle, circle);

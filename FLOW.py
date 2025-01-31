@@ -23,7 +23,7 @@ COMMANDS = [None,
             "disjunction", "subset", "superset", "add", "union", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", "draw", # FUNCTION RELATED
-            "Triangle", "Line", "Circle", "Polyline", #SHAPES
+            "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", #SHAPES
             "get", "object", "attr" # OBJECT RELATED
             ]
 BOOLS = ["TRUE", "FALSE"]
@@ -232,7 +232,7 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: Error while settings objects name attribute, it should be TXT", token)
 
     elif command == "draw":
-        if type(args[0].sol) == dict:
+        if type(args[0].sol) == dict and "points" in args[0].sol.keys():
             argsol = []
             for i in args: argsol.append(i.sol)
             d.start(argsol)
@@ -304,6 +304,67 @@ def execute(token): # args with ,
 
         return obj
 
+    elif command == "Rectangle":
+        for i in args: 
+            if type(i.sol) != list: 
+                raise_error("ARGUMENT ERROR: Trying to create a Rectangle object, wrong arguments, should be sets points (X,Y positions).", token)
+        if len(args) != 4:
+            raise_error("ARGUMENT ERROR: Number of points required to create a Rectangle is 4.", token)
+
+        # Making the object's atributes
+
+        # Points
+        points = []
+        for i in args:
+            points.append(i.sol)
+        # (min(x), min(y)),(max(x), min(y)), (max(x), max(y)), (min(x), max(y))
+        # sorting the points
+        bottom_left, top_left = sorted(points[:2], key=lambda p: p[1])
+        bottom_right, top_right = sorted(points[2:], key=lambda p: p[1]) 
+        points = [bottom_left, bottom_right, top_left, top_right]
+
+        # Sides
+        sides = []
+    
+        for i in range(len(points)):
+            x1, y1 = points[i]
+            x2, y2 = points[(i + 1) % len(points)]  # Connect to the next point, and wrap around
+            distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            sides.append(distance)
+        
+        # Diagonal
+
+        d1 = ((points[0][0] - points[2][0]) ** 2 + (points[0][1] - points[2][1]) ** 2) ** 0.5
+        d2 = ((points[1][0] - points[3][0]) ** 2 + (points[1][1] - points[3][1]) ** 2) ** 0.5
+
+        # Area
+        area = sides[0]*sides[1]
+
+        return {
+                "name":"Rectangle", 
+                "points":points,
+                "sides":sides,
+                "area":area, 
+                "perimeter":sum(sides),
+                "diagonals":[d1, d2],
+                }
+
+    elif command == "Line":
+        for i in args: 
+            if type(i.sol) != list: 
+                raise_error("ARGUMENT ERROR: Trying to create a Line object, wrong arguments, should be 2 sets that represent points (x,y)", token)
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Number of points required to create a Line is be 2.", token)
+        
+        obj = {"name":"Line"}
+        x1, y1 = args[0].sol[0], args[0].sol[1]
+        x2, y2 = args[1].sol[0], args[1].sol[1]
+        c = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+        obj["lentgh"] = c
+        obj["points"] = [[x1, y1], [x2, y2]]
+
+        return obj
+
     elif command == "Polyline":
         for i in args: 
             if type(i.sol) != list: 
@@ -332,6 +393,43 @@ def execute(token): # args with ,
         print(obj)
         return obj
 
+    elif command == "InCircle":
+        if len(args) == 1:
+            if type(args[0].sol) != dict:
+                raise_error("ARGUMENT ERROR: Trying to create an InCircle object with wrong arguments, should be a object.", token)
+        else:
+            raise_error("ARGUMENT ERROR: Trying to create an InCircle object with wrong arguments, should be a object.", token)
+        if len(args[0].sol["points"]) == 3:
+            points=args[0].sol["points"]
+            #check for error
+            for i in points:
+                if type(i) != list or len(i) != 2 or type(i[0]) != int or type(i[1]) != int:
+                    raise_error("ARGUMENT ERROR: points attribute is not in right format.", token)
+            x1, y1 = points[0]
+            x2, y2 = points[1]
+            x3, y3 = points[2]
+
+            a = ((x2 - x3) ** 2 + (y2 - y3) ** 2) ** 0.5
+            b = ((x1 - x3) ** 2 + (y1 - y3) ** 2) ** 0.5
+            c = ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
+            incenter_x = (a * x1 + b * x2 + c * x3) / (a + b + c)
+            incenter_y = (a * y1 + b * y2 + c * y3) / (a + b + c)
+            incenter_point = [incenter_x, incenter_y]
+            s = sum(args[0].sol["sides"]) / 2
+
+            area = math.sqrt(s * (s - args[0].sol["sides"][0]) * (s - args[0].sol["sides"][1]) * (s - args[0].sol["sides"][2]))
+
+            radius = area / s
+
+            objc = {"name":"Circle",
+                    "center":incenter_point,
+                    "radius":radius,
+                    "diameter": radius*2,
+                    "perimeter": radius*2*math.pi,
+                    "area": radius**2*math.pi}
+            print(objc)
+            return objc
+    
     elif command == "get":
         if type(args[0].sol) == dict and type(args[1].sol) == str:
             if args[1].sol in args[0].sol:
