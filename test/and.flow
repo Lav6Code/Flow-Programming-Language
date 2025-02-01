@@ -1,0 +1,9 @@
+var("a", input("bln"));
+var("b", input("bln"));
+if(and(TRUE, TRUE) ,(
+output("a and b are TRUE");
+),
+(
+output("a and b are not TRUE");
+));
+

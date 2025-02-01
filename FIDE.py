@@ -55,7 +55,7 @@ class InteractiveConsole(tk.Frame):
                 VARS = {}
                 vars_ = line[len(VARS_CONNECTION_KEY):-1]
                 vars_ = vars_.replace("True", "'TRUE'")
-                vars_ = vars_.replace("False", "'False'")
+                vars_ = vars_.replace("False", "'FALSE'")
                 VARS = eval(vars_)
                 #print(VARS)
 
@@ -116,23 +116,27 @@ APP.title("untitled.flow")
 APP.resizable(False, False)
 APP.iconbitmap(".\\assets\\fide_icon.ico")
 # FLOW SETUP
-GREEN_KEYWORDS = ['+', '*', "-", "/", "<", "<=", ">", ">=", "="]
+GREEN_KEYWORDS = ['+', '*', "-", "/", "<", "<=", ">", ">=", "=", "not", "and", "xor", "or"]
 RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr"]
 ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"']
 BLUE_KEYWORDS = [";", "(", ")"]
 PINK_KEYWORDS = ["TRUE", "FALSE"]
-YELLOW_KEYWORDS = ["Circle", "Triangle", "Polyline", "Line"]
+YELLOW_KEYWORDS = ["Circle", "Triangle", "Polyline", "Line", "CircumCircle", "InCircle"]
 PURPLE_KEYWORDS = ["$"] # COMMENT
 COMMANDS = GREEN_KEYWORDS+ RED_KEYWORDS + BLUE_KEYWORDS + PINK_KEYWORDS + PURPLE_KEYWORDS + ORANGE_KEYWORDS + YELLOW_KEYWORDS
 COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concatination of arg1 and arg2",
                         "-":"-(arg1 [num], arg2 [num]) -> substraction of arg1 and arg2",
                         "*":"*(arg1 [num], arg2 [num]) -> procuct of arg1 and arg2",
                         "/":"/(arg1 [num], arg2 [num]) -> values that are going to be divided",
-                        "<":"<(arg1 [num], arg2 [num]) -> TRUE if arg1 is less than arg2",
-                        ">":">(arg1 [num], arg2 [num]) -> TRUE if arg1 is greater than arg2",
-                        "<=":"<=(arg1 [num], arg2 [num]) -> TRUE if arg1 is less or equal than arg2",
-                        ">=":">=(arg1 [num], arg2 [num]) -> TRUE if arg1 is greater or equal than arg2",
-                        "=":"=(arg1 [num], arg2 [num]) -> TRUE if arg1 is equal to arg2",
+                        "<":"<(arg1 [num], arg2 [num]) -> TRUE if arg1 is less than arg2, else FALSE",
+                        ">":">(arg1 [num], arg2 [num]) -> TRUE if arg1 is greater than arg2, else FALSE",
+                        "<=":"<=(arg1 [num], arg2 [num]) -> TRUE if arg1 is less or equal than arg2, else FALSE",
+                        ">=":">=(arg1 [num], arg2 [num]) -> TRUE if arg1 is greater or equal than arg2, else FALSE",
+                        "=":"=(arg1 [num], arg2 [num]) -> TRUE if arg1 is equal to arg2, else FALSE",
+                        "not":"not(boolean [bln]) -> returns the logical negation of the boolean",
+                        "and":"and(boolean1 [bln], boolean2 [bln]) -> returns TRUE if both boolean values are TRUE",
+                        "or":"or(bln1 [bool], bln2 [bool]) -> returns TRUE if either or both boolean values are TRUE, otherwise returns FALSE",
+                        "xor":"xor(bln1 [bool], bln2 [bool]) -> returns TRUE if one of both boolean values are TRUE, otherwise returns FALSE",
                         "var":"var(varname [txt], val [txt|num|bln|set]) -> defines or updates a variable with the name varname with the value val",
                         "func":"func(fname [txt], codeblock [blk]) -> defines a function with the name fname and body codeblock",
                         "output":"output(str [txt]) -> outputs the str into console",
@@ -221,12 +225,12 @@ def update_variables_textbox(variables):
     GUI_VARIABLE_BOX.config(state="normal")
     GUI_VARIABLE_BOX.delete("1.0", tk.END)
     insert_text = ""
-    
+    name = "name"
     for v in variables:
-        if variables[v] in "True False".split(" "):
+        if variables[v] in "TRUE FALSE".split(" "):
             insert_text += f"{v}={variables[v].upper()}\n"
         elif type(variables[v]) == dict:
-            insert_text += f"{v}={variables[v]["name"]}\n"
+            insert_text += f"{v}={variables[v][name]}\n"
         elif type(variables[v]) == int:
             insert_text += f"{v}={variables[v]}\n"
         elif type(variables[v]) == str:
@@ -346,11 +350,6 @@ def update_text(a=None):
 def auto_finish(event):
     global GUI_TEXTBOX
     GUI_TEXTBOX.edit_modified(False)
-    
-    if event.keysym == "A":  # For the Enter key, you can do something special
-        print("You pressed Enter!")
-    elif event.keysym == "BackSpace":
-        print("You pressed Backspace!")
     
     char_mapping = {"(": ")", '"': '"', "[": "]", "{": "}"}
     

@@ -15,7 +15,7 @@ FUNS = {}
 # Same as in the FIDE.py
 COMMANDS = [None,
             '+', '*', "-", "/","sum",  # MATH
-            ">", "<", "=", ">=", "<=", "!=", "max", "min", # LOGIC
+            ">", "<", "=", ">=", "<=", "!=", "max", "min", "not", "and", "or", "xor", # LOGIC
             'output', "input", # USER INTERACTION
             "if", "for", "while",  # FLOW
             "set", 'var', # OBJECT CREATIONS
@@ -23,7 +23,7 @@ COMMANDS = [None,
             "disjunction", "subset", "superset", "add", "union", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", "draw", # FUNCTION RELATED
-            "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", #SHAPES
+            "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", "CircumCircle", #SHAPES
             "get", "object", "attr" # OBJECT RELATED
             ]
 BOOLS = ["TRUE", "FALSE"]
@@ -389,8 +389,7 @@ def execute(token): # args with ,
                 obj["length"] = obj["length"] + c
                 obj["points"].append([x1, y1])
 
-
-        print(obj)
+        #print(obj)
         return obj
 
     elif command == "InCircle":
@@ -427,9 +426,85 @@ def execute(token): # args with ,
                     "diameter": radius*2,
                     "perimeter": radius*2*math.pi,
                     "area": radius**2*math.pi}
-            print(objc)
             return objc
-    
+        
+    elif command == "CircumCircle":
+        if len(args) == 1:
+            if type(args[0].sol) != dict:
+                raise_error("ARGUMENT ERROR: Trying to create an Circle object with wrong arguments, should be a object.", token)
+        else:
+            raise_error("ARGUMENT ERROR: Trying to create an Circle object with wrong arguments, should be a object.", token)
+        if len(args[0].sol["points"]) == 3:
+            points=args[0].sol["points"]
+            #check for error
+            for i in points:
+                if type(i) != list or len(i) != 2 or type(i[0]) != int or type(i[1]) != int:
+                    raise_error("ARGUMENT ERROR: points attribute is not in right format.", token)
+            
+            x1, y1 = points[0]
+            x2, y2 = points[1]
+            x3, y3 = points[2]
+
+            # Calculate midpoints of two sides
+            mid_x1 = (x1 + x2) / 2
+            mid_y1 = (y1 + y2) / 2
+            mid_x2 = (x2 + x3) / 2
+            mid_y2 = (y2 + y3) / 2
+
+            # Slopes of the sides
+            slope_1 = (y2 - y1) / (x2 - x1) if x2 != x1 else None
+            slope_2 = (y3 - y2) / (x3 - x2) if x3 != x2 else None
+
+            # Perpendicular slopes (negative reciprocal)
+            if slope_1 is None:  # If vertical, perpendicular is horizontal (slope = 0)
+                perp_slope_1 = 0
+            elif slope_1 == 0:  # If horizontal, perpendicular is vertical (None)
+                perp_slope_1 = None
+            else:
+                perp_slope_1 = -1 / slope_1
+
+            if slope_2 is None:  # If vertical, perpendicular is horizontal
+                perp_slope_2 = 0
+            elif slope_2 == 0:  # If horizontal, perpendicular is vertical
+                perp_slope_2 = None
+            else:
+                perp_slope_2 = -1 / slope_2
+
+            # Solve for circumcenter (intersection of perpendicular bisectors)
+            if perp_slope_1 is None:  # First bisector is vertical
+                cx = mid_x1
+                cy = perp_slope_2 * (cx - mid_x2) + mid_y2
+            elif perp_slope_2 is None:  # Second bisector is vertical
+                cx = mid_x2
+                cy = perp_slope_1 * (cx - mid_x1) + mid_y1
+            elif perp_slope_1 == 0:  # First bisector is horizontal
+                cy = mid_y1
+                cx = (cy - mid_y2) / perp_slope_2 + mid_x2
+            elif perp_slope_2 == 0:  # Second bisector is horizontal
+                cy = mid_y2
+                cx = (cy - mid_y1) / perp_slope_1 + mid_x1
+            else:
+                # Solve y = mx + b for both bisectors
+                b1 = mid_y1 - perp_slope_1 * mid_x1
+                b2 = mid_y2 - perp_slope_2 * mid_x2
+                cx = (b2 - b1) / (perp_slope_1 - perp_slope_2)
+                cy = perp_slope_1 * cx + b1
+
+            circumcenter = [cx, cy]
+
+            # Find radius (distance from circumcenter to any point)
+            radius = math.sqrt((cx - x1) ** 2 + (cy - y1) ** 2)
+
+            # Create circle object
+            objc = {"name":"Circle",
+                    "center":circumcenter,
+                    "radius":radius,
+                    "diameter": radius*2,
+                    "perimeter": radius*2*math.pi,
+                    "area": radius**2*math.pi}
+
+            return objc
+
     elif command == "get":
         if type(args[0].sol) == dict and type(args[1].sol) == str:
             if args[1].sol in args[0].sol:
@@ -510,6 +585,39 @@ def execute(token): # args with ,
         else:
             raise_error("ARGUMENT ERROR: Trying to do a NOT operation on a non bool value.", token)
     
+    elif command == "and":
+        if len(args) == 2:        
+            if type(args[0].sol) == bool and type(args[1].sol) == bool:
+                if args[0].sol == args[1].sol == True:
+                    return True
+                return False
+            else:
+                raise_error("ARGUMENT ERROR: Trying to do a AND operation on a non bool values.", token)
+        else:
+            raise_error("ARGUMENT ERROR: Not enough arguments.", token)
+    
+    elif command == "or":
+        if len(args) == 2:        
+            if type(args[0].sol) == bool and type(args[1].sol) == bool:
+                    if True in [args[0].sol, args[1].sol]:
+                        return True
+                    return False
+
+            else:
+                raise_error("ARGUMENT ERROR: Trying to do a OR operation on a non bool values.", token)
+        else:
+            raise_error("ARGUMENT ERROR: Not enough arguments.", token)
+
+    elif command == "xor":
+        if len(args) == 2:        
+            if type(args[0].sol) == bool and type(args[1].sol) == bool:
+                    if args[0].sol != args[1].sol:
+                        return True
+                    return False
+            else:
+                raise_error("ARGUMENT ERROR: Trying to do a XOR operation on a non bool values.", token)
+        else:
+            raise_error("ARGUMENT ERROR: Not enough arguments.", token)
     # Loops Ifs Elifs Whiles
     
     elif command == "if":
@@ -520,7 +628,7 @@ def execute(token): # args with ,
                 else:
                     raise_error("ARGUMENT ERROR: Trying to run IF's THEN code, but it is not a BLK.", token)
             else:
-                if len(args) == 3:
+                if len(args) == 3: # if there is an else block
                     if args[2].typ == "BLK":
                         args[2].evaluate(forced=True)
                     else:
