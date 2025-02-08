@@ -51,6 +51,15 @@ def draw_grid(screen_width, screen_height, max_x, max_y, margin=50):
             t.write(x-1)
             t.goto(origin_x + (x - 1) * step, origin_y)
             t.setheading(a)
+        else:
+            a = t.heading()
+            t.setheading(270)
+            t.forward(20)
+            t.setheading(180)
+            t.forward(10)
+            t.write(0)
+            t.goto(origin_x + (x - 1) * step, origin_y)
+            t.setheading(a)
         t.pendown()
         t.goto(origin_x + (x - 1) * step, origin_y + (max_y - 1) * step)
         t.penup()
@@ -106,6 +115,7 @@ def draw_circle(circle_obj, screen_width, screen_height, max_x, max_y, margin=50
     t.circle(scaled_radius)
 
 def start(objects):
+
     global t
     turtle.Screen()._root.iconbitmap(".\\assets\\fide_icon.ico")
     screen_width = 600
@@ -116,7 +126,7 @@ def start(objects):
         objects = [objects]
 
     max_x, max_y = calculate_global_extent(objects)
-    print(max_x, max_y)
+    max_x, max_y = round(max_x)+1, round(max_y)+1
     screen = turtle.Screen()
     screen.setup(width=screen_width, height=screen_height)
 
@@ -124,7 +134,6 @@ def start(objects):
     t.hideturtle()
     t.speed()
     screen.tracer(0)
-
     draw_grid(screen_width, screen_height, max_x, max_y, margin)
 
     for obj in objects:
