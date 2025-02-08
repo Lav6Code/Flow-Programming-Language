@@ -118,7 +118,7 @@ APP.title("untitled.flow")
 APP.resizable(False, False)
 APP.iconbitmap(".\\assets\\fide_icon.ico")
 # FLOW SETUP
-GREEN_KEYWORDS = ['+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or"]
+GREEN_KEYWORDS = ['+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not"]
 RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr"]
 ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"']
 BLUE_KEYWORDS = [";", "(", ")"]
