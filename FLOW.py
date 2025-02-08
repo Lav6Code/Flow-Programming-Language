@@ -67,7 +67,6 @@ class Token:
 
         self.arg = arg  # list
         self.com = command
-        
         argstr = []
         for a in arg:
             if type(a) == Token:
@@ -78,19 +77,17 @@ class Token:
             self.dsc = command + "(" + ','.join(argstr) + ")"
         else:
             self.dsc = ';'.join(argstr)
-    
-        # print(argstr)
+        #print(argstr)
             
         self.sol = None
         self.typ = None
-        #print(argstr)
-
+        # print(argstr)
         # this is needed for BLK
         nr_coms = 0
         for a in arg:
             if type(a) == Token and a.typ == "COM":
                 nr_coms += 1
-
+        
         if self.com:
             self.typ = "COM"
 
@@ -113,7 +110,8 @@ class Token:
             raise_error(f'SYNTAX ERROR: {self.dsc} is not a legal FLOW code structure.', self)
 
         if DEVELOPER_MODE:
-            print('DEBUG:  ...created', self)            
+            print('DEBUG:  ...created', self)    
+     
             
     def __repr__(self):
         return f"{self.typ} Token {self.dsc} (sol: {self.sol})"
@@ -390,7 +388,7 @@ def execute(token): # args with ,
                 obj["points"].append([x1, y1])
 
 
-        print(obj)
+        # print(obj)
         return obj
 
     elif command == "InCircle":
@@ -427,7 +425,7 @@ def execute(token): # args with ,
                     "diameter": radius*2,
                     "perimeter": radius*2*math.pi,
                     "area": radius**2*math.pi}
-            print(objc)
+            # print(objc)
             return objc
     
     elif command == "get":
@@ -459,6 +457,12 @@ def execute(token): # args with ,
     elif command == "*":
         if is_int(args[0].sol) and is_int(args[1].sol):
             return int(args[0].sol) * int(args[1].sol)
+        else:
+            raise_error("ARGUMENT ERORR: Trying to multiply(*) two values with wrong type.", token)
+    
+    elif command == "/":
+        if is_int(args[0].sol) and is_int(args[1].sol):
+            return int(args[0].sol) // int(args[1].sol)
         else:
             raise_error("ARGUMENT ERORR: Trying to multiply(*) two values with wrong type.", token)
             
@@ -779,6 +783,9 @@ def execute(token): # args with ,
 
     elif command == "set":
         lst = []
+        if len(args) == 1 and args[0].sol == "_":
+            return lst
+
         for a in args:
             lst.append(a.sol)
         return lst
@@ -787,7 +794,6 @@ def execute(token): # args with ,
     elif command not in COMMANDS:
         raise_error(f"SYNTAX ERROR: {command} is not a command or a variable.", token)
         
-    
 def tokenize(code, tokens_list=None):
     
     if DEVELOPER_MODE:
@@ -828,8 +834,9 @@ def tokenize(code, tokens_list=None):
         # command
         arg = code[first_bracket+1:last_bracket]
         command = code[:first_bracket]
-        
-    # print(f'{command=}')
+
+    if command and abs(first_bracket-last_bracket) == 1: #error for 0 arguments
+        raise_error(f"ARGUMENT ERROR: Insuficient arguments in command '{command}' , every command is required to have arguments.")
 
     if command is None and ';' in arg:  # it's a block
         if arg[-1] == ';':
@@ -837,10 +844,9 @@ def tokenize(code, tokens_list=None):
         arg = parse_block(arg)
     else:                               # it's a command
         arg = parse_arg(arg)
-        
+
     if command is None and not (first_bracket and last_bracket):  # done?
-        token = Token(command, arg)
-        
+        token = Token(command, arg) 
         if tokens_list is not None:
             tokens_list.append(token)
             
@@ -922,11 +928,7 @@ if "FIDE" in flags:
 if "DEVELOPER_MODE" in flags:
     DEVELOPER_MODE = True
 
-# if len(sys.argv) == 3:
-#     RUNNER = sys.argv[2]
-# else:
-#     RUNNER = None
-# FILENAME = sys.argv[1]
+FILENAME = sys.argv[1]
 
 VARS_CONNECTION_KEY = "[SENDING_VARS_TO_FIDE]"
 FUNS_CONNECTION_KEY = "[SENDING_FUNS_TO_FIDE]"

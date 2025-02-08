@@ -1,9 +1,10 @@
+# ------- IMPORTS -------- #
+
 import tkinter as tk
 from tkinter.filedialog import *
 import importlib.util
 import sys
 import os
-os.system("")
 import subprocess
 import threading
 import queue
@@ -12,7 +13,8 @@ import sv_ttk
 import time
 import locale
 locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
-# Interactive Console Definition
+
+# ------- INTERACTIVE CONSOLE -------- #
 class InteractiveConsole(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
@@ -26,7 +28,7 @@ class InteractiveConsole(tk.Frame):
 
     def start_process(self, command):
         global FILENAME
-
+        restrict_input()
         """Starts a subprocess with the specified command."""
         if self.process is not None and self.process.poll() is None:
             self.text.insert(tk.END, "A process is already running.\n")
@@ -55,9 +57,9 @@ class InteractiveConsole(tk.Frame):
                 VARS = {}
                 vars_ = line[len(VARS_CONNECTION_KEY):-1]
                 vars_ = vars_.replace("True", "'TRUE'")
-                vars_ = vars_.replace("False", "'False'")
+                vars_ = vars_.replace("False", "'FALSE'")
                 VARS = eval(vars_)
-                #print(VARS)
+                
 
                 update_variables_textbox(VARS)
 
@@ -106,7 +108,7 @@ class InteractiveConsole(tk.Frame):
                 self.text.configure(state="disabled")
                 self.text.see(tk.END)
 
-# SETUP
+# ------- SETUP -------- #
 DEVELOPER_MODE = False
 WIDTH, HEIGHT = 1207, 700
 APP = tk.Tk()
@@ -115,13 +117,12 @@ APP.lift()
 APP.title("untitled.flow")
 APP.resizable(False, False)
 APP.iconbitmap(".\\assets\\fide_icon.ico")
-# FLOW SETUP
 GREEN_KEYWORDS = ['+', '*', "-", "/", "<", "<=", ">", ">=", "="]
-RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr"]
+RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "max", "min"]
 ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"']
 BLUE_KEYWORDS = [";", "(", ")"]
 PINK_KEYWORDS = ["TRUE", "FALSE"]
-YELLOW_KEYWORDS = ["Circle", "Triangle", "Polyline", "Line"]
+YELLOW_KEYWORDS = ["draw", "Circle", "Triangle", "Polyline", "Line"]
 PURPLE_KEYWORDS = ["$"] # COMMENT
 COMMANDS = GREEN_KEYWORDS+ RED_KEYWORDS + BLUE_KEYWORDS + PINK_KEYWORDS + PURPLE_KEYWORDS + ORANGE_KEYWORDS + YELLOW_KEYWORDS
 COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concatination of arg1 and arg2",
@@ -130,7 +131,7 @@ COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concati
                         "/":"/(arg1 [num], arg2 [num]) -> values that are going to be divided",
                         "<":"<(arg1 [num], arg2 [num]) -> TRUE if arg1 is less than arg2",
                         ">":">(arg1 [num], arg2 [num]) -> TRUE if arg1 is greater than arg2",
-                        "<=":"<=(arg1 [num], arg2 [num]) -> TRUE if arg1 is less or equal than arg2",
+                        "<=":"<=5(arg1 [num], arg2 [num]) -> TRUE if arg1 is less or equal than arg2",
                         ">=":">=(arg1 [num], arg2 [num]) -> TRUE if arg1 is greater or equal than arg2",
                         "=":"=(arg1 [num], arg2 [num]) -> TRUE if arg1 is equal to arg2",
                         "var":"var(varname [txt], val [txt|num|bln|set]) -> defines or updates a variable with the name varname with the value val",
@@ -149,10 +150,13 @@ COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concati
                         "len":"len(arg [set]) -> length of set arg",
                         "add":"add(arg [set], app [txt|num|bln|set]) -> set produced by appending app to the set arg",
                         "call":"call(fname [txt]) -> calls (runs) the function by the name of fname",
-                        "set":"set(el1 [txt|num|bln|set], el2 [txt|num|bln|set], ...) -> set with elements el1, el2, ...",
+                        'set':'set(el1 [txt|num|bln|set], el2 [txt|num|bln|set], ...) -> set with elements el1, el2..., enter only "_" for empty set',
                         "num":"num(arg [txt]) -> converts arg into type num, if possible",
                         "txt":"txt(arg [num]) -> converts arg into txt, if possible",
                         "bln":"bln(arg [txt|num]) -> converts arg into bln, if possible",
+                        "sum":"sum(set [set] or el1 [num], el2[num]...) -> sum of all elements in a set, or sum of all arguments (el1, el1...)",
+                        "max":"max(set [set] or el1 [num], el2[num]...) -> highest value of all elements in a set, or highest value of all arguments (el1, el1...)",
+                        "min":"min(set [set] or el1 [num], el2[num]...) -> lowest value of all elements in a set, or lowest value of all arguments (el1, el1...)",
                         "object":"object(name [txt]) -> creates an emtpy object with no attributes",
                         "attr":"attr(object [txt], attribute [txt], value [txt|num|bln|set]) -> creates an attribute and adds it into object",
                         "get":"get(object [txt], attribute [txt]) -> value of attribute inside the object",
@@ -161,10 +165,9 @@ COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concati
                         "Triangle":"Triangle(point [set], point [set], point [set]) -> object with name, points, perimeter, area, sides attributes",
                         "Circle":"Circle(center [set], radius [num]) -> object with name, center, perimeter, area, diameter attributes that represent a circle",
                         "InCircle":"Circle(triangle [obj]) -> object with name, center, perimeter, area, diameter attributes represent a circle inside a triangle",
-                        "Draw":"Draw(shape [obj], shape [obj]...) -> opens new window and visually shows the shapes",
+                        "draw":"draw(shape [obj], shape [obj]...) -> opens new window and visually shows the shapes",
                         }
 
-# COMMAND HELP HIGHLIGHTS
 HELP_GREEN_KEYWORDS = list(COMMANDS_DESCRIPTION.keys())
 HELP_PINK_KEYWORDS = ["->"]
 HELP_LIGHT_BLUE_KEYWORDS = ["txt","set","num","bln","txt1","set1","num1","bln1","txt2","set2","num2","bln2","blk*","BLK","BLN","SET","sets", "obj", "object"]
@@ -175,7 +178,7 @@ FLOW_PATH = "./FLOW.py"
 # Opened file
 FILENAME = None
 
-# FUNCTIONS (Unchanged from your original implementation)
+# ------- FUNCTIONS -------- #
 def change_path_f():
     global FLOW_PATH, intpreter_configuration_window
     
@@ -283,7 +286,11 @@ def update_line_counter(event=None):
 
 def update_text(a=None):
     global GUI_LINE_COUNTER, GUI_TEXTBOX, GUI_COMMAND_HELP
+    
+    # settings modified attribute to False so it can be changed again
     GUI_TEXTBOX.edit_modified(False)
+
+    # removing all tags from the text box
     GUI_TEXTBOX.tag_remove("GREEN", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("RED", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("BLUE", 1.0, tk.END)
@@ -343,22 +350,6 @@ def update_text(a=None):
     check_autocompletion()
     update_line_counter()
 
-def auto_finish(event):
-    global GUI_TEXTBOX
-    GUI_TEXTBOX.edit_modified(False)
-    
-    if event.keysym == "A":  # For the Enter key, you can do something special
-        print("You pressed Enter!")
-    elif event.keysym == "BackSpace":
-        print("You pressed Backspace!")
-    
-    char_mapping = {"(": ")", '"': '"', "[": "]", "{": "}"}
-    
-    if event.char in char_mapping.keys():
-        current_position = GUI_TEXTBOX.index(tk.INSERT)
-        GUI_TEXTBOX.insert(current_position, char_mapping[event.char])
-        GUI_TEXTBOX.mark_set(tk.INSERT, current_position)
-
 def focus_text_widget():
     GUI_TEXTBOX.focus_force()
 
@@ -404,8 +395,11 @@ def save_file(event=None):
                 recents.pop(4)
             recents_changed = True
     if recents_changed:
-        with open('fide/recents.txt', 'w') as recents_file:
-            recents_file.write("\n".join(recents))
+        try:
+            with open('fide/recents.txt', 'w') as recents_file:
+                recents_file.write("\n".join(recents))
+        except:
+            ...
     # Update recents
     update_recents()
 
@@ -436,7 +430,7 @@ def run_file(event=None):
             developer_mode_arg = ""
         else:
             developer_mode_arg = "DEVELOPER_MODE"
-        GUI_TERMINAL.start_process(["python", os.path.normpath(FLOW_PATH), os.path.normpath(FILENAME), "FIDE",developer_mode_arg])
+        GUI_TERMINAL.start_process(["python", os.path.normpath(FLOW_PATH), os.path.normpath(FILENAME), "FIDE", developer_mode_arg])
 
 def exita(event=None):
     sys.exit()
@@ -589,7 +583,6 @@ def show_autocomplete(x,y, commands):
 
     if GUI_AUTOCOMPLETE is not None:
         GUI_AUTOCOMPLETE.destroy()
-        #print("GUI_AUTOCOMPLETE destroyed")
     
     if commands == []:
         return
@@ -617,14 +610,11 @@ def autocompletion(event=None):
         index = GUI_TEXTBOX.index(tk.INSERT)
         line_number = str(index.split('.')[0])
         line_text = GUI_TEXTBOX.get(line_number+".0", index)[::-1]
-        #print(GUI_AUTOCOMPLETE.curselection())
         word_to_complete = GUI_AUTOCOMPLETE.get(0, tk.END)[GUI_AUTOCOMPLETE.curselection()[0]]
-        #print(word_to_complete)
 
     user_typed = ""
     for s in line_text:
         user_typed += s
-        #print(user_typed)
         if word_to_complete.startswith(user_typed[::-1]):
             GUI_TEXTBOX.insert(index, word_to_complete[len(user_typed)::])
             command_help(word_to_complete)
@@ -636,6 +626,7 @@ def autocompletion(event=None):
 def check_autocompletion(event=None):
     global GUI_AUTOCOMPLETE, GUI_TEXTBOX, APP
 
+    # settings modified attribute to False so it can be changed again
     GUI_TEXTBOX.edit_modified(False)
 
     if APP.focus_get() == GUI_TEXTBOX:
@@ -656,7 +647,6 @@ def check_autocompletion(event=None):
         user_typed = ""
         possible_commands = []
         longest_command = ""
-        #print(longest_command)
         for s in line_text:
             user_typed += s
             for c in COMMANDS_DESCRIPTION.keys():
@@ -781,21 +771,37 @@ def delete_autocomplete(event=None):
     if GUI_AUTOCOMPLETE:
         GUI_AUTOCOMPLETE.destroy()
 
-############
-### MAIN ###
-############
+def restrict_input(event=None):
+    
+    global GUI_TERMINAL
 
+    line = GUI_TERMINAL.text.index(tk.INSERT).split('.')[0]  # Get line number
+    total_lines = int(GUI_TERMINAL.text.index(tk.END).split('.')[0]) - 1
+    if line < total_lines:
+        return "break"
+
+def restrict_input(event=None):
+    """ Allows focus but forces cursor to stay on the last line when clicked """
+    GUI_TERMINAL.text.after(1, move_cursor_to_last_line)  # Move cursor after event executes
+
+def move_cursor_to_last_line():
+    """ Moves cursor to the last line """
+    last_line_index = f"{int(GUI_TERMINAL.text.index(tk.END).split('.')[0]) - 1}.0"
+    GUI_TERMINAL.text.mark_set(tk.INSERT, last_line_index)  # Keep cursor on last line
+
+# GUI setup
 print("\nrunning FIDE...")
 
-# check if recents exist
-if not os.path.exists("fide/recents.txt"):
-    f = open("fide/recents.txt", "x")
+# create recents.txt
+if not os.path.exists("recents.txt"):
+    f = open("recents.txt", "x")
     f.close()
 
-# WIDGETS (Same as original code, except GUI_TERMINAL replaced)
+# ------- WIDGET -------- #
 
 SEARCHING = None
 
+#GUI TEXTBOX
 GUI_TEXTBOX = tk.Text(APP, width=61, height=18, font=("Consolas 19"), undo=True, wrap="none")
 GUI_TEXTBOX.place(rely=0, relx=0.037)
 GUI_TEXTBOX.tag_config("GREEN", foreground="green")
@@ -810,10 +816,12 @@ GUI_TEXTBOX.tag_config("ITALIC", font=("Consolas", 19, "italic"))
 GUI_TEXTBOX.tag_config("HIGHLIGHT", background="blue")
 GUI_TEXTBOX.config(spacing1=5)
 
+# GUI LINE COUNTER
 GUI_LINE_COUNTER = tk.Text(APP, width=3, height=18, font=("Consolas 19"), fg="lightblue", state="disabled", wrap="none")
 GUI_LINE_COUNTER.place(rely=0, relx=0)
 GUI_LINE_COUNTER.config(spacing1=5)
 
+# GUI COMMAND HELP
 GUI_COMMAND_HELP = tk.Text(APP,  font=("Consolas 14"), height=2, width=85, undo=True, state="disabled", bd=0)
 GUI_COMMAND_HELP.place(rely=0.951, relx=0.04, anchor= tk.W)
 GUI_COMMAND_HELP.tag_config("help_green", foreground="green")
@@ -821,7 +829,6 @@ GUI_COMMAND_HELP.tag_config("help_pink", foreground="#d1644a")
 GUI_COMMAND_HELP.tag_config("help_blue", foreground="#2f7afe")
 GUI_COMMAND_HELP.tag_config("help_lightblue", foreground="#FFC300")
 GUI_COMMAND_HELP.tag_config("help_orange", foreground="#e19324")
-#GUI_COMMAND_HELP.config()
 
 # VARIABLE TEXTBOX
 GUI_VARIABLE_BOX = tk.Text(APP, width=11, height=8, font=("Consolas 16"))
@@ -836,36 +843,42 @@ GUI_FUNCTION_BOX = tk.Text(APP, width=11, height=8, font=("Consolas 16"))
 GUI_FUNCTION_BOX.place(rely=0.105, relx=0.887)
 GUI_FUNCTION_BOX.config(state="disabled")
 
+#GUI FUNCTION LABEL
 GUI_FUNCTION_LABEL = tk.Label(APP, text="║FUNS║\n╚====╝", font=("Consolas 20"), fg="lightblue")
 GUI_FUNCTION_LABEL.place(relx=0.905, rely=0)
 
+# CONNECTION KEYS
 VARS_CONNECTION_KEY = "[SENDING_VARS_TO_FIDE]"
 FUNS_CONNECTION_KEY = "[SENDING_FUNS_TO_FIDE]"
 INPUT_CONNECTION_KEY = "[RUNNING_IN_FIDE]"
 
-# Replace the tkterminal with the new InteractiveConsole
+# GUI TERMINAL
 GUI_TERMINAL = InteractiveConsole(APP)
 GUI_TERMINAL.place(relx=0.751, rely=0.53)
 
+# GUI CLEAR/TERMINATE CONSOLE
 GUI_CLEAR_CONSOLE = tk.Button(APP, text="×", fg="red", command = clear_console, font=("Consolas 15"))
 GUI_CLEAR_CONSOLE.place(relx=0.97, rely=0.4750,anchor=tk.CENTER)
 
+# GUI CONSOLE LABEL
 GUI_CONSOLE_LABEL = tk.Label(APP, text="║ CONSOLE ║\n╚=========╝", font=("Consolas 20"), fg="lightblue")
 GUI_CONSOLE_LABEL.place(relx=0.81, rely=0.42)
 
-# MENU BAR (Unchanged)
+# MENU BAR
 GUI_MENUBAR = tk.Menu()
 GUI_FILE_MENU = tk.Menu(GUI_MENUBAR, tearoff=False)
 GUI_FILE_MENU.add_command(label="New", accelerator="Ctrl+n", command=new_file)
 GUI_FILE_MENU.add_command(label="Open", accelerator="Ctrl+o", command=open_file_from_dialog)
+
 # RECENT FILES
 GUI_RECENT_FILES_MENU = tk.Menu(GUI_FILE_MENU, tearoff=False)
-GUI_FILE_MENU.add_cascade(menu=GUI_RECENT_FILES_MENU, label="Open Recents", accelerator="Ctrl+O")
+GUI_FILE_MENU.add_cascade(menu=GUI_RECENT_FILES_MENU, label="Open Recents")
 GUI_FILE_MENU.add_command(label="Save", accelerator="Ctrl+s", command=save_file)
 GUI_FILE_MENU.add_separator()
 GUI_FILE_MENU.add_command(label="Exit", accelerator="Ctrl+e", command=exit)
 GUI_MENUBAR.add_cascade(menu=GUI_FILE_MENU, label="File")
 
+# GUI INSERT MENU
 GUI_INSERT_MENU = tk.Menu(GUI_MENUBAR, tearoff=False)
 GUI_INSERT_MENU.add_command(label = "New Variable",  accelerator="Ctrl+Shift+v", command = insert_new_variable)
 GUI_INSERT_MENU.add_command(label = "New Function",  accelerator="Ctrl+Shift+f", command = insert_new_function)
@@ -874,15 +887,18 @@ GUI_INSERT_MENU.add_command(label = "New While Loop",  accelerator="Ctrl+Shift+w
 GUI_INSERT_MENU.add_command(label = "New If Else",  accelerator="Ctrl+Shift+I", command = insert_new_if_else)
 GUI_MENUBAR.add_cascade(menu=GUI_INSERT_MENU, label="Insert")
 
+# GUI RUN MENU
 GUI_RUN_MENU = tk.Menu(GUI_MENUBAR, tearoff=False)
 GUI_RUN_MENU.add_command(label="Run", accelerator="F5", command=run_file)
 GUI_MENUBAR.add_cascade(menu=GUI_RUN_MENU, label="Run")
 
+# GUI CONFIGURATION MENU
 GUI_CONFIGURATION_MENU = tk.Menu(GUI_MENUBAR, tearoff=False)
 GUI_CONFIGURATION_MENU.add_command(label = "Intepreter",  accelerator="Ctrl+i", command = interpreter_configuration)
 GUI_CONFIGURATION_MENU.add_command(label = "Developer Mode ✗",  accelerator="Ctrl+d", command = developer_mode)
 GUI_MENUBAR.add_cascade(menu=GUI_CONFIGURATION_MENU, label="Configure")
 
+# MENU UPDATE
 APP.config(menu=GUI_MENUBAR)
 
 GUI_TOOL_MENU = tk.Menu(tearoff=False)
@@ -898,7 +914,7 @@ update_recents()
 
 update_line_counter()
 
-# Bindings
+# BINDINGS
 APP.bind("<Control-n>", new_file)
 APP.bind("<Control-o>", open_file_from_dialog)
 APP.bind("<Control-s>", save_file)
@@ -915,15 +931,16 @@ APP.bind("<Control-I>", insert_new_if_else)
 APP.bind("<Control-space>", autocompletion)
 APP.bind("<Control-q>", shuffle_complete_suggestions)
 GUI_TEXTBOX.bind_all('<<Modified>>', check_autocompletion)
-GUI_TEXTBOX.bind('<<Modified>>', auto_finish)
 GUI_TEXTBOX.bind_all('<<Modified>>', update_text)
 GUI_TEXTBOX.bind_all('<MouseWheel>', update_line_counter)
 GUI_TEXTBOX.bind_all("<Key>", update_line_counter)
 GUI_TEXTBOX.bind("<Button-3>", show_menu)
 
-# For autocomplete destruction
-for i in ["<Left>", "<Right>", "<Left>", "<Up>", '<Button-1>'] :
+# ASSIGNING EVERY KEY FOR INPUT RESTRICTIONS 
+for i in ["<Left>", "<Right>", "<Left>", "<Up>", '<Button-1>', '<Control-v>', '<Control-x>'] :
     GUI_TEXTBOX.bind(i, delete_autocomplete)
+    GUI_TERMINAL.text.bind(i, restrict_input)
+    
 # THEME AND MAIN LOOP
 sv_ttk.set_theme("dark")
 APP.mainloop()

@@ -1,0 +1,6 @@
+var("N", input("num"));
+var("list", set("_"));
+for(N, (
+add(list, input("num"));
+));
+output(sum(list));

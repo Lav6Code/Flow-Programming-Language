@@ -1,0 +1,9 @@
+import time
+st = time.time()
+i = 0
+while True:
+    i += 1
+    if i < 10000:
+        break
+    print(i)
+print("DONE")

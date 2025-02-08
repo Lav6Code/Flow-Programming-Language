@@ -1,4 +1,5 @@
 import turtle
+import tkinter
 
 def calculate_global_extent(objects):
     """Calculate the maximum extent of all objects to adjust the grid size."""
@@ -36,6 +37,7 @@ def draw_grid(screen_width, screen_height, max_x, max_y, margin=50):
             t.write(y-1)
             t.goto(origin_x, origin_y + (y - 1) * step)
             t.setheading(a)
+
         t.pendown()
         t.goto(origin_x + (max_x - 1) * step, origin_y + (y - 1) * step)
         t.penup()
@@ -105,6 +107,7 @@ def draw_circle(circle_obj, screen_width, screen_height, max_x, max_y, margin=50
 
 def start(objects):
     global t
+    turtle.Screen()._root.iconbitmap(".\\assets\\fide_icon.ico")
     screen_width = 600
     screen_height = 600
     margin = 50

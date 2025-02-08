@@ -1,0 +1,7 @@
+var("lst", set("_"));
+var("i", 0);
+for(30, (
+var("i", +(i,1));
+add(lst, i); 
+));
+output(sum(lst));
