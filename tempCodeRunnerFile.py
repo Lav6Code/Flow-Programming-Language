@@ -1,1 +1,1 @@
-normal
+, background=BACKGROUND_COLOR

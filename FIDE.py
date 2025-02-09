@@ -2,23 +2,19 @@
 
 import tkinter as tk
 from tkinter.filedialog import *
-import importlib.util
 import sys
 import os
 import subprocess
 import threading
 import queue
 from pathlib import Path
-import sv_ttk
-import time
-import locale
-locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
+import ctypes
 
 # ------- INTERACTIVE CONSOLE -------- #
 class InteractiveConsole(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
-        self.text = tk.Text(self, wrap=tk.WORD, font=("Consolas", 11), height=16, width=37)
+        self.text = tk.Text(self, wrap=tk.WORD, font=("Consolas", 11), height=16, width=37, background=BACKGROUND_COLOR)
         self.text.pack(expand=True, fill=tk.BOTH)
         self.text.bind("<Return>", self.on_enter)
         self.text.configure(state="disabled")
@@ -111,21 +107,34 @@ class InteractiveConsole(tk.Frame):
 # ------- SETUP -------- #
 DEVELOPER_MODE = False
 WIDTH, HEIGHT = 1207, 700
+BACKGROUND_COLOR = "#1e1e2e"
+
 APP = tk.Tk()
+APP.configure(background=BACKGROUND_COLOR)
 APP.geometry(str(WIDTH) + "x" + str(HEIGHT))
 APP.lift()
 APP.title("untitled.flow")
 APP.resizable(False, False)
 APP.iconbitmap(".\\assets\\fide_icon.ico")
+APP.overrideredirect(True)  # Remove default title bar
+
+# ------- CUSTOM TITLE BAR -------- #
+title_bar = tk.Frame(APP, bg=BACKGROUND_COLOR, relief="flat", height=30)
+title_bar.pack(fill="x", side="top")
+
+
+# Title label (window name)
+title_label = tk.Label(title_bar, text="untitled.flow", fg="white", bg=BACKGROUND_COLOR, font=("Segoe UI", 10))
+title_label.pack(side="left", padx=10)
 # FLOW SETUP
-GREEN_KEYWORDS = ['+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not"]
-RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr"]
-ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", '"']
-BLUE_KEYWORDS = [";", "(", ")"]
+ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0"]
+RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not"]
+GREEN_KEYWORDS = ['"']
+LIGHT_BLUE_KEYWORDS = [";", "(", ")"]
 PINK_KEYWORDS = ["TRUE", "FALSE"]
-YELLOW_KEYWORDS = ["Circle", "Triangle", "Polyline", "Line", "draw"]
+BLUE_KEYWORDS = ["Circle", "Triangle", "Polyline", "Line", "draw"]
 PURPLE_KEYWORDS = ["$"] # COMMENT
-COMMANDS = GREEN_KEYWORDS+ RED_KEYWORDS + BLUE_KEYWORDS + PINK_KEYWORDS + PURPLE_KEYWORDS + ORANGE_KEYWORDS + YELLOW_KEYWORDS
+COMMANDS = GREEN_KEYWORDS+ RED_KEYWORDS + BLUE_KEYWORDS + PINK_KEYWORDS + PURPLE_KEYWORDS + ORANGE_KEYWORDS + BLUE_KEYWORDS
 COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concatination of arg1 and arg2",
                         "-":"-(arg1 [num], arg2 [num]) -> substraction of arg1 and arg2",
                         "*":"*(arg1 [num], arg2 [num]) -> procuct of arg1 and arg2",
@@ -184,6 +193,18 @@ FLOW_PATH = "./FLOW.py"
 FILENAME = None
 
 # ------- FUNCTIONS -------- #
+def start_move(event):
+    APP.x = event.x
+    APP.y = event.y
+
+def stop_move(event):
+    APP.x = None
+    APP.y = None
+
+def do_move(event):
+    x = APP.winfo_x() + (event.x - APP.x)
+    y = APP.winfo_y() + (event.y - APP.y)
+    APP.geometry(f"+{x}+{y}")
 def change_path_f():
     global FLOW_PATH, intpreter_configuration_window
     
@@ -267,9 +288,9 @@ def highlight(keyword, tag_name, widget):
             break
         if keyword == widget.get(pos, end):
             widget.tag_add(tag_name, pos, end)
-            if tag_name == "RED":
+            if tag_name == "PINK":
                 widget.tag_add("BOLD", pos, end)
-            if tag_name == "ORANGE":
+            if tag_name == "GREEN":
                 widget.tag_add("ITALIC", pos, end)
 
 def update_line_counter(event=None):
@@ -297,11 +318,11 @@ def update_text(a=None):
 
     # removing all tags from the text box
     GUI_TEXTBOX.tag_remove("GREEN", 1.0, tk.END)
-    GUI_TEXTBOX.tag_remove("RED", 1.0, tk.END)
+    GUI_TEXTBOX.tag_remove("PINK", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("BLUE", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("ORANGE", 1.0, tk.END)
-    GUI_TEXTBOX.tag_remove("PURPLE", 1.0, tk.END)
-    GUI_TEXTBOX.tag_remove("YELLOW", 1.0, tk.END)
+    GUI_TEXTBOX.tag_remove("PINK", 1.0, tk.END)
+    GUI_TEXTBOX.tag_remove("LIGHT_BLUE", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("PINK", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("BOLD", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("ITALIC", 1.0, tk.END)
@@ -309,15 +330,16 @@ def update_text(a=None):
     for word in GREEN_KEYWORDS:
         highlight(word, "GREEN", GUI_TEXTBOX)
     for word in RED_KEYWORDS:
-        highlight(word, "RED", GUI_TEXTBOX)
+        highlight(word, "PINK", GUI_TEXTBOX)
     for word in BLUE_KEYWORDS:
         highlight(word, "BLUE", GUI_TEXTBOX)
     for word in PINK_KEYWORDS:
         highlight(word, "PINK", GUI_TEXTBOX)
     for word in ORANGE_KEYWORDS:
         highlight(word, "ORANGE", GUI_TEXTBOX)
-    for word in YELLOW_KEYWORDS:
-        highlight(word, "YELLOW", GUI_TEXTBOX)
+    for word in LIGHT_BLUE_KEYWORDS:
+        highlight(word, "LIGHT_BLUE", GUI_TEXTBOX) 
+
 
     # WORDS INSIDE ""
 
@@ -337,7 +359,7 @@ def update_text(a=None):
                 inside_n.append(bucket)
                 bucket = ""
     for word in inside_n:
-        highlight(word, "ORANGE", GUI_TEXTBOX)
+        highlight(word, "GREEN", GUI_TEXTBOX)
     
     # WORDS AFTER $
     seperated_by_comment = []
@@ -643,7 +665,6 @@ def autocompletion(event=None):
     GUI_AUTOCOMPLETE.destroy()
     APP.update()
             
-
 def check_autocompletion(event=None):
     global GUI_AUTOCOMPLETE, GUI_TEXTBOX, APP
 
@@ -793,15 +814,6 @@ def delete_autocomplete(event=None):
         GUI_AUTOCOMPLETE.destroy()
 
 def restrict_input(event=None):
-    
-    global GUI_TERMINAL
-
-    line = GUI_TERMINAL.text.index(tk.INSERT).split('.')[0]  # Get line number
-    total_lines = int(GUI_TERMINAL.text.index(tk.END).split('.')[0]) - 1
-    if line < total_lines:
-        return "break"
-
-def restrict_input(event=None):
     """ Allows focus but forces cursor to stay on the last line when clicked """
     GUI_TERMINAL.text.after(1, move_cursor_to_last_line)  # Move cursor after event executes
 
@@ -823,27 +835,27 @@ if not os.path.exists("recents.txt"):
 SEARCHING = None
 
 #GUI TEXTBOX
-GUI_TEXTBOX = tk.Text(APP, width=61, height=18, font=("Consolas 19"), undo=True, wrap="none")
+GUI_TEXTBOX = tk.Text(APP, width=61, height=18, font=("Consolas 19"), undo=True, wrap="none", background=BACKGROUND_COLOR, foreground="#cdd6f4", insertbackground="#cdd6f4")
 GUI_TEXTBOX.place(rely=0, relx=0.037)
-GUI_TEXTBOX.tag_config("GREEN", foreground="green")
-GUI_TEXTBOX.tag_config("RED", foreground="#d1644a")
-GUI_TEXTBOX.tag_config("ORANGE", foreground="#FFC300")
-GUI_TEXTBOX.tag_config("BLUE", foreground="#57c1d9")
+GUI_TEXTBOX.tag_config("GREEN", foreground="#41b196")
+GUI_TEXTBOX.tag_config("PINK", foreground="#cba6f7")
+GUI_TEXTBOX.tag_config("ORANGE", foreground="#f9e2af")
+GUI_TEXTBOX.tag_config("BLUE", foreground="#386ed7")
 GUI_TEXTBOX.tag_config("PURPLE", foreground="#634a7f")
 GUI_TEXTBOX.tag_config("PINK", foreground="#e57bff")
-GUI_TEXTBOX.tag_config("YELLOW", foreground="yellow")
+GUI_TEXTBOX.tag_config("LIGHT_BLUE", foreground="#a5baaf")
 GUI_TEXTBOX.tag_config("BOLD", font=("Consolas", 19, "bold"))
 GUI_TEXTBOX.tag_config("ITALIC", font=("Consolas", 19, "italic"))
 GUI_TEXTBOX.tag_config("HIGHLIGHT", background="blue")
 GUI_TEXTBOX.config(spacing1=5)
 
 # GUI LINE COUNTER
-GUI_LINE_COUNTER = tk.Text(APP, width=3, height=18, font=("Consolas 19"), fg="lightblue", state="disabled", wrap="none")
+GUI_LINE_COUNTER = tk.Text(APP, width=3, height=18, font=("Consolas 19"), fg="lightblue", state="disabled", wrap="none", background=BACKGROUND_COLOR)
 GUI_LINE_COUNTER.place(rely=0, relx=0)
 GUI_LINE_COUNTER.config(spacing1=5)
 
 # GUI COMMAND HELP
-GUI_COMMAND_HELP = tk.Text(APP,  font=("Consolas 14"), height=2, width=85, undo=True, state="disabled", bd=0)
+GUI_COMMAND_HELP = tk.Text(APP,  font=("Consolas 14"), height=2, width=85, undo=True, state="disabled", bd=0, background=BACKGROUND_COLOR)
 GUI_COMMAND_HELP.place(rely=0.951, relx=0.04, anchor= tk.W)
 GUI_COMMAND_HELP.tag_config("help_green", foreground="green")
 GUI_COMMAND_HELP.tag_config("help_pink", foreground="#d1644a")
@@ -852,20 +864,20 @@ GUI_COMMAND_HELP.tag_config("help_lightblue", foreground="#FFC300")
 GUI_COMMAND_HELP.tag_config("help_orange", foreground="#e19324")
 
 # VARIABLE TEXTBOX
-GUI_VARIABLE_BOX = tk.Text(APP, width=11, height=8, font=("Consolas 16"))
+GUI_VARIABLE_BOX = tk.Text(APP, width=11, height=8, font=("Consolas 16"), background=BACKGROUND_COLOR)
 GUI_VARIABLE_BOX.place(rely=0.105, relx=0.7511)
 GUI_VARIABLE_BOX.config(state="disabled")
 
-GUI_VARIABLE_LABEL = tk.Label(APP, text="║VARS║\n╚====╝", font=("Consolas 20"), fg="lightblue")
+GUI_VARIABLE_LABEL = tk.Label(APP, text="║VARS║\n╚====╝", font=("Consolas 20"), fg="lightblue", background=BACKGROUND_COLOR)
 GUI_VARIABLE_LABEL.place(relx=0.77, rely=-0)
 
 # FUNCTION TEXTBOX
-GUI_FUNCTION_BOX = tk.Text(APP, width=11, height=8, font=("Consolas 16"))
+GUI_FUNCTION_BOX = tk.Text(APP, width=11, height=8, font=("Consolas 16"), background=BACKGROUND_COLOR)
 GUI_FUNCTION_BOX.place(rely=0.105, relx=0.887)
 GUI_FUNCTION_BOX.config(state="disabled")
 
 #GUI FUNCTION LABEL
-GUI_FUNCTION_LABEL = tk.Label(APP, text="║FUNS║\n╚====╝", font=("Consolas 20"), fg="lightblue")
+GUI_FUNCTION_LABEL = tk.Label(APP, text="║FUNS║\n╚====╝", font=("Consolas 20"), fg="lightblue", background=BACKGROUND_COLOR)
 GUI_FUNCTION_LABEL.place(relx=0.905, rely=0)
 
 # CONNECTION KEYS
@@ -878,21 +890,21 @@ GUI_TERMINAL = InteractiveConsole(APP)
 GUI_TERMINAL.place(relx=0.751, rely=0.53)
 
 # GUI CLEAR/TERMINATE CONSOLE
-GUI_CLEAR_CONSOLE = tk.Button(APP, text="×", fg="red", command = clear_console, font=("Consolas 15"))
+GUI_CLEAR_CONSOLE = tk.Button(APP, text="×", fg="red", command = clear_console, font=("Consolas 15"), background=BACKGROUND_COLOR)
 GUI_CLEAR_CONSOLE.place(relx=0.97, rely=0.4750,anchor=tk.CENTER)
 
 # GUI CONSOLE LABEL
-GUI_CONSOLE_LABEL = tk.Label(APP, text="║ CONSOLE ║\n╚=========╝", font=("Consolas 20"), fg="lightblue")
+GUI_CONSOLE_LABEL = tk.Label(APP, text="║ CONSOLE ║\n╚=========╝", font=("Consolas 20"), fg="lightblue", background=BACKGROUND_COLOR)
 GUI_CONSOLE_LABEL.place(relx=0.81, rely=0.42)
 
 # MENU BAR
 GUI_MENUBAR = tk.Menu()
-GUI_FILE_MENU = tk.Menu(GUI_MENUBAR, tearoff=False)
+GUI_FILE_MENU = tk.Menu(GUI_MENUBAR, tearoff=False, background=BACKGROUND_COLOR)
 GUI_FILE_MENU.add_command(label="New", accelerator="Ctrl+n", command=new_file)
 GUI_FILE_MENU.add_command(label="Open", accelerator="Ctrl+o", command=open_file_from_dialog)
 
 # RECENT FILES
-GUI_RECENT_FILES_MENU = tk.Menu(GUI_FILE_MENU, tearoff=False)
+GUI_RECENT_FILES_MENU = tk.Menu(GUI_FILE_MENU, tearoff=False, background=BACKGROUND_COLOR)
 GUI_FILE_MENU.add_cascade(menu=GUI_RECENT_FILES_MENU, label="Open Recents")
 GUI_FILE_MENU.add_command(label="Save", accelerator="Ctrl+s", command=save_file)
 GUI_FILE_MENU.add_separator()
@@ -900,7 +912,7 @@ GUI_FILE_MENU.add_command(label="Exit", accelerator="Ctrl+e", command=exit)
 GUI_MENUBAR.add_cascade(menu=GUI_FILE_MENU, label="File")
 
 # GUI INSERT MENU
-GUI_INSERT_MENU = tk.Menu(GUI_MENUBAR, tearoff=False)
+GUI_INSERT_MENU = tk.Menu(GUI_MENUBAR, tearoff=False, background=BACKGROUND_COLOR)
 GUI_INSERT_MENU.add_command(label = "New Variable",  accelerator="Ctrl+Shift+v", command = insert_new_variable)
 GUI_INSERT_MENU.add_command(label = "New Function",  accelerator="Ctrl+Shift+f", command = insert_new_function)
 GUI_INSERT_MENU.add_command(label = "New For Loop",  accelerator="Ctrl+Alt+o", command = insert_new_for_loop)
@@ -918,6 +930,10 @@ GUI_CONFIGURATION_MENU = tk.Menu(GUI_MENUBAR, tearoff=False)
 GUI_CONFIGURATION_MENU.add_command(label = "Intepreter",  accelerator="Ctrl+i", command = interpreter_configuration)
 GUI_CONFIGURATION_MENU.add_command(label = "Developer Mode ✗",  accelerator="Ctrl+d", command = developer_mode)
 GUI_MENUBAR.add_cascade(menu=GUI_CONFIGURATION_MENU, label="Configure")
+
+title_bar.bind("<ButtonPress-1>", start_move)
+title_bar.bind("<ButtonRelease-1>", stop_move)
+title_bar.bind("<B1-Motion>", do_move)
 
 # MENU UPDATE
 APP.config(menu=GUI_MENUBAR)
@@ -962,6 +978,5 @@ for i in ["<Left>", "<Right>", "<Left>", "<Up>", '<Button-1>', '<Control-v>', '<
     GUI_TEXTBOX.bind(i, delete_autocomplete)
     GUI_TERMINAL.text.bind(i, restrict_input)
     
-# THEME AND MAIN LOOP
-sv_ttk.set_theme("dark")
+#MAIN LOOP
 APP.mainloop()

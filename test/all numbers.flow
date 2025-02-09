@@ -1,0 +1,22 @@
+var("i", 0);
+var("numbers", set("_"));  $ Create an empty set to store numbers
+
+for(10, (
+	var("j", 0);  $ Reset j at the start of each outer loop iterationg
+	for(10, (
+		var("val", +(*(i,10),j));  $ Compute i * 10 + j
+		add(numbers, val);  $ Add value to the set
+		var("j", +(j,1));  $ Increment j
+		)
+	);
+	var("i", +(i,1));  $ Increment i
+));
+
+var("i", 0);
+for(len(numbers), 
+	(
+	output(fetch(numbers, i));  $ Print each number
+	var("i", +(i,1));
+	)
+);
+

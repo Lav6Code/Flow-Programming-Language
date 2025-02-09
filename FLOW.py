@@ -17,7 +17,7 @@ COMMANDS = [None,
             '+', '*', "-", "/","sum",  # MATH
             ">", "<", "=", ">=", "<=", "!=", "max", "min", "not", "and", "or", "xor", # LOGIC
             'output', "input", # USER INTERACTION
-            "if", "for", "while",  # FLOW
+            "if", "for", "while", "loop",  # FLOW
             "set", 'var', # OBJECT CREATIONS
             "num", "txt",  #TYPES
             "disjunction", "subset", "superset", "add", "union", # SET RELATED
@@ -642,12 +642,28 @@ def execute(token): # args with ,
         else:
             raise_error("ARGUMENT ERROR: Condition is non bool type", token)
     
-    elif command == "for":
+    elif command == "loop":
         if type(args[0].sol) == int:
             for i in range(args[0].sol):
                 args[1].evaluate(forced=True)
         else:
             raise_error("ARGUMENT ERROR: Trying to use non NUM value for FOR loop.", token)
+
+    elif command == "for":
+        if type(args[0].sol) == str:
+            if type(args[1].sol) == int:
+                if args[0] not in VARS:
+                    VARS[args[0].sol] = 0
+                    for i in range(args[1].sol):
+                        VARS[args[0].sol] = i
+                        args[2].evaluate(forced=True)
+                    VARS.pop(args[0].sol)
+                else:
+                    raise_error("ARGUMENT ERROR: Trying to set an index's name to a variable that has already been set.", token)
+            else:
+                raise_error("ARGUMENT ERROR: Trying to use a non NUM value fora number of repetitions.", token)
+        else:
+            raise_error("ARGUMENT ERROR: Trying to set an index variable to a non TXT name", token)
 
     elif command == "while":
         if args[1].typ == "BLK" and type(args[0].sol) == bool:
@@ -710,8 +726,8 @@ def execute(token): # args with ,
         return UNION_SET
     
     elif command == "len":
-        if type(a.sol) == list:
-            return len(a.sol)
+        if type(args[0].sol) == list:
+            return len(args[0].sol)
         else:
             raise_error("ARGUMENT ERROR: Trying to get a lentgh of a wrong type, should be SET.", token)
             
