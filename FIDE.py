@@ -14,7 +14,7 @@ import ctypes
 class InteractiveConsole(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
-        self.text = tk.Text(self, wrap=tk.WORD, font=("Consolas", 11), height=16, width=37, background=BACKGROUND_COLOR)
+        self.text = tk.Text(self, wrap=tk.WORD, font=("Consolas", 11), height=16, width=37, background=BACKGROUND_COLOR, foreground="#cdd6f4", insertbackground=FOREGROUND_COLOR)
         self.text.pack(expand=True, fill=tk.BOTH)
         self.text.bind("<Return>", self.on_enter)
         self.text.configure(state="disabled")
@@ -108,6 +108,7 @@ class InteractiveConsole(tk.Frame):
 DEVELOPER_MODE = False
 WIDTH, HEIGHT = 1207, 700
 BACKGROUND_COLOR = "#1e1e2e"
+FOREGROUND_COLOR = "#cdd6f4"
 
 APP = tk.Tk()
 APP.configure(background=BACKGROUND_COLOR)
@@ -116,19 +117,10 @@ APP.lift()
 APP.title("untitled.flow")
 APP.resizable(False, False)
 APP.iconbitmap(".\\assets\\fide_icon.ico")
-APP.overrideredirect(True)  # Remove default title bar
 
-# ------- CUSTOM TITLE BAR -------- #
-title_bar = tk.Frame(APP, bg=BACKGROUND_COLOR, relief="flat", height=30)
-title_bar.pack(fill="x", side="top")
-
-
-# Title label (window name)
-title_label = tk.Label(title_bar, text="untitled.flow", fg="white", bg=BACKGROUND_COLOR, font=("Segoe UI", 10))
-title_label.pack(side="left", padx=10)
 # FLOW SETUP
 ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0"]
-RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not"]
+RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "seq","disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not"]
 GREEN_KEYWORDS = ['"']
 LIGHT_BLUE_KEYWORDS = [";", "(", ")"]
 PINK_KEYWORDS = ["TRUE", "FALSE"]
@@ -153,7 +145,9 @@ COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concati
                         "output":"output(str [txt]) -> outputs the str into console",
                         "input":'input(datatype ["num"|"txt"|"bln"]) -> takes text from keyboard and converts it into data of type datatype',
                         "if":"if(bln, blk, blk*) -> if the bln is TRUE the blk will run, ELSE the blk* will run, blk* is optional",
-                        "for":"for(n [num], codeblock [blk]) -> runs the codeblock n times",
+                        "loop":"loop(n [num], codeblock [blk]) -> runs the codeblock n times",
+                        "for":"for(index [txt], array [set], codeblock [blk]) -> iterates through array, assigning each element to index and executing codeblock",
+                        "seq":"seq([start] [num], stop [num], [step] [num]) – Returns a 'set' from 'start' to stop with step 'step'. Defaults: start=0, step=1",
                         "while":"while(condition [bln], codeblock [blk]) -> repeatedly run codeblock, while the condition is TRUE",
                         "fetch":"fetch(set, num) -> the num-th element of the set",
                         "intersection":"intersection(set1 [set], set2 [set]) -> the intersection of the two sets (set of elements that are present in both given sets)",
@@ -182,10 +176,10 @@ COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concati
                         "draw":"draw(shape [obj], shape [obj]...) -> opens new window and visually shows the shapes",
                         }
 
-HELP_GREEN_KEYWORDS = list(COMMANDS_DESCRIPTION.keys())
-HELP_PINK_KEYWORDS = ["->"]
-HELP_LIGHT_BLUE_KEYWORDS = ["txt","set","num","bln","txt1","set1","num1","bln1","txt2","set2","num2","bln2","blk*","BLK","BLN","SET","sets", "obj", "object"]
-HELP_ORANGE_KEYWORDS = ["┃"]
+HELP_KEYWORD1 = list(COMMANDS_DESCRIPTION.keys())
+HELP_KEYWORD2 = ["->"]
+HELP_KEYWORD3 = ["txt","set","num","bln","txt1","set1","num1","bln1","txt2","set2","num2","bln2","blk*","BLK","BLN","SET","sets", "obj", "object"]
+HELP_KEYWORD4 = ["┃"]
 # FLOW path
 FLOW_PATH = "./FLOW.py"
 
@@ -193,18 +187,6 @@ FLOW_PATH = "./FLOW.py"
 FILENAME = None
 
 # ------- FUNCTIONS -------- #
-def start_move(event):
-    APP.x = event.x
-    APP.y = event.y
-
-def stop_move(event):
-    APP.x = None
-    APP.y = None
-
-def do_move(event):
-    x = APP.winfo_x() + (event.x - APP.x)
-    y = APP.winfo_y() + (event.y - APP.y)
-    APP.geometry(f"+{x}+{y}")
 def change_path_f():
     global FLOW_PATH, intpreter_configuration_window
     
@@ -603,21 +585,21 @@ def command_help(c):
     GUI_COMMAND_HELP.config(state="normal")
     GUI_COMMAND_HELP.insert("1.0", string)
     # highlight
-    GUI_COMMAND_HELP.tag_remove("help_blue", 1.0, tk.END)
-    GUI_COMMAND_HELP.tag_remove("help_lightblue", 1.0, tk.END)
-    GUI_COMMAND_HELP.tag_remove("help_pink", 1.0, tk.END)
-    GUI_COMMAND_HELP.tag_remove("help_orange", 1.0, tk.END)
-    GUI_COMMAND_HELP.tag_remove("help_green", 1.0, tk.END)
+    GUI_COMMAND_HELP.tag_remove("help1", 1.0, tk.END)
+    GUI_COMMAND_HELP.tag_remove("help2", 1.0, tk.END)
+    GUI_COMMAND_HELP.tag_remove("help3", 1.0, tk.END)
+    GUI_COMMAND_HELP.tag_remove("help4", 1.0, tk.END)
+    GUI_COMMAND_HELP.tag_remove("help5", 1.0, tk.END)
 
 
-    for word in HELP_GREEN_KEYWORDS:
-        highlight(word, "help_green", GUI_COMMAND_HELP)
-    for word in HELP_LIGHT_BLUE_KEYWORDS:
-        highlight(word, "help_lightblue", GUI_COMMAND_HELP)
-    for word in HELP_PINK_KEYWORDS:
-        highlight(word, "help_pink", GUI_COMMAND_HELP)
-    for word in HELP_ORANGE_KEYWORDS:
-        highlight(word, "help_orange", GUI_COMMAND_HELP)
+    for word in HELP_KEYWORD1:
+        highlight(word, "help1", GUI_COMMAND_HELP)
+    for word in HELP_KEYWORD2:
+        highlight(word, "help2", GUI_COMMAND_HELP)
+    for word in HELP_KEYWORD3:
+        highlight(word, "help3", GUI_COMMAND_HELP)
+    for word in HELP_KEYWORD4:
+        highlight(word, "help4", GUI_COMMAND_HELP)
 
     GUI_COMMAND_HELP.config(state="disabled")
 
@@ -746,6 +728,7 @@ def search():
         SEARCHING = not(SEARCHING)
         GUI_TEXTBOX.update()
         update_menu()
+
 def _():
 
     GUI_REPLACE_WINDOW.after(1, callback)
@@ -835,7 +818,7 @@ if not os.path.exists("recents.txt"):
 SEARCHING = None
 
 #GUI TEXTBOX
-GUI_TEXTBOX = tk.Text(APP, width=61, height=18, font=("Consolas 19"), undo=True, wrap="none", background=BACKGROUND_COLOR, foreground="#cdd6f4", insertbackground="#cdd6f4")
+GUI_TEXTBOX = tk.Text(APP, width=61, height=18, font=("Consolas 19"), undo=True, wrap="none", background=BACKGROUND_COLOR, foreground=FOREGROUND_COLOR, insertbackground=FOREGROUND_COLOR)
 GUI_TEXTBOX.place(rely=0, relx=0.037)
 GUI_TEXTBOX.tag_config("GREEN", foreground="#41b196")
 GUI_TEXTBOX.tag_config("PINK", foreground="#cba6f7")
@@ -850,25 +833,24 @@ GUI_TEXTBOX.tag_config("HIGHLIGHT", background="blue")
 GUI_TEXTBOX.config(spacing1=5)
 
 # GUI LINE COUNTER
-GUI_LINE_COUNTER = tk.Text(APP, width=3, height=18, font=("Consolas 19"), fg="lightblue", state="disabled", wrap="none", background=BACKGROUND_COLOR)
+GUI_LINE_COUNTER = tk.Text(APP, width=3, height=18, font=("Consolas 19"), fg="lightblue", state="disabled", wrap="none", background=BACKGROUND_COLOR, foreground=FOREGROUND_COLOR)
 GUI_LINE_COUNTER.place(rely=0, relx=0)
 GUI_LINE_COUNTER.config(spacing1=5)
 
 # GUI COMMAND HELP
-GUI_COMMAND_HELP = tk.Text(APP,  font=("Consolas 14"), height=2, width=85, undo=True, state="disabled", bd=0, background=BACKGROUND_COLOR)
+GUI_COMMAND_HELP = tk.Text(APP,  font=("Consolas 14"), height=2, width=85, undo=True, state="disabled", bd=0, background=BACKGROUND_COLOR, foreground=FOREGROUND_COLOR)
 GUI_COMMAND_HELP.place(rely=0.951, relx=0.04, anchor= tk.W)
-GUI_COMMAND_HELP.tag_config("help_green", foreground="green")
-GUI_COMMAND_HELP.tag_config("help_pink", foreground="#d1644a")
-GUI_COMMAND_HELP.tag_config("help_blue", foreground="#2f7afe")
-GUI_COMMAND_HELP.tag_config("help_lightblue", foreground="#FFC300")
-GUI_COMMAND_HELP.tag_config("help_orange", foreground="#e19324")
+GUI_COMMAND_HELP.tag_config("help1", foreground="#41b196")
+GUI_COMMAND_HELP.tag_config("help2", foreground="#cba6f7")
+GUI_COMMAND_HELP.tag_config("help3", foreground="#386ed7")
+GUI_COMMAND_HELP.tag_config("help4", foreground="#f9e2af")
 
 # VARIABLE TEXTBOX
 GUI_VARIABLE_BOX = tk.Text(APP, width=11, height=8, font=("Consolas 16"), background=BACKGROUND_COLOR)
 GUI_VARIABLE_BOX.place(rely=0.105, relx=0.7511)
 GUI_VARIABLE_BOX.config(state="disabled")
 
-GUI_VARIABLE_LABEL = tk.Label(APP, text="║VARS║\n╚====╝", font=("Consolas 20"), fg="lightblue", background=BACKGROUND_COLOR)
+GUI_VARIABLE_LABEL = tk.Label(APP, text="║VARS║\n╚====╝", font=("Consolas 20 bold"), fg="lightblue", background=BACKGROUND_COLOR)
 GUI_VARIABLE_LABEL.place(relx=0.77, rely=-0)
 
 # FUNCTION TEXTBOX
@@ -877,7 +859,7 @@ GUI_FUNCTION_BOX.place(rely=0.105, relx=0.887)
 GUI_FUNCTION_BOX.config(state="disabled")
 
 #GUI FUNCTION LABEL
-GUI_FUNCTION_LABEL = tk.Label(APP, text="║FUNS║\n╚====╝", font=("Consolas 20"), fg="lightblue", background=BACKGROUND_COLOR)
+GUI_FUNCTION_LABEL = tk.Label(APP, text="║FUNS║\n╚====╝", font=("Consolas 20 bold"), fg="lightblue", background=BACKGROUND_COLOR)
 GUI_FUNCTION_LABEL.place(relx=0.905, rely=0)
 
 # CONNECTION KEYS
@@ -894,17 +876,17 @@ GUI_CLEAR_CONSOLE = tk.Button(APP, text="×", fg="red", command = clear_console,
 GUI_CLEAR_CONSOLE.place(relx=0.97, rely=0.4750,anchor=tk.CENTER)
 
 # GUI CONSOLE LABEL
-GUI_CONSOLE_LABEL = tk.Label(APP, text="║ CONSOLE ║\n╚=========╝", font=("Consolas 20"), fg="lightblue", background=BACKGROUND_COLOR)
+GUI_CONSOLE_LABEL = tk.Label(APP, text="║ CONSOLE ║\n╚=========╝", font=("Consolas 20 bold"), fg="lightblue", background=BACKGROUND_COLOR)
 GUI_CONSOLE_LABEL.place(relx=0.81, rely=0.42)
 
 # MENU BAR
 GUI_MENUBAR = tk.Menu()
-GUI_FILE_MENU = tk.Menu(GUI_MENUBAR, tearoff=False, background=BACKGROUND_COLOR)
+GUI_FILE_MENU = tk.Menu(GUI_MENUBAR, tearoff=False, background=BACKGROUND_COLOR, foreground=FOREGROUND_COLOR)
 GUI_FILE_MENU.add_command(label="New", accelerator="Ctrl+n", command=new_file)
 GUI_FILE_MENU.add_command(label="Open", accelerator="Ctrl+o", command=open_file_from_dialog)
 
 # RECENT FILES
-GUI_RECENT_FILES_MENU = tk.Menu(GUI_FILE_MENU, tearoff=False, background=BACKGROUND_COLOR)
+GUI_RECENT_FILES_MENU = tk.Menu(GUI_FILE_MENU, tearoff=False, background=BACKGROUND_COLOR, foreground=FOREGROUND_COLOR)
 GUI_FILE_MENU.add_cascade(menu=GUI_RECENT_FILES_MENU, label="Open Recents")
 GUI_FILE_MENU.add_command(label="Save", accelerator="Ctrl+s", command=save_file)
 GUI_FILE_MENU.add_separator()
@@ -912,7 +894,7 @@ GUI_FILE_MENU.add_command(label="Exit", accelerator="Ctrl+e", command=exit)
 GUI_MENUBAR.add_cascade(menu=GUI_FILE_MENU, label="File")
 
 # GUI INSERT MENU
-GUI_INSERT_MENU = tk.Menu(GUI_MENUBAR, tearoff=False, background=BACKGROUND_COLOR)
+GUI_INSERT_MENU = tk.Menu(GUI_MENUBAR, tearoff=False, background=BACKGROUND_COLOR, foreground=FOREGROUND_COLOR)
 GUI_INSERT_MENU.add_command(label = "New Variable",  accelerator="Ctrl+Shift+v", command = insert_new_variable)
 GUI_INSERT_MENU.add_command(label = "New Function",  accelerator="Ctrl+Shift+f", command = insert_new_function)
 GUI_INSERT_MENU.add_command(label = "New For Loop",  accelerator="Ctrl+Alt+o", command = insert_new_for_loop)
@@ -921,19 +903,15 @@ GUI_INSERT_MENU.add_command(label = "New If Else",  accelerator="Ctrl+Shift+I", 
 GUI_MENUBAR.add_cascade(menu=GUI_INSERT_MENU, label="Insert")
 
 # GUI RUN MENU
-GUI_RUN_MENU = tk.Menu(GUI_MENUBAR, tearoff=False)
+GUI_RUN_MENU = tk.Menu(GUI_MENUBAR, tearoff=False, background=BACKGROUND_COLOR, foreground=FOREGROUND_COLOR)
 GUI_RUN_MENU.add_command(label="Run", accelerator="F5", command=run_file)
 GUI_MENUBAR.add_cascade(menu=GUI_RUN_MENU, label="Run")
 
 # GUI CONFIGURATION MENU
-GUI_CONFIGURATION_MENU = tk.Menu(GUI_MENUBAR, tearoff=False)
+GUI_CONFIGURATION_MENU = tk.Menu(GUI_MENUBAR, tearoff=False, background=BACKGROUND_COLOR, foreground=FOREGROUND_COLOR)
 GUI_CONFIGURATION_MENU.add_command(label = "Intepreter",  accelerator="Ctrl+i", command = interpreter_configuration)
 GUI_CONFIGURATION_MENU.add_command(label = "Developer Mode ✗",  accelerator="Ctrl+d", command = developer_mode)
 GUI_MENUBAR.add_cascade(menu=GUI_CONFIGURATION_MENU, label="Configure")
-
-title_bar.bind("<ButtonPress-1>", start_move)
-title_bar.bind("<ButtonRelease-1>", stop_move)
-title_bar.bind("<B1-Motion>", do_move)
 
 # MENU UPDATE
 APP.config(menu=GUI_MENUBAR)

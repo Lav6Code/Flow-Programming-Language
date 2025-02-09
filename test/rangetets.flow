@@ -1,0 +1,3 @@
+for("i", seq(9), (
+output(i);
+));
