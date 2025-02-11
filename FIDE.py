@@ -431,7 +431,7 @@ def save_file(event=None):
 def update_recents():
     global GUI_RECENT_FILES_MENU
     # load recent files
-    with open("fide/recents.txt","r") as recents:
+    with open("./recents.txt","r") as recents:
         GUI_RECENT_FILES_MENU.delete(0,4)
         for r in recents.readlines():
             r = r.rstrip()
@@ -550,7 +550,7 @@ while( ,(
 def insert_new_for_loop(event = None):
     global GUI_TEXTBOX
 
-    new_for_loop_test = '''for( ,(
+    new_for_loop_test = '''for("i", ,(
 
 ));\n'''
     GUI_TEXTBOX.insert(GUI_TEXTBOX.index(tk.INSERT), new_for_loop_test)
@@ -572,16 +572,26 @@ def command_help(c):
     global GUI_COMMAND_HELP
 
     string = COMMANDS_DESCRIPTION[c]
+    length_of_help = 84
+    words = string.split(" ")
+    result = []
+    current_line = ""
 
-    # splitting
+    for word in words:
+        if len(current_line) + len(word) + 1 > length_of_help:
+            result.append(current_line)
+            current_line = word
+        else:
+            if current_line:
+                current_line += " " + word
+            else:
+                current_line = word
 
-    for i in range(len(string)):
-        if i == 80:
-            for _, el in enumerate(string[::80][::-1]):
-                if el == " ":
-                    string = list(string)
-                    string.insert(i, "\n")
-                    string = "".join(string)
+    if current_line:
+        result.append(current_line)
+    
+    string = "\n".join(result)
+
     GUI_COMMAND_HELP.config(state="normal")
     GUI_COMMAND_HELP.insert("1.0", string)
     # highlight
