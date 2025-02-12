@@ -1,0 +1,3 @@
+for("Index", seq(5), (
+output(Index);
+));

@@ -1,0 +1,1 @@
+for("index", set(1,5,7), (output(index);));

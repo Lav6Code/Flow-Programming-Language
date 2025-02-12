@@ -120,7 +120,7 @@ APP.iconbitmap(".\\assets\\fide_icon.ico")
 
 # FLOW SETUP
 ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0"]
-RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection", "union", "seq","disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not"]
+RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection","sort", "reverse" "union", "seq","disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not"]
 GREEN_KEYWORDS = ['"']
 LIGHT_BLUE_KEYWORDS = [";", "(", ")"]
 PINK_KEYWORDS = ["TRUE", "FALSE"]
@@ -154,6 +154,8 @@ COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concati
                         "union":"union(set1 [set], set2 [set]) -> union of two sets (set of unique elements of both sets combined)",
                         "disjunction":"disjunction(set1 [set], set2 [set]) -> the disjunction of the two sets (set of elements that are uniqe to each given set)",
                         "superset":"superset(set1 [set], set2 [set]) -> TRUE if all elements of set2 are in set1, otherwise FALSE",
+                        "reverse":"reverse(set1 [set]) -> reversed set of set1",
+                        'sort':'sort(set1 [set], *scale [txt]) -> sorted set1 in ascending (<) or descending (>) order. The scale is optional.',
                         "subset":"subset(set1 [set], set2 [set]) -> TRUE if all elements of set1 are in set2, otherwise FALSE",
                         "len":"len(arg [set]) -> length of set arg",
                         "add":"add(arg [set], app [txt|num|bln|set]) -> set produced by appending app to the set arg",
@@ -411,7 +413,7 @@ def save_file(event=None):
 
     # RECENTS MANAGEMENT
     recents_changed = False
-    with open('fide/recents.txt', 'r') as recents_file:
+    with open('./recents.txt', 'r') as recents_file:
         recents = recents_file.readlines()
         recents = [line.rstrip() for line in recents]
         if FILENAME not in recents:
@@ -421,7 +423,7 @@ def save_file(event=None):
             recents_changed = True
     if recents_changed:
         try:
-            with open('fide/recents.txt', 'w') as recents_file:
+            with open('./recents.txt', 'w') as recents_file:
                 recents_file.write("\n".join(recents))
         except:
             ...
@@ -484,7 +486,7 @@ def open_file(filename):
 
     # RECENTS MANAGEMENT
     recents_changed = False
-    with open('fide/recents.txt', 'r') as recents_file:
+    with open('./recents.txt', 'r') as recents_file:
         recents = recents_file.readlines()
         recents = [line.rstrip() for line in recents]
         if FILENAME not in recents:
@@ -493,7 +495,7 @@ def open_file(filename):
                 recents.pop(4)
             recents_changed = True
     if recents_changed:
-        with open('fide/recents.txt', 'w') as recents_file:
+        with open('./recents.txt', 'w') as recents_file:
             recents_file.write("\n".join(recents))
 
     # reading the file
@@ -819,8 +821,8 @@ def move_cursor_to_last_line():
 print("\nrunning FIDE...")
 
 # create recents.txt
-if not os.path.exists("recents.txt"):
-    f = open("recents.txt", "x")
+if not os.path.exists("./recents.txt"):
+    f = open("./recents.txt", "x")
     f.close()
 
 # ------- WIDGET -------- #
@@ -838,7 +840,7 @@ GUI_TEXTBOX.tag_config("PURPLE", foreground="#634a7f")
 GUI_TEXTBOX.tag_config("PINK", foreground="#e57bff")
 GUI_TEXTBOX.tag_config("LIGHT_BLUE", foreground="#a5baaf")
 GUI_TEXTBOX.tag_config("BOLD", font=("Consolas", 19, "bold"))
-GUI_TEXTBOX.tag_config("ITALIC", font=("Consolas", 19, "italic"))
+GUI_TEXTBOX.tag_config("ITALIC", font=("Consolas", 19, "italic"), foreground="#41b196")
 GUI_TEXTBOX.tag_config("HIGHLIGHT", background="blue")
 GUI_TEXTBOX.config(spacing1=5)
 
@@ -856,7 +858,7 @@ GUI_COMMAND_HELP.tag_config("help3", foreground="#386ed7")
 GUI_COMMAND_HELP.tag_config("help4", foreground="#f9e2af")
 
 # VARIABLE TEXTBOX
-GUI_VARIABLE_BOX = tk.Text(APP, width=11, height=8, font=("Consolas 16"), background=BACKGROUND_COLOR)
+GUI_VARIABLE_BOX = tk.Text(APP, width=11, height=8, font=("Consolas 16"), background=BACKGROUND_COLOR, foreground=FOREGROUND_COLOR)
 GUI_VARIABLE_BOX.place(rely=0.105, relx=0.7511)
 GUI_VARIABLE_BOX.config(state="disabled")
 
@@ -864,7 +866,7 @@ GUI_VARIABLE_LABEL = tk.Label(APP, text="║VARS║\n╚====╝", font=("Consola
 GUI_VARIABLE_LABEL.place(relx=0.77, rely=-0)
 
 # FUNCTION TEXTBOX
-GUI_FUNCTION_BOX = tk.Text(APP, width=11, height=8, font=("Consolas 16"), background=BACKGROUND_COLOR)
+GUI_FUNCTION_BOX = tk.Text(APP, width=11, height=8, font=("Consolas 16"), background=BACKGROUND_COLOR, foreground=FOREGROUND_COLOR)
 GUI_FUNCTION_BOX.place(rely=0.105, relx=0.887)
 GUI_FUNCTION_BOX.config(state="disabled")
 

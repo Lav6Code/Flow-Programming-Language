@@ -20,7 +20,7 @@ COMMANDS = [None,
             "if", "for", "while", "loop", "seq",  # FLOW
             "set", 'var', # OBJECT CREATIONS
             "num", "txt",  #TYPES
-            "disjunction", "subset", "superset", "add", "union", # SET RELATED
+            "disjunction", "subset", "superset", "add", "union", "sort", "reverse", "filter", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", "draw", # FUNCTION RELATED
             "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", "CircumCircle", #SHAPES
@@ -38,14 +38,12 @@ def repeating_el(lists):
     return list(set(non_repeating_elements))
         
 def is_int(strs):
-    if len(str(strs)) == 0:
+    
+    try:
+        _ = eval(strs)
+        return True
+    except:
         return False
-    isitint = True
-    for i in str(strs):
-        if i not in "0123456789":
-            isitint = False
-            break
-    return isitint
 
 def import_function_from_path(path_to_file, function_name):
     # Load the module from the file path
@@ -752,8 +750,28 @@ def execute(token): # args with ,
             return list(set(INTERSECTED))
         else:
             raise_error("ARGUMENT ERROR: trying to intersect elements that are wrong TYPE, both elements should be SET", token)
-            
 
+    elif command == "reverse":
+        if type(args[0].sol) == list:
+            return args[0].sol[::-1]
+        else:
+            raise_error("ARGUMENT ERROR: reverse command can only be executed on SET type variables.")
+        
+    elif command == "sort":
+        if len(args) == 2:
+            if type(args[1].sol) == str and args[1].sol.lower() == "<" and type(args[0].sol) == list:
+                return sorted(args[0].sol)
+            elif type(args[1].sol) == str and args[1].sol.lower() == ">" and type(args[0].sol) == list:
+                return sorted(args[0].sol)[::-1]
+            
+            else:
+                raise_error('ARGUMENT ERROR: sort command can only be executed on SET type values, second value can be TXT type, use "<" to sort it from smallest to highest and ">" for opposite.')
+        else:
+            if type(args[0].sol) == list:
+                return sorted(args[0].sol)
+            else:
+                raise_error("ARGUMENT ERROR: sort command can only be executed on SET type values.", token)
+            
     elif command == "subset":
         if type(args[0].sol) == list and type(args[1].sol) == list:
             #QUICK CHECK
@@ -869,7 +887,6 @@ def execute(token): # args with ,
         
         else:
             raise_error("ARGUMENT ERROR: Input's arguments should only be 'num' or 'txt' depending on what type does a user wants to convert value into.", token)
-            
 
     elif command == "var":
         if type(args[1].sol) in [int, str, bool, list, dict]:
