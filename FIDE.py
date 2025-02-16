@@ -119,8 +119,8 @@ APP.resizable(False, False)
 APP.iconbitmap(".\\assets\\fide_icon.ico")
 
 # FLOW SETUP
-ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0"]
-RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection","sort", "reverse" "union", "seq","disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not"]
+ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", "-1", "-2", "-3", "-4", "-5", "-6","-7", "-8", "-9"]
+RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection","sort", "reverse" "union", "seq", "filter", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not"]
 GREEN_KEYWORDS = ['"']
 LIGHT_BLUE_KEYWORDS = [";", "(", ")"]
 PINK_KEYWORDS = ["TRUE", "FALSE"]
@@ -148,6 +148,7 @@ COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concati
                         "loop":"loop(n [num], codeblock [blk]) -> runs the codeblock n times",
                         "for":"for(index [txt], array [set], codeblock [blk]) -> iterates through array, assigning each element to index and executing codeblock",
                         "seq":"seq([start] [num], stop [num], [step] [num]) – Returns a 'set' from 'start' to stop with step 'step'. Defaults: start=0, step=1",
+                        "filter":"filter(index [txt], array [set], (cond [bln])) -> return all arguments that satisfy cond",
                         "while":"while(condition [bln], codeblock [blk]) -> repeatedly run codeblock, while the condition is TRUE",
                         "fetch":"fetch(set, num) -> the num-th element of the set",
                         "intersection":"intersection(set1 [set], set2 [set]) -> the intersection of the two sets (set of elements that are present in both given sets)",

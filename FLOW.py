@@ -14,7 +14,7 @@ VARS = {}
 FUNS = {}
 # Same as in the FIDE.py
 COMMANDS = [None,
-            '+', '*', "-", "/","sum",  # MATH
+            '+', '*', "-", "/", "sum",  # MATH
             ">", "<", "=", ">=", "<=", "!=", "max", "min", "not", "and", "or", "xor", # LOGIC
             'output', "input", # USER INTERACTION
             "if", "for", "while", "loop", "seq",  # FLOW
@@ -75,6 +75,7 @@ class Token:
             self.dsc = command + "(" + ','.join(argstr) + ")"
         else:
             self.dsc = ';'.join(argstr)
+            
         #print(argstr)
             
         self.sol = None
@@ -141,6 +142,7 @@ class Token:
                 self.sol = execute(self)
 
         elif self.typ == "BLK" and forced:
+            
             for a in self.arg:
                 a.evaluate()
             # self.sol = True # execute(None, self.arg)
@@ -582,7 +584,7 @@ def execute(token): # args with ,
             return args[0].sol != args[1].sol
         else:
             raise_error("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM", token)
-            
+
     elif command == "not":
         if type(args[0].sol) == bool:
             return not(args[0].sol)
@@ -690,6 +692,30 @@ def execute(token): # args with ,
             print(args[0].sol)
         #return True
     
+    elif command == "filter":
+        ret = []
+        if len(args[2].arg) != 1:
+            raise_error("ARGUMENT ERROR: Condiditon should be only one, in other words only one condition inside the parenthesis", token)
+        if type(args[0].sol) == str and type(args[1].sol) == list and args[2].typ == "BLK":
+
+            VARS[args[0].sol] = 0
+            for i in args[1].sol:
+                VARS[args[0].sol] = i
+                tok = []
+                cond = tokenize(args[2].dsc, tok)
+                cond.evaluate()
+                if cond.sol:
+                    ret.append(i)
+            VARS.pop(args[0].sol)
+                
+            return ret
+
+        raise_error("ARGUMENT ERROR: filter command should have first argument TXT, second SET and last one BLK type", token)
+
+    elif command == "return":
+
+        return args[0].sol
+
     elif command == "fetch":
         if len(args) == 2:
             set_ = args[0].sol
@@ -948,7 +974,7 @@ def execute(token): # args with ,
         raise_error(f"SYNTAX ERROR: {command} is not a command or a variable.", token)
         
 def tokenize(code, tokens_list=None):
-    
+
     if DEVELOPER_MODE:
         print(f'DEBUG: - tokenizing: {code}')
 
