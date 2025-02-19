@@ -124,7 +124,7 @@ RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch",
 GREEN_KEYWORDS = ['"']
 LIGHT_BLUE_KEYWORDS = [";", "(", ")"]
 PINK_KEYWORDS = ["TRUE", "FALSE"]
-BLUE_KEYWORDS = ["Circle", "Triangle", "Polyline", "Line", "draw"]
+BLUE_KEYWORDS = ["Circle", "Triangle", "Polyline", "Line", "draw", "Polygon"]
 PURPLE_KEYWORDS = ["$"] # COMMENT
 COMMANDS = GREEN_KEYWORDS+ RED_KEYWORDS + BLUE_KEYWORDS + PINK_KEYWORDS + PURPLE_KEYWORDS + ORANGE_KEYWORDS + BLUE_KEYWORDS
 COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concatination of arg1 and arg2",
@@ -177,6 +177,7 @@ COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concati
                         "Circle":"Circle(center [set], radius [num]) -> object with name, center, perimeter, area, diameter attributes that represent a circle",
                         "InCircle":"Circle(triangle [obj]) -> object with name, center, perimeter, area, diameter attributes represent a circle inside a triangle",
                         "draw":"draw(shape [obj], shape [obj]...) -> opens new window and visually shows the shapes",
+                        "Polygon":"Polygon(point1 [set], point2 [set]...) -> object with name, points, perimeter, area attributes that represent a polygon"
                         }
 
 HELP_KEYWORD1 = list(COMMANDS_DESCRIPTION.keys())

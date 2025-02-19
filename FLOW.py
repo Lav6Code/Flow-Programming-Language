@@ -23,7 +23,7 @@ COMMANDS = [None,
             "disjunction", "subset", "superset", "add", "union", "sort", "reverse", "filter", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", "draw", # FUNCTION RELATED
-            "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", "CircumCircle", #SHAPES
+            "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", "CircumCircle", "Polygon", #SHAPES
             "get", "object", "attr" # OBJECT RELATED
             ]
 BOOLS = ["TRUE", "FALSE"]
@@ -247,7 +247,47 @@ def execute(token): # args with ,
                     "perimeter": args[1].sol*2*math.pi,
                     "area": args[1].sol**2*math.pi}
             return objc
-            
+    
+    elif command == "Polygon":
+        for i in args: 
+            if type(i.sol) != list: 
+                raise_error("ARGUMENT ERROR: Trying to create a Polygon object, wrong arguments, should be sets points (X,Y positions).", token)
+                for j in i:
+                    if type(j) != int:
+                        raise_error("ARGUMENT ERROR: Trying to create a Polygon object with points which X, Y coordinated are not num type.", token)    
+
+
+        # Making the object's atributes
+        # Points
+        points = []
+        for i in args:
+            points.append(i.sol)
+        # Sides
+        sides = []
+    
+        for i in range(len(points)):
+            x1, y1 = points[i]
+            x2, y2 = points[(i + 1) % len(points)]  # Connect to the next point, and wrap around
+            distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            sides.append(distance)
+        
+        n = len(points)
+        area = 0
+    
+        for i in range(n):
+            x1, y1 = points[i]
+            x2, y2 = points[(i + 1) % n]  # Wrap around to the first point
+            area += x1 * y2 - y1 * x2
+        area = abs(area/2)
+
+        return {
+                "name":"Polygon", 
+                "points":points,
+                "sides":sides,
+                "area":area, 
+                "perimeter":sum(sides)
+                }
+
     elif command == "Triangle":
         for i in args: 
             if type(i.sol) != list: 
