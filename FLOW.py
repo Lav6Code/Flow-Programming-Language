@@ -696,6 +696,8 @@ def execute(token): # args with ,
         ret = []
         if len(args[2].arg) != 1:
             raise_error("ARGUMENT ERROR: Condiditon should be only one, in other words only one condition inside the parenthesis", token)
+        if type(args[2][0].sol) != bool:
+            raise_error("ARGUMENT ERROR: Last argument in filter command needs to be condition with value TRUE or FALSE")
         if type(args[0].sol) == str and type(args[1].sol) == list and args[2].typ == "BLK":
 
             VARS[args[0].sol] = 0
