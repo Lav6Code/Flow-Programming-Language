@@ -363,21 +363,6 @@ def update_text(a=None):
     check_autocompletion()
     update_line_counter()
 
-def auto_finish(event):
-    global GUI_TEXTBOX
-    GUI_TEXTBOX.edit_modified(False)
-    
-    if event.keysym == "A":  # For the Enter key, you can do something special
-        print("You pressed Enter!")
-    elif event.keysym == "BackSpace":
-        print("You pressed Backspace!")
-    
-    char_mapping = {"(": ")", '"': '"', "[": "]", "{": "}"}
-    
-    if event.char in char_mapping.keys():
-        current_position = GUI_TEXTBOX.index(tk.INSERT)
-        GUI_TEXTBOX.insert(current_position, char_mapping[event.char])
-        GUI_TEXTBOX.mark_set(tk.INSERT, current_position)
 
 def focus_text_widget():
     GUI_TEXTBOX.focus_force()
