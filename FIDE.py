@@ -124,7 +124,7 @@ RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch",
 GREEN_KEYWORDS = ['"']
 LIGHT_BLUE_KEYWORDS = [";", "(", ")"]
 PINK_KEYWORDS = ["TRUE", "FALSE"]
-BLUE_KEYWORDS = ["Circle", "Triangle", "Polyline", "Line", "draw", "Polygon"]
+BLUE_KEYWORDS = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line", "draw", "Polygon"]
 PURPLE_KEYWORDS = ["$"] # COMMENT
 COMMANDS = GREEN_KEYWORDS+ RED_KEYWORDS + BLUE_KEYWORDS + PINK_KEYWORDS + PURPLE_KEYWORDS + ORANGE_KEYWORDS + BLUE_KEYWORDS
 COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concatination of arg1 and arg2",
@@ -175,7 +175,8 @@ COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concati
                         "Polyine":"Polyine(point [set], point [set]...) -> object with name, points, length attributes",
                         "Triangle":"Triangle(point [set], point [set], point [set]) -> object with name, points, perimeter, area, sides attributes",
                         "Circle":"Circle(center [set], radius [num]) -> object with name, center, perimeter, area, diameter attributes that represent a circle",
-                        "InCircle":"Circle(triangle [obj]) -> object with name, center, perimeter, area, diameter attributes represent a circle inside a triangle",
+                        "InCircle":"InCircle(triangle [obj]) -> object with name, center, perimeter, area, diameter attributes represent a circle inside the triangle",
+                        "CircumCircle":"CircumCircle(triangle [obj]) -> object with name, center, perimeter, area, diameter attributes represent a circle outside the triangle",
                         "draw":"draw(shape [obj], shape [obj]...) -> opens new window and visually shows the shapes",
                         "Polygon":"Polygon(point1 [set], point2 [set]...) -> object with name, points, perimeter, area attributes that represent a polygon"
                         }
@@ -589,7 +590,6 @@ def command_help(c):
     GUI_COMMAND_HELP.tag_remove("help3", 1.0, tk.END)
     GUI_COMMAND_HELP.tag_remove("help4", 1.0, tk.END)
     GUI_COMMAND_HELP.tag_remove("help5", 1.0, tk.END)
-
 
     for word in HELP_KEYWORD1:
         highlight(word, "help1", GUI_COMMAND_HELP)

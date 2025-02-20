@@ -145,7 +145,6 @@ class Token:
             
             for a in self.arg:
                 a.evaluate()
-            # self.sol = True # execute(None, self.arg)
         
         elif self.typ == "BLN":
             if self.arg[0] in BOOLS: # IT NEEDS TO BE FOR SAFETY PURPOSES
@@ -230,7 +229,9 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: Error while settings objects name attribute, it should be TXT", token)
 
     elif command == "draw":
-        if type(args[0].sol) == dict and "points" in args[0].sol.keys():
+
+        print(args[0].sol)
+        if type(args[0].sol) == dict:
             argsol = []
             for i in args: argsol.append(i.sol)
             d.start(argsol)
@@ -615,6 +616,8 @@ def execute(token): # args with ,
 
     elif command == "=":
         if type(args[0].sol) == int and type(args[1].sol) == int:
+            return args[0].sol == args[1].sol
+        elif type(args[0].sol) == str and type(args[1].sol) == str:
             return args[0].sol == args[1].sol
         else:
             raise_error("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM", token)

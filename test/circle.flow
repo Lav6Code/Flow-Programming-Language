@@ -1,0 +1,17 @@
+var("t", 
+	Triangle(
+		set(1,1),
+		set(5,5),
+		set(1,5)
+	)
+);
+output(t);
+var("w", input("txt"));
+if(=(w, "U"), 
+(
+	draw(t, InCircle(t));
+),
+(
+	draw(t, CircumCircle(t));
+)
+);
