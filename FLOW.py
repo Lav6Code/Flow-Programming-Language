@@ -10,7 +10,7 @@ DEVELOPER_MODE = False
 
 FORBIDDEN_CHARS = ['~']
 
-VARS = {}       
+VARS = {"pi": 3.1415926535}       
 FUNS = {}
 # Same as in the FIDE.py
 COMMANDS = [None,
@@ -966,7 +966,7 @@ def execute(token): # args with ,
 
     elif command == "var":
         if type(args[1].sol) in [int, str, bool, list, dict]:
-            if args[0].sol not in BOOLS:
+            if args[0].sol not in BOOLS and args[0].sol != "pi":
                 #print(VARS)
                 VARS[args[0].sol] = args[1].sol
                 #print(VARS)

@@ -8,7 +8,7 @@ import subprocess
 import threading
 import queue
 from pathlib import Path
-import ctypes
+import re
 
 # ------- INTERACTIVE CONSOLE -------- #
 class InteractiveConsole(tk.Frame):
@@ -124,10 +124,12 @@ RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch",
 GREEN_KEYWORDS = ['"']
 LIGHT_BLUE_KEYWORDS = [";", "(", ")"]
 PINK_KEYWORDS = ["TRUE", "FALSE"]
-BLUE_KEYWORDS = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line", "draw", "Polygon"]
+BLUE_KEYWORDS = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line", "draw", "Polygon", "pi"]
 PURPLE_KEYWORDS = ["$"] # COMMENT
 COMMANDS = GREEN_KEYWORDS+ RED_KEYWORDS + BLUE_KEYWORDS + PINK_KEYWORDS + PURPLE_KEYWORDS + ORANGE_KEYWORDS + BLUE_KEYWORDS
-COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concatination of arg1 and arg2",
+COMMANDS_DESCRIPTION = {
+                        "pi":"mathematical constant",
+                        "+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concatination of arg1 and arg2",
                         "-":"-(arg1 [num], arg2 [num]) -> substraction of arg1 and arg2",
                         "*":"*(arg1 [num], arg2 [num]) -> procuct of arg1 and arg2",
                         "/":"/(arg1 [num], arg2 [num]) -> values that are going to be divided",
