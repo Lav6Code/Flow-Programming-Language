@@ -152,7 +152,7 @@ COMMANDS_DESCRIPTION = {"+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concati
                         "while":"while(condition [bln], codeblock [blk]) -> repeatedly run codeblock, while the condition is TRUE",
                         "fetch":"fetch(set, num) -> the num-th element of the set",
                         "intersection":"intersection(set1 [set], set2 [set]) -> the intersection of the two sets (set of elements that are present in both given sets)",
-                        "union":"union(set1 [set], set2 [set]) -> union of two sets (set of unique elements of both sets combined)",
+                        "union":"union(set1 [set], set2 [set]...) -> union of two or more sets (set of unique elements of both sets combined)",
                         "disjunction":"disjunction(set1 [set], set2 [set]) -> the disjunction of the two sets (set of elements that are uniqe to each given set)",
                         "superset":"superset(set1 [set], set2 [set]) -> TRUE if all elements of set2 are in set1, otherwise FALSE",
                         "reverse":"reverse(set1 [set]) -> reversed set of set1",

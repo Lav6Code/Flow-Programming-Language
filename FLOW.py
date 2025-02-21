@@ -560,14 +560,19 @@ def execute(token): # args with ,
             obj = args[0].sol
             var = args[0].dsc
             obj[args[1].sol] = args[2].sol
-            VARS[var] = obj
+            if var in VARS:
+                VARS[var] = obj
+            else:
+                raise_error("")
         else:
             raise_error("ARGUMENT ERROR: Wrong type declaration while trying to set specific attribute to a object.", token)
     # Operators
     elif command == "+":
-        if type(args[0].sol) == str:
+        if type(args[0].sol) == list and type(args[1].sol) == list:
+            return args[0].sol+args[1].sol
+        elif type(args[0].sol) == str and type(args[1].sol) == str:
             return (args[0].sol) + (args[1].sol)
-        if type(args[0].sol)==int and type(args[1].sol)==int:
+        elif type(args[0].sol)==int and type(args[1].sol)==int:
             return int(args[0].sol) + int(args[1].sol)
         else:
             raise_error("ARGUMENT ERROR: Trying to add(+) two values with different type.", token)
@@ -794,15 +799,15 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: trying to add an element into a wrong TYPE, should be SET", token)
 
     elif command == "union":
-        UNION_SET = []
+        union_set = []
         for a in args:
             if type(a.sol) == list:
-                UNION_SET += a.sol
+                union_set += a.sol
             else:
                 raise_error("ARGUMENT ERROR: trying to unionize elements that are wrong TYPE, both elements should be SET", token)
                 
-        UNION_SET = list(set(UNION_SET))
-        return UNION_SET
+        union_set = list(set(union_set))
+        return union_set
     
     elif command == "len":
         if type(args[0].sol) == list:
