@@ -1,0 +1,4 @@
+var("t", Triangle(set(1,1), set(1,5), set(5,5)));
+var("g", Graph(1, 0));
+output(get_y(g, 2));
+draw(t);

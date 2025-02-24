@@ -1,28 +1,19 @@
-class Solution():
+import turtle
 
-    def numberToWords(num: int) -> str:
-        one_digit = ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", ""]
-        two_digit = ["Ten","Twenty", "Thirty", "Fourty", "Fifty", "Sixty", "Seventy", "Ninety"]
-        teens = ["Eleven", "Twelve", "Thirtheen", "Fourteen", "Fiveteen", "Sixteen", "Seventeen", "Eighteen","Nineteen"]
-        ones = num%10
-        tens = int(str(num//10)[-1])
-        hundreds = int(str(num//100)[-1])
-        thousands = int(str(num//1000)[-1])
-        ten_thousands = int(str(num//10000)[-1])
-        
-        tdigit = ones+tens*10
-        string = []
-        if tdigit> 20:
-            string.append(one_digit[ones-1])
-            string.append(two_digit[tens-1])
-        elif  10 < tdigit < 20:
-            string.append(teens[ones])
-        else:
-            string.append(one_digit[ones-1])
-        
-        string.append("Hundred")
-        string.append(one_digit[hundreds-1])
+# Set up the screen
+screen = turtle.Screen()
 
-        return " ".join(string[::-1])
+# Create a turtle
+t = turtle.Turtle()
 
-print(Solution.numberToWords(435))
+# Rotate the turtle to 45 degrees
+t.setheading(45)
+
+# Write text at the rotated angle
+t.write("Hello, World!", font=("Arial", 16, "normal"))
+
+# Hide the turtle
+t.hideturtle()
+
+# Keep the window open
+turtle.done()

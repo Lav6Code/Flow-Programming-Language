@@ -1,4 +1,1 @@
-C:/Users/Valchichi/Documents/Flow-Programming-Language/test/pi.flow
-C:/Users/Valchichi/Documents/Flow-Programming-Language/test/sets.flow
-C:/Users/Val/Documents/GitHub/Flow-Programming-Language/test/circle.flow
-C:/Users/Val/Documents/GitHub/Flow-Programming-Language/test/drawtest.flow
+C:/Users/Valchichi/Documents/Flow-Programming-Language/test/gfrapgh.flow

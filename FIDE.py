@@ -120,11 +120,11 @@ APP.iconbitmap(".\\assets\\fide_icon.ico")
 
 # FLOW SETUP
 ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", "-1", "-2", "-3", "-4", "-5", "-6","-7", "-8", "-9"]
-RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection","sort", "reverse" "union", "seq", "filter", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not"]
+RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection","sort", "reverse" "union", "seq", "upper", "lower", "filter", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not", "trim", "replace"]
 GREEN_KEYWORDS = ['"']
 LIGHT_BLUE_KEYWORDS = [";", "(", ")"]
 PINK_KEYWORDS = ["TRUE", "FALSE"]
-BLUE_KEYWORDS = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line", "draw", "Polygon", "pi"]
+BLUE_KEYWORDS = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line", "draw", "Polygon", "pi", "get_x", "get_y", "Graph"]
 PURPLE_KEYWORDS = ["$"] # COMMENT
 COMMANDS = GREEN_KEYWORDS+ RED_KEYWORDS + BLUE_KEYWORDS + PINK_KEYWORDS + PURPLE_KEYWORDS + ORANGE_KEYWORDS + BLUE_KEYWORDS
 COMMANDS_DESCRIPTION = {
@@ -167,6 +167,9 @@ COMMANDS_DESCRIPTION = {
                         "num":"num(arg [txt]) -> converts arg into type num, if possible",
                         "txt":"txt(arg [num]) -> converts arg into txt, if possible",
                         "bln":"bln(arg [txt|num]) -> converts arg into bln, if possible",
+                        "upper":"upper(text [txt]) -> capitalizes every character inside text",
+                        "lower":"lower(text [txt]) -> decapitalizes every character inside text",
+                        "replace":"repalce(text [txt], target [txt], replacement [txt]) -> replaces every target with replacement inside text",
                         "sum":"sum(set [set] or el1 [num], el2[num]...) -> sum of all elements in a set, or sum of all arguments (el1, el1...)",
                         "max":"max(set [set] or el1 [num], el2[num]...) -> highest value of all elements in a set, or highest value of all arguments (el1, el1...)",
                         "min":"min(set [set] or el1 [num], el2[num]...) -> lowest value of all elements in a set, or lowest value of all arguments (el1, el1...)",
@@ -176,6 +179,7 @@ COMMANDS_DESCRIPTION = {
                         "Line":"Line(point [set], point [set]) -> object with name, points, length attributes",
                         "Polyine":"Polyine(point [set], point [set]...) -> object with name, points, length attributes",
                         "Triangle":"Triangle(point [set], point [set], point [set]) -> object with name, points, perimeter, area, sides attributes",
+                        "Graph":"Graph(a [num], b [num]) -> object with name, points, perimeter, area, sides attributes and function following y=ax+b where a and b are arguments",
                         "Circle":"Circle(center [set], radius [num]) -> object with name, center, perimeter, area, diameter attributes that represent a circle",
                         "InCircle":"InCircle(triangle [obj]) -> object with name, center, perimeter, area, diameter attributes represent a circle inside the triangle",
                         "CircumCircle":"CircumCircle(triangle [obj]) -> object with name, center, perimeter, area, diameter attributes represent a circle outside the triangle",

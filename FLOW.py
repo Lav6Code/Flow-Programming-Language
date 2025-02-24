@@ -19,11 +19,12 @@ COMMANDS = [None,
             'output', "input", # USER INTERACTION
             "if", "for", "while", "loop", "seq",  # FLOW
             "set", 'var', # OBJECT CREATIONS
+            "lower", "upper", "trim", #TXT MANAGMENT
             "num", "txt",  #TYPES
             "disjunction", "subset", "superset", "add", "union", "sort", "reverse", "filter", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", "draw", # FUNCTION RELATED
-            "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", "CircumCircle", "Polygon", #SHAPES
+            "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", "CircumCircle", "Polygon", "Graph", "get_x", "get_y",  #GEOMETRY
             "get", "object", "attr" # OBJECT RELATED
             ]
 BOOLS = ["TRUE", "FALSE"]
@@ -229,8 +230,6 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: Error while settings objects name attribute, it should be TXT", token)
 
     elif command == "draw":
-
-        print(args[0].sol)
         if type(args[0].sol) == dict:
             argsol = []
             for i in args: argsol.append(i.sol)
@@ -248,6 +247,22 @@ def execute(token): # args with ,
                     "perimeter": args[1].sol*2*math.pi,
                     "area": args[1].sol**2*math.pi}
             return objc
+        
+    elif command == "Graph":
+        if type(args[0].sol) == int and type(args[1].sol) == int:
+            slope = args[0].sol
+            intercept = args[1].sol
+            dot_one = (0, slope*0 + intercept)
+            dot_two = (1, slope*1 + intercept)
+            
+            objc = {"name":"Graph",
+                    "points":[dot_one, dot_two],
+                    "function": f"y={slope}x+{intercept}",
+                    "slope":slope,
+                    "intercept":intercept}
+            return objc
+        else:
+            raise_error("ARGUMENT ERROR: Both arguments in Graph() command should be NUM", token)
     
     elif command == "Polygon":
         for i in args: 
@@ -288,6 +303,26 @@ def execute(token): # args with ,
                 "area":area, 
                 "perimeter":sum(sides)
                 }
+    
+    elif command == "get_x":
+        if type(args[0].sol) == dict and args[0].sol["name"] == "Graph" and type(args[1].sol) == int:
+            a = args[0].sol["slope"]
+            b = args[0].sol["intercept"]
+            y = args[1].sol
+            x = y/a - b
+            return x
+        else:
+            raise_error("ARGUMENT ERROR: While trying to get x from graph, wrong type error occured.")
+    
+    elif command == "get_y":
+        if type(args[0].sol) == dict and args[0].sol["name"] == "Graph" and type(args[1].sol) == int:
+            a = args[0].sol["slope"]
+            b = args[0].sol["intercept"]
+            x = args[1].sol
+            y = a*x+b
+            return y
+        else:
+            raise_error("ARGUMENT ERROR: While trying to get y from graph, wrong type error occured.")
 
     elif command == "Triangle":
         for i in args: 
@@ -570,12 +605,23 @@ def execute(token): # args with ,
     elif command == "+":
         if type(args[0].sol) == list and type(args[1].sol) == list:
             return args[0].sol+args[1].sol
+        
         elif type(args[0].sol) == str and type(args[1].sol) == str:
             return (args[0].sol) + (args[1].sol)
+        
         elif type(args[0].sol)==int and type(args[1].sol)==int:
             return int(args[0].sol) + int(args[1].sol)
+        
+        elif type(args[0].sol)==float and type(args[1].sol)==float:
+            return float(args[0].sol) + float(args[1].sol)
+        
+        elif type(args[0].sol)==int and type(args[1].sol)==float:
+            return float(args[0].sol) + float(args[1].sol)
+        
+        elif type(args[0].sol)==float and type(args[1].sol)==int:
+            return float(args[0].sol) + float(args[1].sol)
         else:
-            raise_error("ARGUMENT ERROR: Trying to add(+) two values with different type.", token)
+            raise_error("ARGUMENT ERROR: Trying to add (+) two values with different or wrong type.", token)
             
     elif command == "*":
         if is_int(args[0].sol) and is_int(args[1].sol):
@@ -810,10 +856,10 @@ def execute(token): # args with ,
         return union_set
     
     elif command == "len":
-        if type(args[0].sol) == list:
+        if type(args[0].sol) == list or type(args[0].sol) == str:
             return len(args[0].sol)
         else:
-            raise_error("ARGUMENT ERROR: Trying to get a lentgh of a wrong type, should be SET.", token)
+            raise_error("ARGUMENT ERROR: Trying to get a lentgh of a wrong type, should be SET or TXT.", token)
             
 
     elif command == "intersection":
@@ -965,7 +1011,7 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: Input's arguments should only be 'num' or 'txt' depending on what type does a user wants to convert value into.", token)
 
     elif command == "var":
-        if type(args[1].sol) in [int, str, bool, list, dict]:
+        if type(args[1].sol) in [int, str, bool, list, dict, float]:
             if args[0].sol not in BOOLS and args[0].sol != "pi":
                 #print(VARS)
                 VARS[args[0].sol] = args[1].sol
@@ -979,7 +1025,8 @@ def execute(token): # args with ,
         #return True
     
     elif command == "func":
-        FUNS[args[0].sol] = args[1]
+        if type(args[0].sol) == str and (args[1].typ) == "BLK":
+            FUNS[args[0].sol] = args[1]
         #return True
 
     elif command == "call":
@@ -1009,11 +1056,56 @@ def execute(token): # args with ,
                 raise_error("TYPE ERROR: Trying to convert non-convertable value into TXT type.", token)
                 
             return str(args[0].sol)
+    
+    elif command == "upper":
+        if type(args[0].sol) == str:
+            return args[0].sol.upper()
+        else:
+            raise_error(f"ARGUMENT ERROR: Wrong type declaration while trying to capitalize {args[0].typ} value, should be TXT", token)
 
+    elif command == "lower":
+        if type(args[0].sol) == str:
+            return args[0].sol.lower()
+        else:
+            raise_error(f"ARGUMENT ERROR: Wrong type declaration while trying to decapitalize {args[0].typ} value, should be TXT", token)
+    
+    elif command == "trim":
+        if type(args[0].sol) == str:
+            v = args[0].sol
+            for i,c in enumerate(args[0].sol):
+                if c != " ":
+                    break
+                else:
+                    v = list(v)
+                    v.pop(i)
+                    v = "".join(v)
+            v = v[::-1]
+            for i,c in enumerate(v):
+                if c != " ":
+                    break
+                else:
+                    v = list(v)
+                    v.pop(i)
+                    v = "".join(v)
+            return v
+        else:
+            raise_error("ARGUMENT ERROR: Trying to trim a non TXT value.")
+    
+    elif command == "replace":
+        if args[0].sol == str and args[1].sol == str and args[2].sol == str:
+            value = args[0].sol
+            replaces = args[1].sol
+            replacement = args[2].sol
+            return value.replace(replaces, replacement)
+        else:
+            raise_error("ARGUMENT ERROR: Can't replace values that are not TXT type.")
+        
     elif command == "set":
         lst = []
         if len(args) == 1 and args[0].sol == "_":
             return lst
+        elif len(args) == 1 and type(args[0].sol) == str:
+            return list(args[0].sol)
 
         for a in args:
             lst.append(a.sol)

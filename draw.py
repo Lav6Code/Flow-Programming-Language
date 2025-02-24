@@ -1,5 +1,6 @@
 import turtle
-import tkinter
+import math
+from PIL import Image, ImageDraw, ImageFont
 
 def calculate_global_extent(objects):
     """Calculate the maximum extent of all objects to adjust the grid size."""
@@ -13,6 +14,10 @@ def calculate_global_extent(objects):
             radius = obj["radius"]
             max_x = max(max_x, center_x + radius)
             max_y = max(max_y, center_y + radius)
+        if obj["name"] == "Graph":
+            for x, y in obj["points"]:
+                max_x = max(max_x, x)
+                max_y = max(max_y, y)
         elif obj["name"] in ["Triangle", "Polyline", "Line", "Rectangle"]:
             for x, y in obj["points"]:
                 max_x = max(max_x, x)
@@ -85,6 +90,50 @@ def scale_points(points, screen_width, screen_height, max_x, max_y, margin=50):
     origin_y = -screen_height // 2 + margin
     return [(origin_x + x * step, origin_y + y * step) for x, y in points]
 
+import math
+import turtle as t
+
+def draw_graph(points, function, screen_width, screen_height, max_x, max_y):
+    # Scaled points for drawing
+    scaled_points = scale_points(points, screen_width, screen_height, max_x, max_y)
+    
+    x1, y1 = scaled_points[0]
+    x2, y2 = scaled_points[1]
+    
+    # Calculate the direction (slope) between the two points
+    dx = x2 - x1
+    dy = y2 - y1
+    
+    # Extension factor
+    extension = 1000  # Length of the extended line
+    
+    # Normalize the direction (dx, dy) to avoid very large numbers
+    length = math.sqrt(dx**2 + dy**2)
+    dx /= length
+    dy /= length
+    
+    # Calculate the two extreme points for the extended line
+    x3 = x1 - extension * dx
+    y3 = y1 - extension * dy
+    
+    x4 = x2 + extension * dx
+    y4 = y2 + extension * dy
+    
+    # Draw the extended line
+    t.pensize(3)
+    t.penup()
+    t.goto(x3, y3)
+    t.pendown()
+    t.goto(x4, y4)
+
+    # Logic for function label orientation
+    angle_degrees = math.degrees(math.atan2(y4 - y3, x4 - x3))
+    
+    t.penup()
+    t.goto((x1 + x4) / 2, (y1 + y4) / 2)  # Position text at the midpoint of the line
+    t.write(function, align="center", font=("Arial", 12, "normal"))
+
+
 def draw_polygon(points, screen_width, screen_height, max_x, max_y):
     scaled_points = scale_points(points, screen_width, screen_height, max_x, max_y)
     t.pensize(3)
@@ -143,6 +192,8 @@ def start(objects):
             draw_polyline(obj["points"], screen_width, screen_height, max_x, max_y)
         elif obj["name"] in ["Triangle", "Rectangle"]:
             draw_polygon(obj["points"], screen_width, screen_height, max_x, max_y)
+        elif obj["name"] == "Graph":
+            draw_graph(obj["points"], obj["function"], screen_width, screen_height, max_x, max_y)
 
     screen.update()
     turtle.done()
