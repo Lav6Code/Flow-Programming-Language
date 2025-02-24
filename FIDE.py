@@ -120,11 +120,11 @@ APP.iconbitmap(".\\assets\\fide_icon.ico")
 
 # FLOW SETUP
 ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", "-1", "-2", "-3", "-4", "-5", "-6","-7", "-8", "-9"]
-RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection","sort", "reverse" "union", "seq", "upper", "lower", "filter", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not", "trim", "replace"]
+RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection","sort", "reverse" "union", "reverse", "remove", "seq", "upper", "lower", "filter", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not", "trim", "replace",  "get_x", "get_y"]
 GREEN_KEYWORDS = ['"']
 LIGHT_BLUE_KEYWORDS = [";", "(", ")"]
 PINK_KEYWORDS = ["TRUE", "FALSE"]
-BLUE_KEYWORDS = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line", "draw", "Polygon", "pi", "get_x", "get_y", "Graph"]
+BLUE_KEYWORDS = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line", "draw", "Polygon", "pi", "Graph"]
 PURPLE_KEYWORDS = ["$"] # COMMENT
 COMMANDS = GREEN_KEYWORDS+ RED_KEYWORDS + BLUE_KEYWORDS + PINK_KEYWORDS + PURPLE_KEYWORDS + ORANGE_KEYWORDS + BLUE_KEYWORDS
 COMMANDS_DESCRIPTION = {
@@ -162,6 +162,7 @@ COMMANDS_DESCRIPTION = {
                         "subset":"subset(set1 [set], set2 [set]) -> TRUE if all elements of set1 are in set2, otherwise FALSE",
                         "len":"len(arg [set]) -> length of set arg",
                         "add":"add(arg [set], app [txt|num|bln|set]) -> set produced by appending app to the set arg",
+                        "remove":"remove(arg [set], el [txt|num|bln|set]) -> set produced by removing el from the set arg",
                         "call":"call(fname [txt]) -> calls (runs) the function by the name of fname",
                         'set':'set(el1 [txt|num|bln|set], el2 [txt|num|bln|set], ...) -> set with elements el1, el2..., enter only "_" for empty set',
                         "num":"num(arg [txt]) -> converts arg into type num, if possible",

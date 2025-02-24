@@ -1,140 +1,94 @@
 import turtle
 import math
-from PIL import Image, ImageDraw, ImageFont
 
 def calculate_global_extent(objects):
     """Calculate the maximum extent of all objects to adjust the grid size."""
-    if not isinstance(objects, list):
-        objects = [objects]  # Convert single object to a list
-
     max_x, max_y = 0, 0
     for obj in objects:
         if obj["name"] == "Circle":
             center_x, center_y = obj["center"]
             radius = obj["radius"]
-            max_x = max(max_x, center_x + radius)
-            max_y = max(max_y, center_y + radius)
-        if obj["name"] == "Graph":
+            max_x = max(max_x, abs(center_x) + radius)
+            max_y = max(max_y, abs(center_y) + radius)
+        elif obj["name"] in ["Graph", "Triangle", "Polyline", "Line", "Rectangle"]:
             for x, y in obj["points"]:
-                max_x = max(max_x, x)
-                max_y = max(max_y, y)
-        elif obj["name"] in ["Triangle", "Polyline", "Line", "Rectangle"]:
-            for x, y in obj["points"]:
-                max_x = max(max_x, x)
-                max_y = max(max_y, y)
-    return max_x+1, max_y+1
+                max_x = max(max_x, abs(x))
+                max_y = max(max_y, abs(y))
+    return max_x + 1, max_y + 1
 
 def draw_grid(screen_width, screen_height, max_x, max_y, margin=50):
-    """Draws a grid in the first quadrant, scaled to fit all objects."""
+    """Draws a grid centered at (0,0), covering all four quadrants."""
     t.penup()
     t.color("gray")
-
-    step = (screen_height - margin * 2) // (max(max_x, max_y) or 1)  # Avoid division by zero
-    origin_x = -screen_width // 2 + margin
-    origin_y = -screen_height // 2 + margin
-
-    for y in range(1, max_y + 1):
-        t.goto(origin_x, origin_y + (y - 1) * step)
-        if y != 1:
-            a = t.heading()
-            t.setheading(180)
-            t.forward(10)
-            t.write(y-1)
-            t.goto(origin_x, origin_y + (y - 1) * step)
-            t.setheading(a)
-
+    step = (screen_height - margin * 2) // (2 * max(max_x, max_y) or 1)
+    
+    # Draw horizontal lines
+    for y in range(-max_y, max_y + 1):
+        t.goto(-max_x * step, y * step)
         t.pendown()
-        t.goto(origin_x + (max_x - 1) * step, origin_y + (y - 1) * step)
+        t.goto(max_x * step, y * step)
         t.penup()
-
-    for x in range(1, max_x + 1):
-        t.goto(origin_x + (x - 1) * step, origin_y)
-        if x != 1:
-            a = t.heading()
-            t.setheading(270)
-            t.forward(20)
-            t.write(x-1)
-            t.goto(origin_x + (x - 1) * step, origin_y)
-            t.setheading(a)
-        else:
-            a = t.heading()
-            t.setheading(270)
-            t.forward(20)
-            t.setheading(180)
-            t.forward(10)
-            t.write(0)
-            t.goto(origin_x + (x - 1) * step, origin_y)
-            t.setheading(a)
+        if y != 0:
+            t.goto(5, y * step - 5)
+            t.write(y, align="left", font=("Arial", 10, "normal"))
+    
+    # Draw vertical lines
+    for x in range(-max_x, max_x + 1):
+        t.goto(x * step, -max_y * step)
         t.pendown()
-        t.goto(origin_x + (x - 1) * step, origin_y + (max_y - 1) * step)
+        t.goto(x * step, max_y * step)
         t.penup()
-
+        if x != 0:
+            t.goto(x * step + 5, -15)
+            t.write(x, align="center", font=("Arial", 10, "normal"))
+    
+    # Draw axes with arrows
     t.color("black")
     t.pensize(3)
-    t.goto(origin_x, origin_y)
+    
+    # X-axis
+    t.goto(-max_x * step, 0)
     t.pendown()
-    t.goto(origin_x + (max_x - 1) * step, origin_y)
+    t.goto(max_x * step, 0)
     t.penup()
-    t.goto(origin_x, origin_y)
+    t.goto(max_x * step - 10, -5)
     t.pendown()
-    t.goto(origin_x, origin_y + (max_y - 1) * step)
+    t.goto(max_x * step, 0)
+    t.goto(max_x * step - 10, 5)
     t.penup()
-    t.goto(origin_x + (max_x - 1) * step + 10, origin_y - 10)
+    
+    # Y-axis
+    t.goto(0, -max_y * step)
+    t.pendown()
+    t.goto(0, max_y * step)
+    t.penup()
+    t.goto(-5, max_y * step - 10)
+    t.pendown()
+    t.goto(0, max_y * step)
+    t.goto(5, max_y * step - 10)
+    t.penup()
+    
+    # Label axes
+    t.goto(max_x * step - 20, -25)
     t.write("X", font=("Arial", 12, "bold"))
-    t.goto(origin_x - 20, origin_y + (max_y - 1) * step + 5)
+    t.goto(-25, max_y * step - 20)
     t.write("Y", font=("Arial", 12, "bold"))
 
 def scale_points(points, screen_width, screen_height, max_x, max_y, margin=50):
-    step = (screen_height - margin * 2) // (max(max_x, max_y) or 1)
-    origin_x = -screen_width // 2 + margin
-    origin_y = -screen_height // 2 + margin
-    return [(origin_x + x * step, origin_y + y * step) for x, y in points]
+    """Scale points to fit within the centered grid."""
+    step = (screen_height - margin * 2) // (2 * max(max_x, max_y) or 1)
+    return [(x * step, y * step) for x, y in points]
 
-import math
-import turtle as t
-
-def draw_graph(points, function, screen_width, screen_height, max_x, max_y):
-    # Scaled points for drawing
+def draw_polyline(points):
     scaled_points = scale_points(points, screen_width, screen_height, max_x, max_y)
-    
-    x1, y1 = scaled_points[0]
-    x2, y2 = scaled_points[1]
-    
-    # Calculate the direction (slope) between the two points
-    dx = x2 - x1
-    dy = y2 - y1
-    
-    # Extension factor
-    extension = 1000  # Length of the extended line
-    
-    # Normalize the direction (dx, dy) to avoid very large numbers
-    length = math.sqrt(dx**2 + dy**2)
-    dx /= length
-    dy /= length
-    
-    # Calculate the two extreme points for the extended line
-    x3 = x1 - extension * dx
-    y3 = y1 - extension * dy
-    
-    x4 = x2 + extension * dx
-    y4 = y2 + extension * dy
-    
-    # Draw the extended line
     t.pensize(3)
     t.penup()
-    t.goto(x3, y3)
+    t.goto(scaled_points[0])
     t.pendown()
-    t.goto(x4, y4)
+    for x, y in scaled_points:
+        t.goto(x, y)
 
-    # Logic for function label orientation
-    angle_degrees = math.degrees(math.atan2(y4 - y3, x4 - x3))
-    
-    t.penup()
-    t.goto((x1 + x4) / 2, (y1 + y4) / 2)  # Position text at the midpoint of the line
-    t.write(function, align="center", font=("Arial", 12, "normal"))
-
-
-def draw_polygon(points, screen_width, screen_height, max_x, max_y):
+def draw_polygon(points):
     scaled_points = scale_points(points, screen_width, screen_height, max_x, max_y)
     t.pensize(3)
     t.penup()
@@ -144,56 +98,84 @@ def draw_polygon(points, screen_width, screen_height, max_x, max_y):
         t.goto(x, y)
     t.goto(scaled_points[0])
 
-def draw_polyline(points, screen_width, screen_height, max_x, max_y):
-    scaled_points = scale_points(points, screen_width, screen_height, max_x, max_y)
-    t.pensize(3)
-    t.penup()
-    t.goto(scaled_points[0])
-    t.pendown()
-    for x, y in scaled_points:
-        t.goto(x, y)
-
-def draw_circle(circle_obj, screen_width, screen_height, max_x, max_y, margin=50):
-    step = (screen_height - 2 * margin) // (max(max_x, max_y) or 1)
+def draw_circle(circle_obj):
+    step = (screen_height - 2 * margin) // (2 * max(max_x, max_y) or 1)
     scaled_center = scale_points([circle_obj["center"]], screen_width, screen_height, max_x, max_y)[0]
-    scaled_radius = (circle_obj["radius"]) * step
+    scaled_radius = circle_obj["radius"] * step
     t.penup()
     t.goto(scaled_center[0], scaled_center[1] - scaled_radius)
     t.pendown()
     t.pensize(3)
     t.circle(scaled_radius)
 
+def draw_graph(graph_obj, screen_width, screen_height, max_x, max_y):
+    """Draw a graph based on the slope and intercept in the object."""
+    slope = graph_obj['slope']
+    intercept = graph_obj['intercept']
+    
+    # Define the range for x values
+    x_start, x_end = -max_x, max_x  # Set to max_x for full range
+    
+    # Initialize list to hold points
+    points = []
+    
+    # Calculate the points to plot based on the slope-intercept form
+    for x in range(x_start, x_end + 1):
+        y_value = slope * x + intercept  # y = mx + b
+        points.append((x, y_value))
+    
+    # Scale points to fit in the drawing area
+    scaled_points = scale_points(points, screen_width, screen_height, max_x, max_y)
+    
+    t.pensize(3)
+    t.penup()
+    t.goto(scaled_points[0])
+    t.pendown()
+    
+    # Draw the line
+    for x, y in scaled_points[1:]:
+        t.goto(x, y)
+
+    # Logic to label the function
+    mid_x = (scaled_points[0][0] + scaled_points[-1][0]) / 2
+    mid_y = (scaled_points[0][1] + scaled_points[-1][1]) / 2
+    
+    t.penup()
+    t.goto(mid_x, mid_y)
+    t.write(f'y={slope}x+{intercept}', align="center", font=("Arial", 12, "normal"))
+
 def start(objects):
-
-    global t
-    turtle.Screen()._root.iconbitmap(".\\assets\\fide_icon.ico")
-    screen_width = 600
-    screen_height = 600
+    global t, screen_width, screen_height, max_x, max_y, margin
+    
+    screen_width, screen_height = 600, 600
     margin = 50
-
+    
     if not isinstance(objects, list):
         objects = [objects]
-
+    
     max_x, max_y = calculate_global_extent(objects)
-    max_x, max_y = round(max_x)+1, round(max_y)+1
+    max_x, max_y = round(max_x) + 1, round(max_y) + 1
+    max_x = max(max_x, max_y)
+    max_y = max_x
+    
     screen = turtle.Screen()
     screen.setup(width=screen_width, height=screen_height)
-
+    
     t = turtle.Turtle()
     t.hideturtle()
-    t.speed()
+    t.speed(0)
     screen.tracer(0)
     draw_grid(screen_width, screen_height, max_x, max_y, margin)
-
+    
     for obj in objects:
         if obj["name"] == "Circle":
-            draw_circle(obj, screen_width, screen_height, max_x, max_y, margin)
+            draw_circle(obj)
         elif obj["name"] in ["Polyline", "Line"]:
-            draw_polyline(obj["points"], screen_width, screen_height, max_x, max_y)
+            draw_polyline(obj["points"])
         elif obj["name"] in ["Triangle", "Rectangle"]:
-            draw_polygon(obj["points"], screen_width, screen_height, max_x, max_y)
+            draw_polygon(obj["points"])
         elif obj["name"] == "Graph":
-            draw_graph(obj["points"], obj["function"], screen_width, screen_height, max_x, max_y)
-
+            draw_graph(obj, screen_width, screen_height, max_x, max_y)
+    
     screen.update()
     turtle.done()

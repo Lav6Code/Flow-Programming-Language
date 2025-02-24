@@ -19,9 +19,9 @@ COMMANDS = [None,
             'output', "input", # USER INTERACTION
             "if", "for", "while", "loop", "seq",  # FLOW
             "set", 'var', # OBJECT CREATIONS
-            "lower", "upper", "trim", #TXT MANAGMENT
+            "lower", "upper", "trim", "setify", #TXT MANAGMENT
             "num", "txt",  #TYPES
-            "disjunction", "subset", "superset", "add", "union", "sort", "reverse", "filter", # SET RELATED
+            "disjunction", "subset", "superset", "add", "union", "sort", "reverse", "filter", "remove", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", "draw", # FUNCTION RELATED
             "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", "CircumCircle", "Polygon", "Graph", "get_x", "get_y",  #GEOMETRY
@@ -230,6 +230,7 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: Error while settings objects name attribute, it should be TXT", token)
 
     elif command == "draw":
+        print(args[0].sol)
         if type(args[0].sol) == dict:
             argsol = []
             for i in args: argsol.append(i.sol)
@@ -767,9 +768,14 @@ def execute(token): # args with ,
             return list(range(args[0].sol))
         elif len(args) == 2:
             return list(range(args[1].sol))
-        return(list(range(args[0].sol, args[1].sol, args[2].sol)))
+        elif len(args) == 3:
+            return(list(range(args[0].sol, args[1].sol, args[2].sol)))
+        else:
+            raise_error("ARGUMENT ERROR: Number of arguments should be 1,2 or 3")
 
     elif command == "while":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Number of arguments should be 2")
         if args[1].typ == "BLK" and type(args[0].sol) == bool:
             while args[0].sol:
                 args[1].evaluate(forced=True)
@@ -787,11 +793,15 @@ def execute(token): # args with ,
         #return True
     
     elif command == "filter":
+
         ret = []
+
         if len(args[2].arg) != 1:
             raise_error("ARGUMENT ERROR: Condiditon should be only one, in other words only one condition inside the parenthesis", token)
-        if type(args[2][0].sol) != bool:
-            raise_error("ARGUMENT ERROR: Last argument in filter command needs to be condition with value TRUE or FALSE")
+
+        if args[2].arg[0].typ != "COM":
+            raise_error("ARGUMENT ERROR: Last argument in filter command needs to be condition with value TRUE or FALSE", token)
+        
         if type(args[0].sol) == str and type(args[1].sol) == list and args[2].typ == "BLK":
 
             VARS[args[0].sol] = 0
@@ -800,13 +810,15 @@ def execute(token): # args with ,
                 tok = []
                 cond = tokenize(args[2].dsc, tok)
                 cond.evaluate()
+                if type(cond.sol) != bool:
+                    raise_error("ARGUMENT ERROR: Last argument in filter command needs to be condition with value TRUE or FALSE", token)
                 if cond.sol:
                     ret.append(i)
             VARS.pop(args[0].sol)
                 
             return ret
-
-        raise_error("ARGUMENT ERROR: filter command should have first argument TXT, second SET and last one BLK type", token)
+        else:
+            raise_error("ARGUMENT ERROR: filter command should have first argument TXT, second SET and last one BLK type", token)
 
     elif command == "return":
 
@@ -814,33 +826,83 @@ def execute(token): # args with ,
 
     elif command == "fetch":
         if len(args) == 2:
-            set_ = args[0].sol
-            i_ = int(args[1].sol)
-            try:
-                return set_[i_]
-            except:
-                raise_error(f"INDEX ERROR: Trying to FETCH inexistent value at {i_} position in {set_} SET.", token)
+            if type(args[0].sol) == list and type(args[1].sol) == int:
+                set_ = args[0].sol
+                i_ = int(args[1].sol)
+                try:
+                    return set_[i_]
+                except:
+                    raise_error(f"INDEX ERROR: Trying to FETCH inexistent value at {i_} position in {set_} SET.", token)
+            elif type(args[0].sol) == str and type(args[1].sol) == int:
+                string = args[0].sol
+                i_ = int(args[1].sol)
+                try:
+                    return string[i_]
+                except:
+                    raise_error(f"INDEX ERROR: Trying to FETCH inexistent value at {i_} position in {set_} TXT.", token)
+            else:
+                raise_error("ARGUMENT ERROR: Wrong type arguments for command fetch.")
                 
         elif len(args) == 3:
-            set_ = args[0]
-            i_ = args[1].sol
-            j_ = args[2].sol
-            try:
-                return set_.sol[i_:j_]
-            except:
-                raise_error(f"INDEX ERROR: trying to FETCH inexistent value from {i_} position to {j_} in {set_} SET.", token)
-                
+            if type(args[0].sol) == list and type(args[1].sol) == int and type(args[2].sol) == int:
+                set_ = args[0].sol
+                i_ = args[1].sol
+                j_ = args[2].sol
+                try:
+                    return set_[i_:j_]
+                except:
+                    raise_error(f"INDEX ERROR: trying to FETCH inexistent value from {i_} position to {j_} in {set_} SET.", token)
 
+            elif type(args[0].sol) == list and type(args[1].sol) == int and type(args[2].sol) == int:
+                string = args[0]
+                i_ = args[1].sol
+                j_ = args[2].sol
+                try:
+                    return string[i_:j_]
+                except:
+                    raise_error(f"INDEX ERROR: trying to FETCH inexistent value from {i_} position to {j_} in {set_} TXT.", token)
+            
+            else:
+                raise_error("ARGUMENT ERROR: Wrong type arguments for command fetch.", token)
+        
+        else:
+            raise_error("ARGUMENT ERROR: Number of arguments should be 2 or 3.", token)
+
+
+    elif command == "remove":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Number of arguments should be 2", token)
+        if type(args[0].sol) == list:
+            if args[1].sol in args[0].sol:
+                SET_UPDATED = args[0].sol
+                SET_UPDATED.remove(args[1].sol)
+                return SET_UPDATED
+            else:
+                raise_error("ARGUMENT ERROR: trying to remove an element that is not in SET", token)
+        elif type(args[0].sol) == str:
+            if args[1].sol in args[0].sol:
+                SET_UPDATED = list(args[0].sol)
+                for i in range(SET_UPDATED.count(args[1].sol)):
+                    SET_UPDATED.remove(args[1].sol)
+                return "".join(SET_UPDATED)
+            else:
+                raise_error("ARGUMENT ERROR: trying to remove an element into a wrong TYPE, should be SET", token)
+        else:
+            raise_error("ARGUMENT ERROR: trying to remove an element into a wrong TYPE, should be SET", token)
+    
     elif command == "add":
         if type(args[0].sol) == list:
             if len(args) == 2:
                 SET_UPDATED = args[0].sol
                 SET_UPDATED.append(args[1].sol)
-                VARS[args[0].dsc] = SET_UPDATED
-            else:
+                return SET_UPDATED
+            elif len(args) == 3:
                 SET_UPDATED = args[0].sol
-                SET_UPDATED.insert(args[1].sol, args[2].sol)
-                VARS[args[0].dsc] = SET_UPDATED
+                try:
+                    SET_UPDATED.insert(args[1].sol, args[2].sol)
+                    return SET_UPDATED
+                except:
+                    raise_error("INDEX ERROR: Trying to insert value to a index thats not in SET")
         else:
             raise_error("ARGUMENT ERROR: trying to add an element into a wrong TYPE, should be SET", token)
 
@@ -1072,22 +1134,7 @@ def execute(token): # args with ,
     elif command == "trim":
         if type(args[0].sol) == str:
             v = args[0].sol
-            for i,c in enumerate(args[0].sol):
-                if c != " ":
-                    break
-                else:
-                    v = list(v)
-                    v.pop(i)
-                    v = "".join(v)
-            v = v[::-1]
-            for i,c in enumerate(v):
-                if c != " ":
-                    break
-                else:
-                    v = list(v)
-                    v.pop(i)
-                    v = "".join(v)
-            return v
+            return v.strip()
         else:
             raise_error("ARGUMENT ERROR: Trying to trim a non TXT value.")
     
@@ -1104,12 +1151,18 @@ def execute(token): # args with ,
         lst = []
         if len(args) == 1 and args[0].sol == "_":
             return lst
-        elif len(args) == 1 and type(args[0].sol) == str:
-            return list(args[0].sol)
-
         for a in args:
             lst.append(a.sol)
         return lst
+    
+    elif command == "setify":
+        lst = []
+        if len(args) == 1 and args[0].sol == "_":
+            return lst
+        if type(args[0].sol) == str:
+            return list(args[0].sol)
+        else:
+            raise_error("ARGUMENT ERROR: setify command takes in only TXT arguments, _ for emtpy SET")
     
     #COMMAND NOT FOUND SYNTAX ERROR
     elif command not in COMMANDS:

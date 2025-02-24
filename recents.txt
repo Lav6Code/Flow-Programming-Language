@@ -1,1 +1,4 @@
-C:/Users/Valchichi/Documents/Flow-Programming-Language/test/gfrapgh.flow
+C:/Users/Valchichi/Documents/Flow-Programming-Language/test/remove.flow
+C:/Users/Valchichi/Documents/Flow-Programming-Language/test/filters.flow
+C:/Users/Valchichi/Documents/Flow-Programming-Language/test/filter.flow
+C:/Users/Valchichi/Documents/Flow-Programming-Language/test/ss.flow
