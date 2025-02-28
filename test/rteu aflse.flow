@@ -1,4 +1,0 @@
-if(TRUE),
-(output("True");)
-,(output("False"));
-);

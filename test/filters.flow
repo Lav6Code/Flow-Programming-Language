@@ -1,5 +1,0 @@
-if(>(3,2), (output("f");));
-
-output(
-filter("i", set(1,2,3), (>(i,0);));
-);

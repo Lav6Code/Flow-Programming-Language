@@ -1,3 +1,0 @@
-for("index", seq(1,10), (
-output(index);
-));

@@ -1,7 +1,0 @@
-if(and(TRUE, TRUE) ,(
-output("it is TRUE");
-),
-(
-output("it is FALSE");
-));
-

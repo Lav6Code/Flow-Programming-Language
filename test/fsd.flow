@@ -1,4 +1,0 @@
-loop(10, (
-loop(10, 
-(output("SIGMA");)
-);));

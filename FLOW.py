@@ -1,9 +1,7 @@
-import importlib.util
 import sys
 import math
 import draw as d
-import time
-
+import random
 FLOW_VERSION = "1.0"
 
 DEVELOPER_MODE = False
@@ -19,9 +17,9 @@ COMMANDS = [None,
             'output', "input", # USER INTERACTION
             "if", "for", "while", "loop", "seq",  # FLOW
             "set", 'var', # OBJECT CREATIONS
-            "lower", "upper", "trim", "setify", #TXT MANAGMENT
+            "lower", "upper", "trim", #TXT MANAGMENT
             "num", "txt",  #TYPES
-            "disjunction", "subset", "superset", "add", "union", "sort", "reverse", "filter", "remove", # SET RELATED
+            "disjunction", "subset", "superset", "add", "union", "sort", "reverse", "filter", "remove", "setify", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", "draw", # FUNCTION RELATED
             "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", "CircumCircle", "Polygon", "Graph", "get_x", "get_y",  #GEOMETRY
@@ -45,17 +43,6 @@ def is_int(strs):
         return True
     except:
         return False
-
-def import_function_from_path(path_to_file, function_name):
-    # Load the module from the file path
-    spec = importlib.util.spec_from_file_location("module.name", path_to_file)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules["module.name"] = module
-    spec.loader.exec_module(module)
-    
-    # Retrieve the function from the module
-    func = getattr(module, function_name)
-    return func
 
 class Token:
     
@@ -165,6 +152,7 @@ def parse_arg(sstr):
     # print(f'...parsing args: {sstr}')
 
     bracket_checkup = 0 
+    inside_qoutes = False
     separations = []
     
     for i,c in enumerate(sstr):
@@ -174,7 +162,10 @@ def parse_arg(sstr):
         elif c == ")":
             bracket_checkup -= 1
         
-        if bracket_checkup == 0:
+        if c == '"':
+            inside_qoutes = not(inside_qoutes)
+        
+        if bracket_checkup == 0 and not(inside_qoutes):
             if c == ",":
                 separations.append(i)
 
@@ -223,6 +214,8 @@ def execute(token): # args with ,
     args = token.arg
     # Objects
     if command == "object":
+        if len(args) != 1:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments", token)
         if type(args[0].sol) == str:
             objs = {"name":str(args[0].sol)}
             return objs
@@ -230,16 +223,17 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: Error while settings objects name attribute, it should be TXT", token)
 
     elif command == "draw":
-        print(args[0].sol)
-        if type(args[0].sol) == dict:
-            argsol = []
-            for i in args: argsol.append(i.sol)
-            d.start(argsol)
+        for i in args:
+            if type(i.sol) != dict:
+                raise_error("ARGUMENT ERROR: draw command only takes in objects", token)
 
-        else:
-            raise_error("ARGUMENT ERROR: Trying to execute draw command, arguments should be an geomtric object")
+        argsol = []
+        for i in args: argsol.append(i.sol)
+        d.start(argsol)
 
     elif command == "Circle":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments", token)
         if type(args[0].sol) == list and type(args[1].sol) == int:
             objc = {"name":"Circle",
                     "center":args[0].sol,
@@ -250,6 +244,8 @@ def execute(token): # args with ,
             return objc
         
     elif command == "Graph":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments", token)
         if type(args[0].sol) == int and type(args[1].sol) == int:
             slope = args[0].sol
             intercept = args[1].sol
@@ -306,6 +302,8 @@ def execute(token): # args with ,
                 }
     
     elif command == "get_x":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments", token)
         if type(args[0].sol) == dict and args[0].sol["name"] == "Graph" and type(args[1].sol) == int:
             a = args[0].sol["slope"]
             b = args[0].sol["intercept"]
@@ -316,6 +314,8 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: While trying to get x from graph, wrong type error occured.")
     
     elif command == "get_y":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments", token)
         if type(args[0].sol) == dict and args[0].sol["name"] == "Graph" and type(args[1].sol) == int:
             a = args[0].sol["slope"]
             b = args[0].sol["intercept"]
@@ -329,6 +329,10 @@ def execute(token): # args with ,
         for i in args: 
             if type(i.sol) != list: 
                 raise_error("ARGUMENT ERROR: Trying to create a Triangle object, wrong arguments, should be sets points (X,Y positions).", token)
+                for j in i:
+                    if type(j) != int:
+                        raise_error("ARGUMENT ERROR: Trying to create a Triangle object with points which X, Y coordinated are not num type.", token)    
+
         if len(args) != 3:
             raise_error("ARGUMENT ERROR: Number of points required to create a Triangle is be 3.", token)
 
@@ -367,6 +371,10 @@ def execute(token): # args with ,
         for i in args: 
             if type(i.sol) != list: 
                 raise_error("ARGUMENT ERROR: Trying to create a Line object, wrong arguments, should be 2 sets that represent points (x,y)", token)
+                for j in i:
+                    if type(j) != int:
+                        raise_error("ARGUMENT ERROR: Trying to create a Line object with points which X, Y coordinated are not num type.", token)    
+
         if len(args) != 2:
             raise_error("ARGUMENT ERROR: Number of points required to create a Line is be 2.", token)
         
@@ -383,6 +391,9 @@ def execute(token): # args with ,
         for i in args: 
             if type(i.sol) != list: 
                 raise_error("ARGUMENT ERROR: Trying to create a Rectangle object, wrong arguments, should be sets points (X,Y positions).", token)
+                for j in i:
+                    if type(j) != int:
+                        raise_error("ARGUMENT ERROR: Trying to create a Rectangle object with points which X, Y coordinated are not num type.", token)    
         if len(args) != 4:
             raise_error("ARGUMENT ERROR: Number of points required to create a Rectangle is 4.", token)
 
@@ -423,22 +434,6 @@ def execute(token): # args with ,
                 "perimeter":sum(sides),
                 "diagonals":[d1, d2],
                 }
-
-    elif command == "Line":
-        for i in args: 
-            if type(i.sol) != list: 
-                raise_error("ARGUMENT ERROR: Trying to create a Line object, wrong arguments, should be 2 sets that represent points (x,y)", token)
-        if len(args) != 2:
-            raise_error("ARGUMENT ERROR: Number of points required to create a Line is be 2.", token)
-        
-        obj = {"name":"Line"}
-        x1, y1 = args[0].sol[0], args[0].sol[1]
-        x2, y2 = args[1].sol[0], args[1].sol[1]
-        c = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-        obj["lentgh"] = c
-        obj["points"] = [[x1, y1], [x2, y2]]
-
-        return obj
 
     elif command == "Polyline":
         for i in args: 
@@ -583,6 +578,8 @@ def execute(token): # args with ,
             return objc
 
     elif command == "get":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
         if type(args[0].sol) == dict and type(args[1].sol) == str:
             if args[1].sol in args[0].sol:
                 return args[0].sol[args[1].sol]
@@ -592,6 +589,8 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: Wrong type declaration while trying to get specific attribute from a object.", token)
     
     elif command == "attr":
+        if len(args) != 3:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
         if type(args[0].sol) == dict and type(args[1].sol) == str:
             obj = args[0].sol
             var = args[0].dsc
@@ -604,6 +603,9 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: Wrong type declaration while trying to set specific attribute to a object.", token)
     # Operators
     elif command == "+":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+
         if type(args[0].sol) == list and type(args[1].sol) == list:
             return args[0].sol+args[1].sol
         
@@ -625,48 +627,72 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: Trying to add (+) two values with different or wrong type.", token)
             
     elif command == "*":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+
         if is_int(args[0].sol) and is_int(args[1].sol):
             return int(args[0].sol) * int(args[1].sol)
         else:
             raise_error("ARGUMENT ERORR: Trying to multiply(*) two values with wrong type.", token)
     
     elif command == "/":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+
         if is_int(args[0].sol) and is_int(args[1].sol):
             return int(args[0].sol) // int(args[1].sol)
         else:
             raise_error("ARGUMENT ERORR: Trying to multiply(*) two values with wrong type.", token)
             
     elif command == "-":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+
         if is_int(args[0].sol) and is_int(args[1].sol):
             return int(args[0].sol) - int(args[1].sol)
         else:
             raise_error("ARGUMENT ERORR: Trying to substract(-) two values with wrong type.", token)
 
     elif command == ">":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol > args[1].sol
         else:
             raise_error("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM", token)
 
     elif command == ">=":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol >= args[1].sol
         else:
             raise_error("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM", token)
 
     elif command == "<":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol < args[1].sol
         else:
             raise_error("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM", token)
 
     elif command == "<=":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol <= args[1].sol
         else:
             raise_error("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM", token)
 
     elif command == "=":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+            
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol == args[1].sol
         elif type(args[0].sol) == str and type(args[1].sol) == str:
@@ -675,12 +701,18 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM", token)
 
     elif command == "!=":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol != args[1].sol
         else:
             raise_error("ARGUMENT ERROR: Trying to compare two values with wrong type, should be NUM", token)
 
     elif command == "not":
+        if len(args) != 1:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+
         if type(args[0].sol) == bool:
             return not(args[0].sol)
         else:
@@ -695,33 +727,39 @@ def execute(token): # args with ,
             else:
                 raise_error("ARGUMENT ERROR: Trying to do a AND operation on a non bool values.", token)
         else:
-            raise_error("ARGUMENT ERROR: Not enough arguments.", token)
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
     
     elif command == "or":
-        if len(args) == 2:        
-            if type(args[0].sol) == bool and type(args[1].sol) == bool:
-                    if True in [args[0].sol, args[1].sol]:
-                        return True
-                    return False
-
-            else:
-                raise_error("ARGUMENT ERROR: Trying to do a OR operation on a non bool values.", token)
-        else:
+        if len(args) < 2:  # Provjerava da ima barem dva argumenta
             raise_error("ARGUMENT ERROR: Not enough arguments.", token)
+        
+        argsol = []
+        for i in args:
+            if i.typ != "BLN":
+                raise_error("ARGUMENT ERROR: Trying to do an OR operation on a non-boolean value.", token)
+            argsol.append(str(i.sol))  # Pretvaramo u string za evaluaciju
+        
+        evalstr = " or ".join(argsol)  # Spaja sve argumente OR operatorom
+        return eval(evalstr)  # Evaluira izraz i vraća rezultat
+
 
     elif command == "xor":
-        if len(args) == 2:        
-            if type(args[0].sol) == bool and type(args[1].sol) == bool:
-                    if args[0].sol != args[1].sol:
-                        return True
-                    return False
-            else:
-                raise_error("ARGUMENT ERROR: Trying to do a XOR operation on a non bool values.", token)
-        else:
+        if len(args) < 2:
             raise_error("ARGUMENT ERROR: Not enough arguments.", token)
+        argsol = []
+        for i in args:
+            if i.typ != "BLN":
+                raise_error("ARGUMENT ERROR: Trying to do a XOR operation on a non-boolean value.", token)
+            argsol.append(i.sol)  # Ovdje koristimo bool direktno, ne string
+
+        result = sum(argsol) % 2 == 1  # XOR provjerava neparan broj TRUE vrijednosti
+        return result
+    
     # Loops Ifs Elifs Whiles
     
     elif command == "if":
+        if len(args) not in  [2,3]:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if type(args[0].sol) == bool:
             if args[0].sol == True:
                 if args[1].typ == "BLK":
@@ -738,6 +776,8 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: Condition is non bool type", token)
     
     elif command == "loop":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if type(args[0].sol) == int:
             for i in range(args[0].sol):
                 args[1].evaluate(forced=True)
@@ -745,6 +785,8 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: Trying to use non NUM value for FOR loop.", token)
 
     elif command == "for":
+        if len(args) != 3:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if type(args[0].sol) == str:
             if type(args[1].sol) == list:
                 if args[0] not in VARS:
@@ -760,6 +802,14 @@ def execute(token): # args with ,
         else:
             raise_error("ARGUMENT ERROR: Trying to set an index variable to a non TXT name", token)
     
+    elif command == "random":
+        if len(args) == 2:
+            start = args[0].sol
+            end = args[0].sol
+            return random.randint(start, end)
+        else:
+            raise_error("ARGUMENT ERROR: random command only takes in 2 NUM types that represent lowest and the highest value command can result.", token)
+    
     elif command == "seq":
         for a in args:
             if type(a.sol) != int:
@@ -771,7 +821,7 @@ def execute(token): # args with ,
         elif len(args) == 3:
             return(list(range(args[0].sol, args[1].sol, args[2].sol)))
         else:
-            raise_error("ARGUMENT ERROR: Number of arguments should be 1,2 or 3")
+            raise_error("ARGUMENT ERROR: Number of arguments should be either 1,2 or 3")
 
     elif command == "while":
         if len(args) != 2:
@@ -786,16 +836,24 @@ def execute(token): # args with ,
     # Other commands
 
     elif command == "output":
-        if type(args[0].sol) == bool:
-            print(str(args[0].sol).upper())
-        else:
-            print(args[0].sol)
-        #return True
+        out = ""
+        for arg in args:
+            if arg.typ == "BLK":
+                raise_error("ARGUMENT ERROR: output command can't take in block of code as an argument")
+
+            elif type(arg.sol) == bool:
+                out += (str(arg.sol).upper())
+            else:
+                out += str(arg.sol)
+            out += " "
+        
+        print(out)
     
     elif command == "filter":
 
+        if len(args) != 3:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         ret = []
-
         if len(args[2].arg) != 1:
             raise_error("ARGUMENT ERROR: Condiditon should be only one, in other words only one condition inside the parenthesis", token)
 
@@ -820,9 +878,6 @@ def execute(token): # args with ,
         else:
             raise_error("ARGUMENT ERROR: filter command should have first argument TXT, second SET and last one BLK type", token)
 
-    elif command == "return":
-
-        return args[0].sol
 
     elif command == "fetch":
         if len(args) == 2:
@@ -891,6 +946,7 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: trying to remove an element into a wrong TYPE, should be SET", token)
     
     elif command == "add":
+        
         if type(args[0].sol) == list:
             if len(args) == 2:
                 SET_UPDATED = args[0].sol
@@ -903,6 +959,8 @@ def execute(token): # args with ,
                     return SET_UPDATED
                 except:
                     raise_error("INDEX ERROR: Trying to insert value to a index thats not in SET")
+            else:
+                raise_error("ARGUMENT ERROR: Wrong number of arguments.")
         else:
             raise_error("ARGUMENT ERROR: trying to add an element into a wrong TYPE, should be SET", token)
 
@@ -918,6 +976,8 @@ def execute(token): # args with ,
         return union_set
     
     elif command == "len":
+        if len(args) != 1:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if type(args[0].sol) == list or type(args[0].sol) == str:
             return len(args[0].sol)
         else:
@@ -925,6 +985,8 @@ def execute(token): # args with ,
             
 
     elif command == "intersection":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         INTERSECTED = []
         if type(args[0].sol) == list and type(args[1].sol) == list:
             for E1 in args[0].sol:
@@ -936,12 +998,16 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: trying to intersect elements that are wrong TYPE, both elements should be SET", token)
 
     elif command == "reverse":
+        if len(args) != 1:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if type(args[0].sol) == list:
             return args[0].sol[::-1]
         else:
             raise_error("ARGUMENT ERROR: reverse command can only be executed on SET type variables.")
         
     elif command == "sort":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if len(args) == 2:
             if type(args[1].sol) == str and args[1].sol.lower() == "<" and type(args[0].sol) == list:
                 return sorted(args[0].sol)
@@ -957,6 +1023,8 @@ def execute(token): # args with ,
                 raise_error("ARGUMENT ERROR: sort command can only be executed on SET type values.", token)
             
     elif command == "subset":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if type(args[0].sol) == list and type(args[1].sol) == list:
             #QUICK CHECK
             if len(args[0].sol) > len(args[1].sol):
@@ -971,6 +1039,8 @@ def execute(token): # args with ,
         return False
     
     elif command == "superset":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if type(args[0].sol) == list and type(args[1].sol) == list:
             #QUICK CHECK
             if len(args[1].sol) > len(args[0].sol):
@@ -991,7 +1061,7 @@ def execute(token): # args with ,
             if type(args[0].sol) == list:
                 return sum(args[0].sol)
             else:
-                raise_error("ARGUMENT/TYPE ERROR: Trying to get a SUM of only one value, or values are incorrect type.", token)
+                raise_error("ARGUMENT/TYPE ERROR: Trying to get a SUM of only one value or values are incorrect type.", token)
                 
         else:
             sum_list = []
@@ -999,7 +1069,7 @@ def execute(token): # args with ,
                 if i.typ == "NUM":
                     sum_list.append(i.sol)
                 else:
-                    raise_error("TYPE ERROR: Trying to get a SUM of mutlitple non NUM type values.", token)
+                    raise_error("TYPE ERROR: Trying to get a SUM of multiple non NUM type values.", token)
                     
             return sum(sum_list)
         
@@ -1038,6 +1108,8 @@ def execute(token): # args with ,
             return min(min_list)
     
     elif command == "disjunction":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if type(args[0].sol) == list and type(args[1].sol) == list:
             
             a = repeating_el(args[0].sol + args[1].sol)
@@ -1073,6 +1145,8 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: Input's arguments should only be 'num' or 'txt' depending on what type does a user wants to convert value into.", token)
 
     elif command == "var":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if type(args[1].sol) in [int, str, bool, list, dict, float]:
             if args[0].sol not in BOOLS and args[0].sol != "pi":
                 #print(VARS)
@@ -1087,12 +1161,15 @@ def execute(token): # args with ,
         #return True
     
     elif command == "func":
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if type(args[0].sol) == str and (args[1].typ) == "BLK":
             FUNS[args[0].sol] = args[1]
         #return True
 
     elif command == "call":
-        # TODO check if arg in FUNS
+        if len(args) != 1:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if args[0].sol in FUNS:
             FUNS[args[0].sol].evaluate(forced=True)
         else:
@@ -1102,6 +1179,8 @@ def execute(token): # args with ,
     # Type conversions:
         
     elif command == "num":
+        if len(args) != 1:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if is_int(args[0].sol):
             return int(args[0].sol)
         else:
@@ -1120,18 +1199,24 @@ def execute(token): # args with ,
             return str(args[0].sol)
     
     elif command == "upper":
+        if len(args) != 1:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if type(args[0].sol) == str:
             return args[0].sol.upper()
         else:
             raise_error(f"ARGUMENT ERROR: Wrong type declaration while trying to capitalize {args[0].typ} value, should be TXT", token)
 
     elif command == "lower":
+        if len(args) != 1:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if type(args[0].sol) == str:
             return args[0].sol.lower()
         else:
             raise_error(f"ARGUMENT ERROR: Wrong type declaration while trying to decapitalize {args[0].typ} value, should be TXT", token)
     
     elif command == "trim":
+        if len(args) != 1:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if type(args[0].sol) == str:
             v = args[0].sol
             return v.strip()
@@ -1139,6 +1224,8 @@ def execute(token): # args with ,
             raise_error("ARGUMENT ERROR: Trying to trim a non TXT value.")
     
     elif command == "replace":
+        if len(args) != 3:
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
         if args[0].sol == str and args[1].sol == str and args[2].sol == str:
             value = args[0].sol
             replaces = args[1].sol
@@ -1175,19 +1262,27 @@ def tokenize(code, tokens_list=None):
 
     first_bracket = None
     last_bracket = None
-    
+    str_depth = False
+    codeError = ""
     for i,e in enumerate(code):
         
         i1 = len(code) - i - 1
+
+        if e == '"':
+            str_depth = not(str_depth)
         
-        if e == "(" and first_bracket is None:
+        if e == "(" and first_bracket is None and not(str_depth):
             first_bracket = i
             
-        if code[i1] == ")" and last_bracket is None:
+        if code[i1] == ")" and last_bracket is None and not(str_depth):
             last_bracket = i1
+        
+        if not(str_depth):
+            codeError += e
             
-    # FIX CHECKING FOR ERROR IN BRACKETS
-    if code.count("(")!=code.count(")"):
+    # FIX CHECKING FOR ERROR IN BRACKET
+
+    if codeError.count("(")!=codeError.count(")"):
         print(code)
         raise_error('SYNTAX ERROR: brackets are not balanced')
     
@@ -1220,6 +1315,7 @@ def tokenize(code, tokens_list=None):
         arg = parse_arg(arg)
 
     if command is None and not (first_bracket and last_bracket):  # done?
+
         token = Token(command, arg) 
         if tokens_list is not None:
             tokens_list.append(token)
@@ -1282,7 +1378,6 @@ def run(file_path):
     TOKENS = []
     token_root = tokenize(file_content, TOKENS)
     token_root.evaluate(forced=True)
-
     return TOKENS, file_path
 
 ######
@@ -1296,6 +1391,7 @@ if len(sys.argv) < 2 or len(sys.argv) > 4:
     sys.exit(1)
 
 # Extract arguments
+RUNNER = None
 _, FILENAME, *flags = sys.argv
 if "FIDE" in flags:
     RUNNER = "FIDE"

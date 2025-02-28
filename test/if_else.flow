@@ -1,7 +1,0 @@
-if(=(0,0),(
-output("0 is equal 0");
-),
-(
-output("1 is equal 0");
-));
-

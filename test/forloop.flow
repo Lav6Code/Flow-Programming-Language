@@ -1,4 +1,0 @@
-for("index", 10, (
-output(index);
-));
-output(index);

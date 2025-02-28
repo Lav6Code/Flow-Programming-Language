@@ -1,3 +1,0 @@
-var("obj", object("o"));
-attr(obj, "noge", 8);
-output(get(obj, "noge"));

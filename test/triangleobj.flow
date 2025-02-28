@@ -1,2 +1,0 @@
-var("OBJ", object("OBJ"));
-output(get(OBJ, "name"));

@@ -100,7 +100,6 @@ class InteractiveConsole(tk.Frame):
                 self.process = None  # Reset the process reference
             else:
                 self.text.configure(state="normal")
-                self.text.insert(tk.END, "No running process to terminate.\n")
                 self.text.configure(state="disabled")
                 self.text.see(tk.END)
 
@@ -119,74 +118,77 @@ APP.resizable(False, False)
 APP.iconbitmap(".\\assets\\fide_icon.ico")
 
 # FLOW SETUP
-ORANGE_KEYWORDS = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", "-1", "-2", "-3", "-4", "-5", "-6","-7", "-8", "-9"]
-RED_KEYWORDS = ['var', 'func', 'output', "input", "if", "for", "while", "fetch", "intersection","sort", "reverse" "union", "reverse", "remove", "seq", "upper", "lower", "filter", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not", "trim", "replace",  "get_x", "get_y"]
-GREEN_KEYWORDS = ['"']
-LIGHT_BLUE_KEYWORDS = [";", "(", ")"]
-PINK_KEYWORDS = ["TRUE", "FALSE"]
-BLUE_KEYWORDS = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line", "draw", "Polygon", "pi", "Graph"]
-PURPLE_KEYWORDS = ["$"] # COMMENT
-COMMANDS = GREEN_KEYWORDS+ RED_KEYWORDS + BLUE_KEYWORDS + PINK_KEYWORDS + PURPLE_KEYWORDS + ORANGE_KEYWORDS + BLUE_KEYWORDS
+KEYWORDS_1 = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", "-1", "-2", "-3", "-4", "-5", "-6","-7", "-8", "-9"]
+KEYWORDS_2 = ['var', 'func', 'output', "sum", "input", "if", "for", "while", "sum", "min", "max", "union", "fetch", "intersection","sort", "!=", "reverse" "union", "reverse", "remove", "seq", "upper", "lower", "filter", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not", "trim", "replace",  "get_x", "get_y", "setify"]
+KEYWORDS_3 = ['"']
+KEYWORDS_4 = [";", "(", ")"]
+KEYWORDS_5 = ["TRUE", "FALSE"]
+KEYWORDS_6 = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line", "draw", "Polygon", "pi", "Graph"]
+KEYWORDS_7 = ["$"] # COMMENT
+COMMANDS = KEYWORDS_3+ KEYWORDS_2 + KEYWORDS_6 + KEYWORDS_5 + KEYWORDS_7 + KEYWORDS_1 + KEYWORDS_4
 COMMANDS_DESCRIPTION = {
-                        "pi":"mathematical constant",
-                        "+":"+(arg1 [num|txt], arg2 [num|txt]) -> sum or concatination of arg1 and arg2",
-                        "-":"-(arg1 [num], arg2 [num]) -> substraction of arg1 and arg2",
-                        "*":"*(arg1 [num], arg2 [num]) -> procuct of arg1 and arg2",
-                        "/":"/(arg1 [num], arg2 [num]) -> values that are going to be divided",
-                        "<":"<(arg1 [num], arg2 [num]) -> TRUE if arg1 is less than arg2",
-                        ">":">(arg1 [num], arg2 [num]) -> TRUE if arg1 is greater than arg2",
-                        "<=":"<=(arg1 [num], arg2 [num]) -> TRUE if arg1 is less or equal than arg2",
-                        ">=":">=(arg1 [num], arg2 [num]) -> TRUE if arg1 is greater or equal than arg2",
-                        "=":"=(arg1 [num], arg2 [num]) -> TRUE if arg1 is equal to arg2",
-                        "and":"and(bln1 [bln], bln2 [bln]) -> TRUE if arg1 and arg2 are TRUE",
-                        "or":"or(bln1 [bln], bln2 [bln]) -> TRUE if at least one arg1 and arg2 are TRUE",
-                        "xor":"xor(bln1 [bln], bln2 [bln]) -> TRUE if only one of two blns is TRUE",
-                        "not":"not(bln1 [bln]) -> opposite boolean value of bln1, TRUE -> FALSE, FALSE -> TRUE",
-                        "var":"var(varname [txt], val [txt|num|bln|set]) -> defines or updates a variable with the name varname with the value val",
-                        "func":"func(fname [txt], codeblock [blk]) -> defines a function with the name fname and body codeblock",
-                        "output":"output(str [txt]) -> outputs the str into console",
-                        "input":'input(datatype ["num"|"txt"|"bln"]) -> takes text from keyboard and converts it into data of type datatype',
-                        "if":"if(bln, blk, blk*) -> if the bln is TRUE the blk will run, ELSE the blk* will run, blk* is optional",
-                        "loop":"loop(n [num], codeblock [blk]) -> runs the codeblock n times",
-                        "for":"for(index [txt], array [set], codeblock [blk]) -> iterates through array, assigning each element to index and executing codeblock",
-                        "seq":"seq([start] [num], stop [num], [step] [num]) – Returns a 'set' from 'start' to stop with step 'step'. Defaults: start=0, step=1",
-                        "filter":"filter(index [txt], array [set], (cond [bln])) -> return all arguments that satisfy cond",
-                        "while":"while(condition [bln], codeblock [blk]) -> repeatedly run codeblock, while the condition is TRUE",
-                        "fetch":"fetch(set, num) -> the num-th element of the set",
-                        "intersection":"intersection(set1 [set], set2 [set]) -> the intersection of the two sets (set of elements that are present in both given sets)",
-                        "union":"union(set1 [set], set2 [set]...) -> union of two or more sets (set of unique elements of both sets combined)",
-                        "disjunction":"disjunction(set1 [set], set2 [set]) -> the disjunction of the two sets (set of elements that are uniqe to each given set)",
-                        "superset":"superset(set1 [set], set2 [set]) -> TRUE if all elements of set2 are in set1, otherwise FALSE",
-                        "reverse":"reverse(set1 [set]) -> reversed set of set1",
-                        'sort':'sort(set1 [set], *scale [txt]) -> sorted set1 in ascending (<) or descending (>) order. The scale is optional.',
-                        "subset":"subset(set1 [set], set2 [set]) -> TRUE if all elements of set1 are in set2, otherwise FALSE",
-                        "len":"len(arg [set]) -> length of set arg",
-                        "add":"add(arg [set], app [txt|num|bln|set]) -> set produced by appending app to the set arg",
-                        "remove":"remove(arg [set], el [txt|num|bln|set]) -> set produced by removing el from the set arg",
-                        "call":"call(fname [txt]) -> calls (runs) the function by the name of fname",
-                        'set':'set(el1 [txt|num|bln|set], el2 [txt|num|bln|set], ...) -> set with elements el1, el2..., enter only "_" for empty set',
-                        "num":"num(arg [txt]) -> converts arg into type num, if possible",
-                        "txt":"txt(arg [num]) -> converts arg into txt, if possible",
-                        "bln":"bln(arg [txt|num]) -> converts arg into bln, if possible",
-                        "upper":"upper(text [txt]) -> capitalizes every character inside text",
-                        "lower":"lower(text [txt]) -> decapitalizes every character inside text",
-                        "replace":"repalce(text [txt], target [txt], replacement [txt]) -> replaces every target with replacement inside text",
-                        "sum":"sum(set [set] or el1 [num], el2[num]...) -> sum of all elements in a set, or sum of all arguments (el1, el1...)",
-                        "max":"max(set [set] or el1 [num], el2[num]...) -> highest value of all elements in a set, or highest value of all arguments (el1, el1...)",
-                        "min":"min(set [set] or el1 [num], el2[num]...) -> lowest value of all elements in a set, or lowest value of all arguments (el1, el1...)",
-                        "object":"object(name [txt]) -> creates an emtpy object with no attributes",
-                        "attr":"attr(object [txt], attribute [txt], value [txt|num|bln|set]) -> creates an attribute and adds it into object",
-                        "get":"get(object [txt], attribute [txt]) -> value of attribute inside the object",
-                        "Line":"Line(point [set], point [set]) -> object with name, points, length attributes",
-                        "Polyine":"Polyine(point [set], point [set]...) -> object with name, points, length attributes",
-                        "Triangle":"Triangle(point [set], point [set], point [set]) -> object with name, points, perimeter, area, sides attributes",
-                        "Graph":"Graph(a [num], b [num]) -> object with name, points, perimeter, area, sides attributes and function following y=ax+b where a and b are arguments",
-                        "Circle":"Circle(center [set], radius [num]) -> object with name, center, perimeter, area, diameter attributes that represent a circle",
-                        "InCircle":"InCircle(triangle [obj]) -> object with name, center, perimeter, area, diameter attributes represent a circle inside the triangle",
-                        "CircumCircle":"CircumCircle(triangle [obj]) -> object with name, center, perimeter, area, diameter attributes represent a circle outside the triangle",
-                        "draw":"draw(shape [obj], shape [obj]...) -> opens new window and visually shows the shapes",
-                        "Polygon":"Polygon(point1 [set], point2 [set]...) -> object with name, points, perimeter, area attributes that represent a polygon"
-                        }
+    "pi": "Mathematical constant.",
+    "+": "+(arg1 [num|txt], arg2 [num|txt]) -> Sum or concatenation of arg1 and arg2.",
+    "-": "-(arg1 [num], arg2 [num]) -> Subtraction of arg1 and arg2.",
+    "*": "*(arg1 [num], arg2 [num]) -> Product of arg1 and arg2.",
+    "/": "/(arg1 [num], arg2 [num]) -> Division of arg1 by arg2.",
+    "<": "<(arg1 [num], arg2 [num]) -> TRUE if arg1 is less than arg2.",
+    ">": ">(arg1 [num], arg2 [num]) -> TRUE if arg1 is greater than arg2.",
+    "<=": "<=(arg1 [num], arg2 [num]) -> TRUE if arg1 is less than or equal to arg2.",
+    ">=": ">=(arg1 [num], arg2 [num]) -> TRUE if arg1 is greater than or equal to arg2.",
+    "=": "=(arg1 [num], arg2 [num]) -> TRUE if arg1 is equal to arg2.",
+    "!=": "!=(arg1 [num], arg2 [num]) -> TRUE if arg1 is not equal to arg2.",
+    "and": "and(bln1 [bln], bln2 [bln]) -> TRUE if both arg1 and arg2 are TRUE.",
+    "or": "or(bln1 [bln], bln2 [bln]) -> TRUE if at least one of arg1 or arg2 is TRUE.",
+    "xor": "xor(bln1 [bln], bln2 [bln]) -> TRUE if exactly one of the two bln values is TRUE.",
+    "not": "not(bln1 [bln]) -> Returns the opposite boolean value of bln1 (TRUE -> FALSE, FALSE -> TRUE).",
+    "var": "var(varname [txt], val [txt|num|bln|set]) -> Defines or updates a variable with the name varname and value val.",
+    "func": "func(fname [txt], codeblock [blk]) -> Defines a function named fname with the given codeblock.",
+    "output": "output(str [txt]) -> Outputs the string str to the console.",
+    "input": 'input(datatype ["num"|"txt"|"bln"]) -> Takes input from the keyboard and converts it into the specified datatype.',
+    "if": "if(bln, blk, blk*) -> Executes blk if the condition bln is TRUE, otherwise executes blk* (optional).",
+    "loop": "loop(n [num], codeblock [blk]) -> Executes the codeblock n times.",
+    "for": "for(index [txt], array [set], codeblock [blk]) -> Iterates through the array, assigning each element to index and executing the codeblock.",
+    "seq": "seq([start] [num], stop [num], [step] [num]) -> Returns a set from start to stop with step step (defaults: start=0, step=1).",
+    "filter": "filter(index [txt], array [set], (cond [bln])) -> Returns elements of array where the condition cond is TRUE.",
+    "while": "while(condition [bln], codeblock [blk]) -> Repeatedly executes codeblock while the condition is TRUE.",
+    "fetch": "fetch(set, num) -> Returns the num-th element of the set.",
+    "intersection": "intersection(set1 [set], set2 [set]) -> Returns the intersection of two sets (elements present in both sets).",
+    "union": "union(set1 [set], set2 [set]...) -> Returns the union of two or more sets (unique elements from all sets).",
+    "disjunction": "disjunction(set1 [set], set2 [set]) -> Returns the disjunction of two sets (unique elements from each set).",
+    "superset": "superset(set1 [set], set2 [set]) -> TRUE if all elements of set2 are in set1, otherwise FALSE.",
+    "reverse": "reverse(set1 [set]) -> Returns the reversed set of set1.",
+    "sort": "sort(set1 [set], *scale [txt]) -> Returns a sorted set1 in ascending (<) or descending (>) order. The scale is optional.",
+    "subset": "subset(set1 [set], set2 [set]) -> TRUE if all elements of set1 are in set2, otherwise FALSE.",
+    "len": "len(arg [set]) -> Returns the length of the set arg.",
+    "add": "add(arg [set], app [txt|num|bln|set]) -> Returns a set produced by appending app to set arg.",
+    "remove": "remove(arg [set], el [txt|num|bln|set]) -> Returns a set produced by removing el from set arg.",
+    "call": "call(fname [txt]) -> Calls (executes) the function with the name fname.",
+    "set": "set(el1 [txt|num|bln|set], el2 [txt|num|bln|set], ...) -> Creates a set with elements el1, el2..., enter only '_' for an empty set.",
+    "setify": "setify(text) -> Returns a set with elements representing each character of the text.",
+    "num": "num(arg [txt]) -> Converts arg to type num, if possible.",
+    "txt": "txt(arg [num]) -> Converts arg to type txt, if possible.",
+    "bln": "bln(arg [txt|num]) -> Converts arg to type bln, if possible.",
+    "upper": "upper(text [txt]) -> Converts all characters in text to uppercase.",
+    "lower": "lower(text [txt]) -> Converts all characters in text to lowercase.",
+    "replace": "replace(text [txt], target [txt], replacement [txt]) -> Replaces all occurrences of target with replacement in text.",
+    "sum": "sum(set [set] or el1 [num], el2[num]...) -> Returns the sum of all elements in a set, or the sum of all arguments (el1, el2...).",
+    "max": "max(set [set] or el1 [num], el2[num]...) -> Returns the highest value among all elements in a set, or the highest value of the arguments.",
+    "min": "min(set [set] or el1 [num], el2[num]...) -> Returns the lowest value among all elements in a set, or the lowest value of the arguments.",
+    "object": "object(name [txt]) -> Creates an empty object with no attributes.",
+    "attr": "attr(object [txt], attribute [txt], value [txt|num|bln|set]) -> Creates an attribute and adds it to the object.",
+    "get": "get(object [txt], attribute [txt]) -> Returns the value of the specified attribute in the object.",
+    "Line": "Line(point [set], point [set]) -> Creates a Line object with points and length attributes.",
+    "Polyline": "Polyline(point [set], point [set]...) -> Creates a Polyline object with points and length attributes.",
+    "Triangle": "Triangle(point [set], point [set], point [set]) -> Creates a Triangle object with points, perimeter, area, and sides attributes.",
+    "Graph": "Graph(a [num], b [num]) -> Creates a Graph object following the function y=ax+b with attributes for points, perimeter, area, and sides.",
+    "Circle": "Circle(center [set], radius [num]) -> Creates a Circle object with center, perimeter, area, and diameter attributes.",
+    "InCircle": "InCircle(triangle [obj]) -> Creates a circle object inscribed inside a triangle with attributes for center, perimeter, area, and diameter.",
+    "CircumCircle": "CircumCircle(triangle [obj]) -> Creates a circle object circumscribed around a triangle with attributes for center, perimeter, area, and diameter.",
+    "draw": "draw(shape [obj], shape [obj]...) -> Opens a window and visually displays the specified shapes.",
+    "Polygon": "Polygon(point1 [set], point2 [set]...) -> Creates a Polygon object with points, perimeter, and area attributes."
+}
+
 
 HELP_KEYWORD1 = list(COMMANDS_DESCRIPTION.keys())
 HELP_KEYWORD2 = ["->"]
@@ -221,22 +223,22 @@ def developer_mode(event=None):
 
 def interpreter_configuration(event=None):
     global intpreter_configuration_window
-    intpreter_configuration_window = tk.Toplevel(APP)
+    intpreter_configuration_window = tk.Toplevel(APP, background=BACKGROUND_COLOR)
     intpreter_configuration_window.geometry("750x150")
     intpreter_configuration_window.title("Configure Intepreter")
     intpreter_configuration_window.after(10, intpreter_configuration_window.lift)
     
-    current_intepreter_title = tk.Label(master=intpreter_configuration_window, text="╔{ CURRENT INTEPRETER }╗", fg="#3277a8", font = ("Calibri Bold", 16))
+    current_intepreter_title = tk.Label(master=intpreter_configuration_window, text="╔{ CURRENT INTEPRETER }╗", fg="lightblue", font = ("Calibri Bold", 16), bg=BACKGROUND_COLOR)
     current_intepreter_title.pack()
     
-    current_path = tk.Label(master=intpreter_configuration_window, text="", font = "Consolas 12", bg = "#8f99a1", fg = "#000")
+    current_path = tk.Label(master=intpreter_configuration_window, text="", font = "Consolas 12", bg = BACKGROUND_COLOR, fg = FOREGROUND_COLOR)
     if FLOW_PATH:
         current_path.config(text=FLOW_PATH)
     else:
         current_path.config(text="⚠️NO INTEPRETER SELECTED⚠️")
     current_path.pack()
     
-    change_path = tk.Button(intpreter_configuration_window, text="Change Path to FLOW intepreter", command = change_path_f)
+    change_path = tk.Button(intpreter_configuration_window, text="Change Path to FLOW intepreter", command = change_path_f, bg=BACKGROUND_COLOR, fg=FOREGROUND_COLOR)
     change_path.place(relx=0.5,rely=0.7, anchor=tk.CENTER)
     
 def update_variables_textbox(variables):
@@ -321,17 +323,17 @@ def update_text(a=None):
     GUI_TEXTBOX.tag_remove("BOLD", 1.0, tk.END)
     GUI_TEXTBOX.tag_remove("ITALIC", 1.0, tk.END)
 
-    for word in GREEN_KEYWORDS:
+    for word in KEYWORDS_3:
         highlight(word, "GREEN", GUI_TEXTBOX)
-    for word in RED_KEYWORDS:
+    for word in KEYWORDS_2:
         highlight(word, "PINK", GUI_TEXTBOX)
-    for word in BLUE_KEYWORDS:
+    for word in KEYWORDS_6:
         highlight(word, "BLUE", GUI_TEXTBOX)
-    for word in PINK_KEYWORDS:
+    for word in KEYWORDS_5:
         highlight(word, "PINK", GUI_TEXTBOX)
-    for word in ORANGE_KEYWORDS:
+    for word in KEYWORDS_1:
         highlight(word, "ORANGE", GUI_TEXTBOX)
-    for word in LIGHT_BLUE_KEYWORDS:
+    for word in KEYWORDS_4:
         highlight(word, "LIGHT_BLUE", GUI_TEXTBOX) 
 
 
@@ -378,7 +380,7 @@ def focus_text_widget():
 def new_file(event=None):
     global FILENAME, GUI_TEXTBOX
     response = tk.messagebox.askquestion(title="⚠️ File will not be saved! ⚠️",
-                                             message="Save file before opening another file?", type="yesnocancel")
+                                             message="Save file before creating a new file?", type="yesnocancel")
     if response == "yes":
         save_file()
         GUI_TEXTBOX.delete("1.0", tk.END)
@@ -455,7 +457,18 @@ def run_file(event=None):
         GUI_TERMINAL.start_process(["python", os.path.normpath(FLOW_PATH), os.path.normpath(FILENAME), "FIDE", developer_mode_arg])
 
 def exita(event=None):
-    sys.exit()
+    response = tk.messagebox.askquestion(title="⚠️ File will not be saved! ⚠️",
+                                             message="Save file before exiting the program?", type="yesnocancel")
+    if response == "yes":
+        save_file()
+        GUI_TEXTBOX.delete("1.0", tk.END)
+        APP.update()
+        sys.exit()
+    elif response == "no":
+        GUI_TEXTBOX.delete("1.0", tk.END)
+        APP.update()
+        sys.exit()
+    
 
 def clear_console(event=None):
     global GUI_TERMINAL
@@ -750,27 +763,30 @@ def callback():
 def open_replace_window(event=None):
     global GUI_REPLACE_BUTTON, GUI_REPLACE_WORD, GUI_FIND_WORD, GUI_REPLACE_WINDOW
 
-    GUI_REPLACE_WINDOW = tk.Toplevel(APP)
-    GUI_REPLACE_WINDOW.geometry("300x200")
+    GUI_REPLACE_WINDOW = tk.Toplevel(APP, background=BACKGROUND_COLOR)
+    GUI_REPLACE_WINDOW.resizable(False, False)
+    GUI_REPLACE_WINDOW.geometry("335x200")
     GUI_REPLACE_WINDOW.title("Replace")
     GUI_REPLACE_WINDOW.iconbitmap(".\\assets\\fide_icon.ico")
 
-    GUI_FIND_WORD_LABEL = tk.Label(GUI_REPLACE_WINDOW, text="Word that will be replaced", font="Consolas 10")
+    GUI_FIND_WORD_LABEL = tk.Label(GUI_REPLACE_WINDOW, text="Word that will be replaced", font="Consolas 10", fg=FOREGROUND_COLOR, bg=BACKGROUND_COLOR)
     GUI_FIND_WORD_LABEL.place(rely=0.15, relx=0.7, anchor=tk.E)
 
     sv = tk.StringVar()
-    GUI_FIND_WORD = tk.Entry(GUI_REPLACE_WINDOW, textvariable=sv, validate="key", validatecommand=_, font="Consolas 17")
+    GUI_FIND_WORD = tk.Entry(GUI_REPLACE_WINDOW, textvariable=sv, validate="key", validatecommand=_, font="Consolas 17", fg=FOREGROUND_COLOR, bg=BACKGROUND_COLOR)
     GUI_FIND_WORD.place(relx = 0.5, rely = 0.3, anchor=tk.CENTER)
 
-    GUI_REPLACE_WORD_LABEL = tk.Label(GUI_REPLACE_WINDOW, text="Replacement", font="Consolas 10")
-    GUI_REPLACE_WORD_LABEL.place(rely=0.55, relx=0.345, anchor=tk.E)
+    GUI_REPLACE_WORD_LABEL = tk.Label(GUI_REPLACE_WINDOW, text="Replacement", font="Consolas 10", fg=FOREGROUND_COLOR, bg=BACKGROUND_COLOR)
+    GUI_REPLACE_WORD_LABEL.place(rely=0.55, relx=0.4, anchor=tk.E)
 
-
-    GUI_REPLACE_WORD = tk.Entry(GUI_REPLACE_WINDOW, font="Consolas 17")
+    GUI_REPLACE_WORD = tk.Entry(GUI_REPLACE_WINDOW, font="Consolas 17", fg=FOREGROUND_COLOR, bg=BACKGROUND_COLOR)
     GUI_REPLACE_WORD.place(relx = 0.5, rely = 0.7, anchor=tk.CENTER)
 
-    GUI_REPLACE_BUTTON = tk.Button(GUI_REPLACE_WINDOW, text="Replace", command=replace)
+    GUI_REPLACE_BUTTON = tk.Button(GUI_REPLACE_WINDOW, text="Replace", command=replace, fg=FOREGROUND_COLOR, bg=BACKGROUND_COLOR)
     GUI_REPLACE_BUTTON.place(relx=0.5, rely=0.9, anchor=tk.CENTER)
+
+    GUI_REPLACE_ARROW = tk.Label(GUI_REPLACE_WINDOW, text = "⤹", foreground="#386ed7", font=("Consolas 23"), fg=FOREGROUND_COLOR, bg=BACKGROUND_COLOR)
+    GUI_REPLACE_ARROW.place(relx=0.1, rely=0.5, anchor=tk.CENTER)
 
     # Setting the normal value for tk.Entry
 
@@ -831,7 +847,6 @@ GUI_TEXTBOX.tag_config("PINK", foreground="#cba6f7")
 GUI_TEXTBOX.tag_config("ORANGE", foreground="#f9e2af")
 GUI_TEXTBOX.tag_config("BLUE", foreground="#386ed7")
 GUI_TEXTBOX.tag_config("PURPLE", foreground="#634a7f")
-GUI_TEXTBOX.tag_config("PINK", foreground="#e57bff")
 GUI_TEXTBOX.tag_config("LIGHT_BLUE", foreground="#a5baaf")
 GUI_TEXTBOX.tag_config("BOLD", font=("Consolas", 19, "bold"))
 GUI_TEXTBOX.tag_config("ITALIC", font=("Consolas", 19, "italic"), foreground="#41b196")
@@ -939,7 +954,7 @@ update_line_counter()
 APP.bind("<Control-n>", new_file)
 APP.bind("<Control-o>", open_file_from_dialog)
 APP.bind("<Control-s>", save_file)
-APP.bind("<Control-e>", exit)
+APP.bind("<Control-e>", exita)
 APP.bind("<F5>", run_file)
 APP.bind("<Control-i>", interpreter_configuration)
 APP.bind("<Control-d>", developer_mode)
@@ -961,6 +976,5 @@ GUI_TEXTBOX.bind("<Button-3>", show_menu)
 for i in ["<Left>", "<Right>", "<Left>", "<Up>", '<Button-1>', '<Control-v>', '<Control-x>'] :
     GUI_TEXTBOX.bind(i, delete_autocomplete)
     GUI_TERMINAL.text.bind(i, restrict_input)
-    
 #MAIN LOOP
 APP.mainloop()

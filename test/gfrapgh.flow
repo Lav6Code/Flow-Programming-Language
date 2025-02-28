@@ -1,4 +1,0 @@
-var("t", Triangle(set(-5,5), set(5,5), set(-5,-5)));
-var("g", Graph(1, 5));
-output(get_x(g, 0));
-draw(g);

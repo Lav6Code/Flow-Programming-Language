@@ -10,7 +10,7 @@ def calculate_global_extent(objects):
             radius = obj["radius"]
             max_x = max(max_x, abs(center_x) + radius)
             max_y = max(max_y, abs(center_y) + radius)
-        elif obj["name"] in ["Graph", "Triangle", "Polyline", "Line", "Rectangle"]:
+        elif obj["name"] in ["Graph", "Triangle", "Polyline", "Line", "Rectangle", "Polygon"]:
             for x, y in obj["points"]:
                 max_x = max(max_x, abs(x))
                 max_y = max(max_y, abs(y))
@@ -172,10 +172,11 @@ def start(objects):
             draw_circle(obj)
         elif obj["name"] in ["Polyline", "Line"]:
             draw_polyline(obj["points"])
-        elif obj["name"] in ["Triangle", "Rectangle"]:
+        elif obj["name"] in ["Triangle", "Rectangle", "Polygon"]:
             draw_polygon(obj["points"])
         elif obj["name"] == "Graph":
             draw_graph(obj, screen_width, screen_height, max_x, max_y)
     
+    screen.cv._rootwindow.resizable(False, False)
     screen.update()
     turtle.done()

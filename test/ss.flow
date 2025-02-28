@@ -1,9 +1,0 @@
-var("s", set(1,2,3,4,5));
-var("targets", filter(
-"i",
-s,
-(>(i,1);)));
-for("i", targets, (
-remove(s, i);
-));
-output(s);

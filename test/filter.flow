@@ -1,1 +1,0 @@
-output(sort(set(1,2,3), ">"));

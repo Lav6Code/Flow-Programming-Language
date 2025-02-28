@@ -1,2 +1,0 @@
-var("B", input("bln"));
-output(+("B=", txt(B)));

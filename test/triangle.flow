@@ -1,4 +1,0 @@
-var("triangle", Triangle(set(1,1), set(3,3), set(1,3)));
-var("incircle", InCircle(triangle));
-var("circumcircle", CircumCircle(triangle));
-draw(triangle, incircle, circumcircle);

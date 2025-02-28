@@ -1,7 +1,0 @@
-if(not(TRUE),(
-output("F");
-),
-(
-output("S");
-));
-
