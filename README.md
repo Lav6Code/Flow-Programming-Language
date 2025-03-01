@@ -22,4 +22,4 @@ Examples of code are in **example** folder.
 
 ## Hardware
 
-Running FLOW was not tested on any other OS other than Windows, so it is recommended to run it that way. Running it on MacOS should not cause any errors, but still consider using Windows for safety purposes.
+Running FLOW was not tested on any other OS other than Windows, so it is recommended to run it that way. Running it on MacOS or Linux should not cause any errors, but still consider using Windows for safety purposes.
