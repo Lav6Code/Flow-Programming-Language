@@ -1,0 +1,2 @@
+var("C", Polygon(set(-5,-5), set(5,-5), set(7,0),set(5,5), set(-5,5), set(-7,0)));
+draw(C);

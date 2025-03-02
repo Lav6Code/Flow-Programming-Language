@@ -8,7 +8,6 @@ import subprocess
 import threading
 import queue
 from pathlib import Path
-import re
 
 # ------- INTERACTIVE CONSOLE -------- #
 class InteractiveConsole(tk.Frame):
@@ -123,7 +122,7 @@ KEYWORDS_2 = ['var', 'func', 'output', "sum", "input", "if", "for", "while", "su
 KEYWORDS_3 = ['"']
 KEYWORDS_4 = [";", "(", ")"]
 KEYWORDS_5 = ["TRUE", "FALSE"]
-KEYWORDS_6 = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line", "draw", "Polygon", "pi", "Graph"]
+KEYWORDS_6 = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line", "draw", "Polygon", "pi", "Graph", "Rectangle"]
 KEYWORDS_7 = ["$"] # COMMENT
 COMMANDS = KEYWORDS_3+ KEYWORDS_2 + KEYWORDS_6 + KEYWORDS_5 + KEYWORDS_7 + KEYWORDS_1 + KEYWORDS_4
 COMMANDS_DESCRIPTION = {
@@ -181,6 +180,7 @@ COMMANDS_DESCRIPTION = {
     "Line": "Line(point [set], point [set]) -> Creates a Line object with points and length attributes.",
     "Polyline": "Polyline(point [set], point [set]...) -> Creates a Polyline object with points and length attributes.",
     "Triangle": "Triangle(point [set], point [set], point [set]) -> Creates a Triangle object with points, perimeter, area, and sides attributes.",
+    "Rectangle": "Rectangle(point [set], point [set], point [set], point [set]) -> Creates a Rectangle object with points, perimeter, area, and sides attributes.",
     "Graph": "Graph(a [num], b [num]) -> Creates a Graph object following the function y=ax+b with attributes for points, perimeter, area, and sides.",
     "Circle": "Circle(center [set], radius [num]) -> Creates a Circle object with center, perimeter, area, and diameter attributes.",
     "InCircle": "InCircle(triangle [obj]) -> Creates a circle object inscribed inside a triangle with attributes for center, perimeter, area, and diameter.",

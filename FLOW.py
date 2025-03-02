@@ -382,7 +382,7 @@ def execute(token): # args with ,
         x1, y1 = args[0].sol[0], args[0].sol[1]
         x2, y2 = args[1].sol[0], args[1].sol[1]
         c = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-        obj["lentgh"] = c
+        obj["length"] = c
         obj["points"] = [[x1, y1], [x2, y2]]
 
         return obj
@@ -403,11 +403,16 @@ def execute(token): # args with ,
         points = []
         for i in args:
             points.append(i.sol)
-        # (min(x), min(y)),(max(x), min(y)), (max(x), max(y)), (min(x), max(y))
-        # sorting the points
-        bottom_left, top_left = sorted(points[:2], key=lambda p: p[1])
-        bottom_right, top_right = sorted(points[2:], key=lambda p: p[1]) 
-        points = [bottom_left, bottom_right, top_left, top_right]
+        # Sort points based on x first, and then y coordinates
+        points = sorted(points, key=lambda p: (p[0], p[1]))
+
+        # Ensure bottom-left and bottom-right are the first two points
+        bottom_left, bottom_right = points[:2]
+        # Ensure top-left and top-right are the last two points
+        top_left, top_right = points[2:]
+
+        # Reorder the points to avoid hourglass shape
+        points = [bottom_left, bottom_right, top_right, top_left]
 
         # Sides
         sides = []
@@ -817,7 +822,7 @@ def execute(token): # args with ,
         if len(args) == 1:
             return list(range(args[0].sol))
         elif len(args) == 2:
-            return list(range(args[1].sol))
+            return list(range(args[0].sol, args[1].sol))
         elif len(args) == 3:
             return(list(range(args[0].sol, args[1].sol, args[2].sol)))
         else:
@@ -981,7 +986,7 @@ def execute(token): # args with ,
         if type(args[0].sol) == list or type(args[0].sol) == str:
             return len(args[0].sol)
         else:
-            raise_error("ARGUMENT ERROR: Trying to get a lentgh of a wrong type, should be SET or TXT.", token)
+            raise_error("ARGUMENT ERROR: Trying to get a length of a wrong type, should be SET or TXT.", token)
             
 
     elif command == "intersection":
