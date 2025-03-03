@@ -1,3 +1,4 @@
+# Imports
 import sys
 import math
 import draw as d
@@ -10,6 +11,7 @@ FORBIDDEN_CHARS = ['~']
 
 VARS = {"pi": 3.1415926535}       
 FUNS = {}
+# Commands
 # Same as in the FIDE.py
 COMMANDS = [None,
             '+', '*', "-", "/", "sum",  # MATH
@@ -29,6 +31,7 @@ BOOLS = ["TRUE", "FALSE"]
 
 COMMENT = "$"
 
+# Functions
 def repeating_el(lists):
     non_repeating_elements = []
     for i in lists:
@@ -37,7 +40,7 @@ def repeating_el(lists):
     return list(set(non_repeating_elements))
         
 def is_int(strs):
-    
+    # Not the best answer, but it works
     try:
         _ = eval(strs)
         return True
@@ -64,37 +67,34 @@ class Token:
         else:
             self.dsc = ';'.join(argstr)
             
-        #print(argstr)
-            
         self.sol = None
         self.typ = None
-        # print(argstr)
         # this is needed for BLK
         nr_coms = 0
         for a in arg:
             if type(a) == Token and a.typ == "COM":
                 nr_coms += 1
         
-        if self.com:
+        if self.com: # command type case
             self.typ = "COM"
 
-        elif argstr[0][0] == '"' and argstr[0][-1] == '"':
+        elif argstr[0][0] == '"' and argstr[0][-1] == '"': # txt type case
             self.typ = "TXT"
         
-        elif is_int(argstr[0]):
+        elif is_int(argstr[0]): # num type case
             self.typ = "NUM"
 
-        elif ';' in argstr[0] or nr_coms == len(arg):
+        elif ';' in argstr[0] or nr_coms == len(arg): # blk type case
             self.typ = "BLK"
         
-        elif argstr[0] in BOOLS:
+        elif argstr[0] in BOOLS: # bln type case
             self.typ = "BLN"
 
-        elif '"' not in argstr[0]:
+        elif '"' not in argstr[0]: # var type case
             self.typ = "VAR"
 
         else: 
-            raise_error(f'SYNTAX ERROR: {self.dsc} is not a legal FLOW code structure.', self)
+            raise_error(f'SYNTAX ERROR: {self.dsc} is not a legal FLOW code structure.', self) # typ not recognized
 
         if DEVELOPER_MODE:
             print('DEBUG:  ...created', self)    
@@ -154,12 +154,14 @@ def parse_arg(sstr):
     bracket_checkup = 0 
     inside_qoutes = False
     separations = []
+    if "" in sstr.split(","): # New added (check if it breaks anything)
+        raise_error(f"ARGUMENT ERROR: Sufficient number of , in {sstr}")
     
     for i,c in enumerate(sstr):
         
-        if c == "(":
+        if c == "(": # inside brackets
             bracket_checkup += 1
-        elif c == ")":
+        elif c == ")": # outside brackets
             bracket_checkup -= 1
         
         if c == '"':
@@ -171,17 +173,15 @@ def parse_arg(sstr):
 
     sstr = list(sstr)
 
+    # adding sepration marks
     for p in separations:
         sstr[p] = "~"
-    
-    # print(f'...parsed args: {"".join(sstr).split("~")}')
-    
+
+    # splitting on sepration marks    
     return "".join(sstr).split("~")
     
     
 def parse_block(sstr):
-    
-    # print(f'...parsing block: {sstr}')
     
     bracket_checkup = 0 
     separations = []
@@ -203,12 +203,10 @@ def parse_block(sstr):
         if p != len(sstr) - 1:
             sstr[p] = "~"
     
-    # print(f'...parsed block as: {"".join(sstr).split("~")}')
-    
     return "".join(sstr).split("~")
 
 
-def execute(token): # args with ,
+def execute(token):
     global VARS, FUNS
     command = token.com
     args = token.arg
@@ -216,6 +214,7 @@ def execute(token): # args with ,
     if command == "object":
         if len(args) != 1:
             raise_error("ARGUMENT ERROR: Wrong number of arguments", token)
+
         if type(args[0].sol) == str:
             objs = {"name":str(args[0].sol)}
             return objs
@@ -235,6 +234,12 @@ def execute(token): # args with ,
         if len(args) != 2:
             raise_error("ARGUMENT ERROR: Wrong number of arguments", token)
         if type(args[0].sol) == list and type(args[1].sol) == int:
+            for i in args[0].sol:
+                if is_int(i):
+                    ...
+                else:
+                    raise_error("ARGUMENT ERROR: Circle commands takes in a list of only NUM type values")
+
             objc = {"name":"Circle",
                     "center":args[0].sol,
                     "radius":args[1].sol,
@@ -351,6 +356,7 @@ def execute(token): # args with ,
             x2, y2 = points[(i + 1) % len(points)]  # Connect to the next point, and wrap around
             distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
             sides.append(distance)
+
         # Area
         area = 0
         for i in range(len(points)):
@@ -403,11 +409,12 @@ def execute(token): # args with ,
         points = []
         for i in args:
             points.append(i.sol)
-        # Sort points based on x first, and then y coordinates
+        # Sorting points so it always looks like a rectangle
         points = sorted(points, key=lambda p: (p[0], p[1]))
 
         # Ensure bottom-left and bottom-right are the first two points
         bottom_left, bottom_right = points[:2]
+
         # Ensure top-left and top-right are the last two points
         top_left, top_right = points[2:]
 
@@ -430,6 +437,8 @@ def execute(token): # args with ,
 
         # Area
         area = sides[0]*sides[1]
+
+        # Output
 
         return {
                 "name":"Rectangle", 
