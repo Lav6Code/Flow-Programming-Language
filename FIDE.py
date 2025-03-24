@@ -258,6 +258,10 @@ def update_variables_textbox(variables):
             insert_text += f"{v}='{variables[v]}'\n" # ' for representing string(TXT)
         elif type(variables[v]) == list:
             insert_text += f"{v}={variables[v]}\n"
+        elif type(variables[v]) == float and v != "pi":
+            insert_text += f"{v}={variables[v]}\n"
+
+
 
     GUI_VARIABLE_BOX.insert("1.0",insert_text)
     GUI_VARIABLE_BOX.config(state="disabled")

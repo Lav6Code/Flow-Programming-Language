@@ -19,7 +19,7 @@ COMMANDS = [None,
             'output', "input", # USER INTERACTION
             "if", "for", "while", "loop", "seq",  # FLOW
             "set", 'var', # OBJECT CREATIONS
-            "lower", "upper", "trim", #TXT MANAGMENT
+            "lower", "upper", "trim", "replace", #TXT MANAGMENT
             "num", "txt",  #TYPES
             "disjunction", "subset", "superset", "add", "union", "sort", "reverse", "filter", "remove", "setify", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
@@ -39,12 +39,11 @@ def repeating_el(lists):
             non_repeating_elements.append(i)
     return list(set(non_repeating_elements))
         
-def is_int(strs):
-    # Not the best answer, but it works
+def is_int(s):
     try:
-        _ = eval(strs)
+        float(s)  # Try converting to a float
         return True
-    except:
+    except ValueError:
         return False
 
 class Token:
@@ -111,8 +110,12 @@ class Token:
         #print(f'...evaluating {self}')
             
         if self.typ == "NUM": 
+
             if is_int(self.arg[0]):
-                self.sol = int(self.arg[0])
+                if "." in self.arg[0]:
+                    self.sol = float(self.arg[0])
+                else:
+                    self.sol = int(self.arg[0])
                 
         elif self.typ == "TXT":
             self.sol = self.arg[0][1:-1]
@@ -148,8 +151,6 @@ def raise_error(erorr_msg, token=False):
     
 
 def parse_arg(sstr):
-    
-    # print(f'...parsing args: {sstr}')
 
     bracket_checkup = 0 
     inside_qoutes = False
@@ -233,7 +234,7 @@ def execute(token):
     elif command == "Circle":
         if len(args) != 2:
             raise_error("ARGUMENT ERROR: Wrong number of arguments", token)
-        if type(args[0].sol) == list and type(args[1].sol) == int:
+        if type(args[0].sol) == list and type(args[1].sol) in  [int, float]:
             for i in args[0].sol:
                 if is_int(i):
                     ...
@@ -251,7 +252,7 @@ def execute(token):
     elif command == "Graph":
         if len(args) != 2:
             raise_error("ARGUMENT ERROR: Wrong number of arguments", token)
-        if type(args[0].sol) == int and type(args[1].sol) == int:
+        if type(args[0].sol) in  [int, float] and type(args[1].sol) in  [int, float]:
             slope = args[0].sol
             intercept = args[1].sol
             dot_one = (0, slope*0 + intercept)
@@ -271,7 +272,7 @@ def execute(token):
             if type(i.sol) != list: 
                 raise_error("ARGUMENT ERROR: Trying to create a Polygon object, wrong arguments, should be sets points (X,Y positions).", token)
                 for j in i:
-                    if type(j) != int:
+                    if type(j) not in  [int, float]:
                         raise_error("ARGUMENT ERROR: Trying to create a Polygon object with points which X, Y coordinated are not num type.", token)    
 
 
@@ -309,7 +310,7 @@ def execute(token):
     elif command == "get_x":
         if len(args) != 2:
             raise_error("ARGUMENT ERROR: Wrong number of arguments", token)
-        if type(args[0].sol) == dict and args[0].sol["name"] == "Graph" and type(args[1].sol) == int:
+        if type(args[0].sol) == dict and args[0].sol["name"] == "Graph" and type(args[1].sol) in  [int, float]:
             a = args[0].sol["slope"]
             b = args[0].sol["intercept"]
             y = args[1].sol
@@ -321,7 +322,7 @@ def execute(token):
     elif command == "get_y":
         if len(args) != 2:
             raise_error("ARGUMENT ERROR: Wrong number of arguments", token)
-        if type(args[0].sol) == dict and args[0].sol["name"] == "Graph" and type(args[1].sol) == int:
+        if type(args[0].sol) == dict and args[0].sol["name"] == "Graph" and type(args[1].sol) in  [int, float]:
             a = args[0].sol["slope"]
             b = args[0].sol["intercept"]
             x = args[1].sol
@@ -335,7 +336,7 @@ def execute(token):
             if type(i.sol) != list: 
                 raise_error("ARGUMENT ERROR: Trying to create a Triangle object, wrong arguments, should be sets points (X,Y positions).", token)
                 for j in i:
-                    if type(j) != int:
+                    if type(j) not in  [int, float]:
                         raise_error("ARGUMENT ERROR: Trying to create a Triangle object with points which X, Y coordinated are not num type.", token)    
 
         if len(args) != 3:
@@ -473,8 +474,6 @@ def execute(token):
                 obj["length"] = obj["length"] + c
                 obj["points"].append([x1, y1])
 
-
-        # print(obj)
         return obj
 
     elif command == "InCircle":
@@ -511,7 +510,7 @@ def execute(token):
                     "diameter": radius*2,
                     "perimeter": radius*2*math.pi,
                     "area": radius**2*math.pi}
-            # print(objc)
+
             return objc
         
     elif command == "CircumCircle":
@@ -1149,7 +1148,7 @@ def execute(token):
             return a
 
         elif type_conversion.lower() == "bln":
-            # print(a)
+
             if a in [0, "0"]:
                 return False
             else:
@@ -1161,11 +1160,12 @@ def execute(token):
     elif command == "var":
         if len(args) != 2:
             raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
+
         if type(args[1].sol) in [int, str, bool, list, dict, float]:
             if args[0].sol not in BOOLS and args[0].sol != "pi":
-                #print(VARS)
+
                 VARS[args[0].sol] = args[1].sol
-                #print(VARS)
+
             else:
                 raise_error("ARGUMENT ERROR: Trying to set a variable's name to TRUE or FALSE, which can't be used as variables names.", token)
                                 
@@ -1240,7 +1240,9 @@ def execute(token):
     elif command == "replace":
         if len(args) != 3:
             raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
-        if args[0].sol == str and args[1].sol == str and args[2].sol == str:
+
+        if type(args[0].sol) == str and type(args[1].sol) == str and type(args[2].sol) == str:
+            
             value = args[0].sol
             replaces = args[1].sol
             replacement = args[2].sol
@@ -1300,7 +1302,6 @@ def tokenize(code, tokens_list=None):
         print(code)
         raise_error('SYNTAX ERROR: brackets are not balanced')
     
-    # print(f'brackets: {first_bracket}, {last_bracket}')
     if not first_bracket and not last_bracket:
         # value
         command = None
@@ -1352,7 +1353,6 @@ def run(file_path):
     global VARS, FIDE_PATH, FILE_PATH
   
     FILE_PATH = file_path
-    EXECUTE_MESSAGE =f"Flow v{FLOW_VERSION} running, {file_path.split('/')[-1]}"
 
     file = open(file_path)
     file_content = file.read()

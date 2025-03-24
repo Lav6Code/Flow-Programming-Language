@@ -1,4 +1,4 @@
-C:/Users/Val/Desktop/Kodovi za screencast/test.flow
-C:/Users/Val/Desktop/Kodovi za screencast/line.flow
-C:/Users/Val/Desktop/Kodovi za screencast/forpetlja.flow
-C:/Users/Val/Desktop/Kodovi za screencast/testvaijable.flow
+C:/Users/Val/Desktop/Kodovi za screencast/inputest.flow
+C:/Users/Val/Desktop/Kodovi za screencast/circledecimal.flow
+C:/Users/Val/Desktop/Kodovi za screencast/decimal.flow
+C:/Users/Val/Desktop/Kodovi za screencast/circle.flow
