@@ -229,6 +229,7 @@ def execute(token):
 
         argsol = []
         for i in args: argsol.append(i.sol)
+        sys.stdout.flush()
         d.start(argsol)
 
     elif command == "Circle":
@@ -791,6 +792,8 @@ def execute(token):
     elif command == "loop":
         if len(args) != 2:
             raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
+        if args[1].typ != "BLK":
+            raise_error("ARGUMENT ERROR: Trying to run a non BLK type argument in a loop", token)
         if type(args[0].sol) == int:
             for i in range(args[0].sol):
                 args[1].evaluate(forced=True)
@@ -800,6 +803,8 @@ def execute(token):
     elif command == "for":
         if len(args) != 3:
             raise_error("ARGUMENT ERROR: Wrong number of arguments.", token)
+        if args[2].typ != "BLK":
+            raise_error("ARGUMENT ERROR: Trying to run a non BLK type argument in a loop", token)
         if type(args[0].sol) == str:
             if type(args[1].sol) == list:
                 if args[0] not in VARS:

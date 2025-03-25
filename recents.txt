@@ -1,4 +1,4 @@
+C:/Users/valdr/Documents/GitHub/Flow-Programming-Language/examples/fortest.flow
+C:/Users/valdr/Documents/GitHub/Flow-Programming-Language/examples/all.flow
+C:/Users/valdr/Documents/GitHub/Flow-Programming-Language/examples/circle test.flow
 C:/Users/Val/Desktop/Kodovi za screencast/inputest.flow
-C:/Users/Val/Desktop/Kodovi za screencast/circledecimal.flow
-C:/Users/Val/Desktop/Kodovi za screencast/decimal.flow
-C:/Users/Val/Desktop/Kodovi za screencast/circle.flow

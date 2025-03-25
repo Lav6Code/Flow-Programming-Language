@@ -1,0 +1,76 @@
+
+$ MATH OPERATIONS
+output(+(1,2));
+output(-(5,3));
+output(*(4,2));
+output(/(10,2));
+output(sum(set(1,2,3,4)));
+
+$ LOGIC OPERATIONS
+output(>(5,3));
+output(<(2,8));
+output(=(4,4));
+output(>=(3,3));
+output(<=(2,5));
+output(!=(3,4));
+output(max(set(2,5,8)));
+output(min(set(2,5,8)));
+output(not(TRUE));
+output(and(TRUE,FALSE));
+output(or(FALSE,TRUE));
+output(xor(TRUE,TRUE));
+
+$ USER INTERACTION
+var("my_input", input("num"));
+output(my_input);
+
+$ FLOW CONTROL
+if(=(1,1), (output("IF PASSED"))); 
+loop(3, (output("LOOP")));
+for("i", set(1,2,3), (output(i)));
+
+$ VARIABLE & FUNCTION HANDLING
+var("x", 10);
+output(x);
+func("myFunc", (output("FUNCTION CALLED")));
+call("myFunc");
+
+$ TEXT MANIPULATION
+output(lower("HELLO"));
+output(upper("hello"));
+output(trim("  space  "));
+output(replace("hello world", "world", "FLOW"));
+
+$ TYPE CONVERSIONS
+output(num("10"));
+output(txt(5));
+
+$ SET OPERATIONS
+output(union(set(1,2), set(3,4)));
+output(intersection(set(1,2,3), set(2,3,4)));
+output(filter("i", set(1,2,3,4), (>(i,2))));
+output(fetch(set(10,20,30),1));
+output(remove(set(1,2,3),2));
+output(add(set(1,2),3));
+output(len(set(1,2,3,4)));
+output(sort(set(3,1,2),"<"));
+output(reverse(set(1,2,3)));
+output(subset(set(1,2), set(1,2,3)));
+output(superset(set(1,2,3), set(2,3)));
+
+$ GEOMETRY
+var(circle, Circle(set(0,0),5));
+output(get(circle, "radius"));
+draw(circle);
+var("triangle", Triangle(set(0,0), set(3,0), set(3,4)));
+output(get(triangle, "area"));
+draw(triangle);
+var("graph", Graph(2,3));
+output(get_x(graph, 7));
+output(get_y(graph, 2));
+
+$ OBJECT HANDLING
+var("obj", object("TestObject"));
+attr(obj, "value", 42);
+output(get(obj, "value"));
+
