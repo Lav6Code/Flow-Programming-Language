@@ -10,7 +10,7 @@ def calculate_global_extent(objects):
             radius = obj["radius"]
             max_x = max(max_x, abs(center_x) + radius)
             max_y = max(max_y, abs(center_y) + radius)
-        elif obj["name"] in ["Graph", "Triangle", "Polyline", "Line", "Rectangle", "Polygon"]:
+        elif obj["name"] in ["Graph", "Triangle", "Polyline", "Line", "Rectangle", "Polygon", "Vector"]:
             for x, y in obj["points"]:
                 max_x = max(max_x, abs(x))
                 max_y = max(max_y, abs(y))
@@ -87,6 +87,28 @@ def draw_polyline(points):
     t.pendown()
     for x, y in scaled_points:
         t.goto(x, y)
+
+def draw_vector(points, screen_width, screen_height, max_x, max_y, length):
+    
+    scaled_points = scale_points(points, screen_width, screen_height, max_x, max_y)
+    t.pensize(3)
+    t.penup()
+    t.goto(scaled_points[0])
+    t.pendown()
+    ang = t.towards(scaled_points[1])
+    a = abs(scaled_points[1][0])
+    b = abs(scaled_points[1][1])
+    hipotenuse = math.sqrt(a**2+b**2)
+    t.setheading(ang)
+    for x, y in scaled_points:
+        t.goto(x, y)
+    arlen = hipotenuse * 0.1
+    t.rt(45+90)
+    t.fd(arlen)
+    t.bk(arlen)
+    t.setheading(ang)
+    t.lt(135)
+    t.fd(arlen)
 
 def draw_polygon(points):
     scaled_points = scale_points(points, screen_width, screen_height, max_x, max_y)
@@ -176,6 +198,8 @@ def start(objects):
             draw_polygon(obj["points"])
         elif obj["name"] == "Graph":
             draw_graph(obj, screen_width, screen_height, max_x, max_y)
+        elif obj["name"] == "Vector":
+            draw_vector(obj["points"], screen_width, screen_height, max_x, max_y, obj["length"])
     
     screen.cv._rootwindow.resizable(False, False)
     screen.update()

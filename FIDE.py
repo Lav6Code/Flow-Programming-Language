@@ -118,11 +118,11 @@ APP.iconbitmap(".\\assets\\fide_icon.ico")
 
 # FLOW SETUP
 KEYWORDS_1 = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", "-1", "-2", "-3", "-4", "-5", "-6","-7", "-8", "-9"]
-KEYWORDS_2 = ['var', 'func', 'output', "sum", "input", "if", "for", "while", "sum", "min", "max", "union", "fetch", "intersection","sort", "!=", "reverse" "union", "reverse", "remove", "seq", "upper", "lower", "filter", "disjunction", "superset", "subset", "len", "call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not", "trim", "replace",  "get_x", "get_y", "setify"]
+KEYWORDS_2 = ['var', 'func', 'output', "sum", "input", "if", "for", "while", "sum", "min", "max", "union", "fetch", "intersection","sort", "!=", "reverse" "union", "reverse", "remove", "seq", "upper", "lower", "filter", "disjunction", "superset", "subset", "len","length" ,"call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not", "trim", "replace",  "get_x", "get_y", "setify"]
 KEYWORDS_3 = ['"']
 KEYWORDS_4 = [";", "(", ")"]
 KEYWORDS_5 = ["TRUE", "FALSE"]
-KEYWORDS_6 = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line", "draw", "Polygon", "pi", "Graph", "Rectangle"]
+KEYWORDS_6 = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line","Vector" , "draw", "Polygon", "pi", "Graph", "Rectangle"]
 KEYWORDS_7 = ["$"] # COMMENT
 COMMANDS = KEYWORDS_3+ KEYWORDS_2 + KEYWORDS_6 + KEYWORDS_5 + KEYWORDS_7 + KEYWORDS_1 + KEYWORDS_4
 COMMANDS_DESCRIPTION = {
@@ -186,7 +186,8 @@ COMMANDS_DESCRIPTION = {
     "InCircle": "InCircle(triangle [obj]) -> Creates a circle object inscribed inside a triangle with attributes for center, perimeter, area, and diameter.",
     "CircumCircle": "CircumCircle(triangle [obj]) -> Creates a circle object circumscribed around a triangle with attributes for center, perimeter, area, and diameter.",
     "draw": "draw(shape [obj], shape [obj]...) -> Opens a window and visually displays the specified shapes.",
-    "Polygon": "Polygon(point1 [set], point2 [set]...) -> Creates a Polygon object with points, perimeter, and area attributes."
+    "Polygon": "Polygon(point1 [set], point2 [set]...) -> Creates a Polygon object with points, perimeter, and area attributes.",
+    "Vector": "Vector(dx [num] dy [num]) -> Creates a Vector object with length atribute"
 }
 
 

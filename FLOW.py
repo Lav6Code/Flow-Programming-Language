@@ -24,7 +24,7 @@ COMMANDS = [None,
             "disjunction", "subset", "superset", "add", "union", "sort", "reverse", "filter", "remove", "setify", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", "draw", # FUNCTION RELATED
-            "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", "CircumCircle", "Polygon", "Graph", "get_x", "get_y",  #GEOMETRY
+            "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", "CircumCircle", "Polygon", "Graph", "get_x", "get_y", "Vector",  #GEOMETRY
             "get", "object", "attr" # OBJECT RELATED
             ]
 BOOLS = ["TRUE", "FALSE"]
@@ -475,6 +475,23 @@ def execute(token):
                 obj["length"] = obj["length"] + c
                 obj["points"].append([x1, y1])
 
+        return obj
+
+    elif command == "Vector":
+        if len(args) == 2:
+            for i in args:
+                if type(i.sol) in [int, float]:
+                    ...
+                else:
+                    raise_error("ARGUMENT ERROR: Wrong argument type", token)
+        x1, y1 = args[0].sol, args[1].sol
+        a = x1
+        b = y1
+        obj = {"name": "Vector",
+               "length":math.sqrt(a**2+b**2),
+               "start": (0,0),
+               "end": (x1, y1),
+               "points":[[0,0], [x1,y1]]}
         return obj
 
     elif command == "InCircle":
