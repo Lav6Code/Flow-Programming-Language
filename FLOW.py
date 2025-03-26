@@ -1,8 +1,11 @@
 # Imports
 import sys
 import math
-import draw as d
 import random
+from copy import deepcopy
+import draw as d
+
+
 FLOW_VERSION = "1.0"
 
 DEVELOPER_MODE = False
@@ -24,7 +27,7 @@ COMMANDS = [None,
             "disjunction", "subset", "superset", "add", "union", "sort", "reverse", "filter", "remove", "setify", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", "draw", # FUNCTION RELATED
-            "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", "CircumCircle", "Polygon", "Graph", "get_x", "get_y", "Vector",  #GEOMETRY
+            "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", "CircumCircle", "Polygon", "Graph", "get_x", "translate" , "get_y", "Vector",  #GEOMETRY
             "get", "object", "attr" # OBJECT RELATED
             ]
 BOOLS = ["TRUE", "FALSE"]
@@ -308,6 +311,22 @@ def execute(token):
                 "perimeter":sum(sides)
                 }
     
+    elif command == "translate":
+        
+        if len(args) != 2:
+            raise_error("ARGUMENT ERROR: Insufficent number of arguments")
+
+        vect = args[1].sol["end"]
+        dx, dy = vect[0], vect[1]
+
+        new_obj = deepcopy(args[0].sol)
+        
+        for i in range(len(new_obj["points"])):
+            new_obj["points"][i][0] += dx
+            new_obj["points"][i][1] += dy
+        
+        return new_obj
+
     elif command == "get_x":
         if len(args) != 2:
             raise_error("ARGUMENT ERROR: Wrong number of arguments", token)
