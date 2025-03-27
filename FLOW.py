@@ -248,11 +248,11 @@ def execute(token):
             else:
                 center = args[0].sol
 
-            for i in args[0].sol:
-                if is_int(i):
-                    ...
-                else:
-                    raise_error("ARGUMENT ERROR: Circle commands takes in a list of only NUM type values")
+                for i in args[0].sol:
+                    if is_int(i):
+                        ...
+                    else:
+                        raise_error("ARGUMENT ERROR: Circle commands takes in a list of only NUM type values")
 
             objc = {"name":"Circle",
                     "center":center,
@@ -290,7 +290,7 @@ def execute(token):
         for i in args: 
             if isinstance(i.sol, list):
                 if len(i.sol) == 2:
-                    for j in i.sol:  # Fix iteration
+                    for j in i.sol:
                         if not isinstance(j, (int, float)):
                             raise_error("ARGUMENT ERROR: Trying to create a Polygon object with points whose X, Y coordinates are not num type.", token)
                     points.append([i.sol[0], i.sol[1]])
@@ -432,10 +432,10 @@ def execute(token):
 
         for i in args: 
             if type(i.sol) == list: 
-                for j in i:
+                for j in i.sol:
                     if type(j) not in [int, float]:
-                        raise_error("ARGUMENT ERROR: Trying to create a Triangle object with points which X, Y coordinated are not num type.", token)    
-                    points.append([i[0], i[1]])
+                        raise_error("ARGUMENT ERROR: Trying to create a Triangle object with points which X, Y coordinated are not num type.", token)  
+                points.append([i.sol[0], i.sol[1]])
             elif type(i.sol) == dict:
                 if "name" in i.sol.keys() and "x" in i.sol.keys() and "y" in i.sol.keys():
                     if i.sol["name"] == "Point":
@@ -448,7 +448,6 @@ def execute(token):
                 raise_error("ARGUMENT ERROR: Trying to create a Triangle object, wrong arguments, should be sets points (X,Y positions) or Point OBJ.", token)
 
         # Making the object's atributes
-
         # Sides
         sides = []
     

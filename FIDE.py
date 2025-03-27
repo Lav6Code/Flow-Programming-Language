@@ -118,11 +118,11 @@ APP.iconbitmap(".\\assets\\fide_icon.ico")
 
 # FLOW SETUP
 KEYWORDS_1 = ["1", "2", "3", "3", "4", "5", "6", "7", "8", "9", "0", "-1", "-2", "-3", "-4", "-5", "-6","-7", "-8", "-9"]
-KEYWORDS_2 = ['var', 'func', 'output', "sum", "input", "if", "for", "while", "sum", "min", "max", "union", "fetch", "intersection","sort", "!=", "reverse" "union", "reverse", "remove", "seq", "upper", "lower", "filter", "disjunction", "superset", "subset", "len","length" ,"call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not", "trim", "replace",  "get_x", "get_y", "setify"]
+KEYWORDS_2 = ['var', 'func', 'output', "sum", "input", "if", "for", "while", "sum", "min", "max", "union", "fetch", "intersection","sort", "!=", "random", "reverse" "union", "reverse", "remove", "seq", "upper", "lower", "filter", "disjunction", "superset", "subset", "len","length" ,"call", "add", "num", "set", "txt", "bln", "get", "object", "attr", "loop",'+', '*', "-", "/", "<", "<=", ">", ">=", "=", "and", "xor", "or", "not", "trim", "replace",  "get_x", "get_y", "setify"]
 KEYWORDS_3 = ['"']
 KEYWORDS_4 = [";", "(", ")"]
 KEYWORDS_5 = ["TRUE", "FALSE"]
-KEYWORDS_6 = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line","Vector" , "draw", "Polygon", "pi", "Graph", "Rectangle"]
+KEYWORDS_6 = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line","Vector" , "draw", "Polygon", "pi", "Graph", "Rectangle", "translate", "Point"]
 KEYWORDS_7 = ["$"] # COMMENT
 COMMANDS = KEYWORDS_3+ KEYWORDS_2 + KEYWORDS_6 + KEYWORDS_5 + KEYWORDS_7 + KEYWORDS_1 + KEYWORDS_4
 COMMANDS_DESCRIPTION = {
@@ -168,6 +168,7 @@ COMMANDS_DESCRIPTION = {
     "num": "num(arg [txt]) -> Converts arg to type num, if possible.",
     "txt": "txt(arg [num]) -> Converts arg to type txt, if possible.",
     "bln": "bln(arg [txt|num]) -> Converts arg to type bln, if possible.",
+    "random": "random(min [num], max [max]) -> random number between min and max",
     "upper": "upper(text [txt]) -> Converts all characters in text to uppercase.",
     "lower": "lower(text [txt]) -> Converts all characters in text to lowercase.",
     "replace": "replace(text [txt], target [txt], replacement [txt]) -> Replaces all occurrences of target with replacement in text.",
@@ -177,17 +178,18 @@ COMMANDS_DESCRIPTION = {
     "object": "object(name [txt]) -> Creates an empty object with no attributes.",
     "attr": "attr(object [txt], attribute [txt], value [txt|num|bln|set]) -> Creates an attribute and adds it to the object.",
     "get": "get(object [txt], attribute [txt]) -> Returns the value of the specified attribute in the object.",
-    "Line": "Line(point [set], point [set]) -> Creates a Line object with points and length attributes.",
-    "Polyline": "Polyline(point [set], point [set]...) -> Creates a Polyline object with points and length attributes.",
-    "Triangle": "Triangle(point [set], point [set], point [set]) -> Creates a Triangle object with points, perimeter, area, and sides attributes.",
-    "Rectangle": "Rectangle(point [set], point [set], point [set], point [set]) -> Creates a Rectangle object with points, perimeter, area, and sides attributes.",
-    "Graph": "Graph(a [num], b [num]) -> Creates a Graph object following the function y=ax+b with attributes for points, perimeter, area, and sides.",
-    "Circle": "Circle(center [set], radius [num]) -> Creates a Circle object with center, perimeter, area, and diameter attributes.",
+    "Line": "Line(point [set], point [set]) -> Creates a Line object with points and length attributes, instead of sets you can use Point obj",
+    "Polyline": "Polyline(point [set], point [set]...) -> Creates a Polyline object with points and length attributes, instead of sets you can use Point obj",
+    "Triangle": "Triangle(point [set], point [set], point [set]) -> Creates a Triangle object with points, perimeter, area, and sides attributes, instead of sets you can use Point obj",
+    "Rectangle": "Rectangle(point [set], point [set], point [set], point [set]) -> Creates a Rectangle object with points, perimeter, area, and sides attributes, instead of sets you can use Point obj",
+    "Graph": "Graph(a [num], b [num]) -> Creates a Graph object following the function y=ax+b with attribute function, points, slope, intercept",
+    "Circle": "Circle(center [set], radius [num]) -> Creates a Circle object with center, perimeter, area, and diameter attributes, instead of a set you can use Point obj",
     "InCircle": "InCircle(triangle [obj]) -> Creates a circle object inscribed inside a triangle with attributes for center, perimeter, area, and diameter.",
     "CircumCircle": "CircumCircle(triangle [obj]) -> Creates a circle object circumscribed around a triangle with attributes for center, perimeter, area, and diameter.",
     "draw": "draw(shape [obj], shape [obj]...) -> Opens a window and visually displays the specified shapes.",
-    "Polygon": "Polygon(point1 [set], point2 [set]...) -> Creates a Polygon object with points, perimeter, and area attributes.",
-    "Vector": "Vector(dx [num] dy [num]) -> Creates a Vector object with length atribute"
+    "Polygon": "Polygon(point1 [set], point2 [set]...) -> Creates a Polygon object with points, perimeter, and area attributes, instead of sets you can use Point obj",
+    "Vector": "Vector(dx [num] dy [num]) -> Creates a Vector object with length atribute",
+    "Point": "Point(x [num] y [num]) -> Creates a Point object"
 }
 
 
@@ -668,8 +670,7 @@ def autocompletion(event=None):
             GUI_TEXTBOX.insert(index, word_to_complete[len(user_typed)::])
             command_help(word_to_complete)
     
-    GUI_AUTOCOMPLETE.destroy()
-    APP.update()
+            delete_autocomplete()
             
 def check_autocompletion(event=None):
     global GUI_AUTOCOMPLETE, GUI_TEXTBOX, APP
