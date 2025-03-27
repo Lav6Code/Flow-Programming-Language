@@ -1,0 +1,4 @@
+var("g", Graph(3,3));
+output(get_x(g, 3));
+output(get_y(g, 1));
+draw(g);

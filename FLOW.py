@@ -17,7 +17,7 @@ FUNS = {}
 # Commands
 # Same as in the FIDE.py
 COMMANDS = [None,
-            '+', '*', "-", "/", "sum",  # MATH
+            '+', '*', "-", "/", "sum", "random",  # MATH
             ">", "<", "=", ">=", "<=", "!=", "max", "min", "not", "and", "or", "xor", # LOGIC
             'output', "input", # USER INTERACTION
             "if", "for", "while", "loop", "seq",  # FLOW
@@ -27,7 +27,7 @@ COMMANDS = [None,
             "disjunction", "subset", "superset", "add", "union", "sort", "reverse", "filter", "remove", "setify", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", "draw", # FUNCTION RELATED
-            "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", "CircumCircle", "Polygon", "Graph", "get_x", "translate" , "get_y", "Vector",  #GEOMETRY
+            "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", "CircumCircle", "Point", "Polygon", "Graph", "get_x", "translate" , "get_y", "Vector",  #GEOMETRY
             "get", "object", "attr" # OBJECT RELATED
             ]
 BOOLS = ["TRUE", "FALSE"]
@@ -218,6 +218,9 @@ def execute(token):
     if command == "object":
         if len(args) != 1:
             raise_error("ARGUMENT ERROR: Wrong number of arguments", token)
+        
+        if args[0].sol in COMMANDS:
+            raise_error("ARGUMENT ERROR: Object can't be named after a built in command", token)
 
         if type(args[0].sol) == str:
             objs = {"name":str(args[0].sol)}
@@ -238,7 +241,13 @@ def execute(token):
     elif command == "Circle":
         if len(args) != 2:
             raise_error("ARGUMENT ERROR: Wrong number of arguments", token)
-        if type(args[0].sol) == list and type(args[1].sol) in  [int, float]:
+        if type(args[0].sol) in [dict, list] and type(args[1].sol) in  [int, float]:
+
+            if type(args[0].sol) == dict:
+                center = [args[0].sol["x"], args[0].sol["y"]]
+            else:
+                center = args[0].sol
+
             for i in args[0].sol:
                 if is_int(i):
                     ...
@@ -246,7 +255,7 @@ def execute(token):
                     raise_error("ARGUMENT ERROR: Circle commands takes in a list of only NUM type values")
 
             objc = {"name":"Circle",
-                    "center":args[0].sol,
+                    "center":center,
                     "radius":args[1].sol,
                     "diameter": args[1].sol*2,
                     "perimeter": args[1].sol*2*math.pi,
@@ -271,20 +280,30 @@ def execute(token):
         else:
             raise_error("ARGUMENT ERROR: Both arguments in Graph() command should be NUM", token)
     
-    elif command == "Polygon":
-        for i in args: 
-            if type(i.sol) != list: 
-                raise_error("ARGUMENT ERROR: Trying to create a Polygon object, wrong arguments, should be sets points (X,Y positions).", token)
-                for j in i:
-                    if type(j) not in  [int, float]:
-                        raise_error("ARGUMENT ERROR: Trying to create a Polygon object with points which X, Y coordinated are not num type.", token)    
+    elif command == "Point":
+        if not(type(args[0].sol) in [int, float] and type(args[1].sol) in [int, float]):
+            raise_error("ARGUMENT ERROR: Wrong argument type")
+        return {"name": "Point", "x":args[0].sol, "y":args[1].sol}
 
+    elif command == "Polygon":
+        points = []
+        for i in args: 
+            if isinstance(i.sol, list):
+                if len(i.sol) == 2:
+                    for j in i.sol:  # Fix iteration
+                        if not isinstance(j, (int, float)):
+                            raise_error("ARGUMENT ERROR: Trying to create a Polygon object with points whose X, Y coordinates are not num type.", token)
+                    points.append([i.sol[0], i.sol[1]])
+                else:
+                    raise_error("ARGUMENT ERROR: Length of every set used in creating Polygon object needs to be 2", token)
+            elif isinstance(i.sol, dict):
+                if i.sol.get("name") == "Point":  # Use .get() to avoid KeyError
+                    if "x" in i.sol and "y" in i.sol:
+                        points.append([i.sol["x"], i.sol["y"]])
+                    else:
+                        raise_error("ARGUMENT ERROR: Point object is missing 'x' or 'y' key.", token)
 
         # Making the object's atributes
-        # Points
-        points = []
-        for i in args:
-            points.append(i.sol)
         # Sides
         sides = []
     
@@ -314,61 +333,122 @@ def execute(token):
     elif command == "translate":
         
         if len(args) != 2:
-            raise_error("ARGUMENT ERROR: Insufficent number of arguments")
+            raise_error("ARGUMENT ERROR: Insufficent number of arguments", token)
+
+        if type(args[0].sol) != dict and type(args[1].sol) != dict:
+            raise_error("ARGUMENT ERROR: Wrong argument type, should be OBJ", token)
+
+        if "name" not in args[0].sol.keys():
+            raise_error("ARGUMENT ERROR: Object is not valid for this operation", token)
+
+        if args[0].sol["name"] in ["Vector", "Graph"]:
+            raise_error("ARGUMENT ERROR: Wrong object used as an argument", token)
+
+        if type(args[1].sol) != dict:
+            raise_error("ARGUMENT ERROR: Second argument should be a Vector OBJ",token)
+
+        if "name" not in args[1].sol.keys:
+            raise_error("ARGUMENT ERROR: Object is not valid for this operation", token)
+        
+        if args[1].sol["name"] != "Vector":
+            raise_error("ARGUMENT ERROR: Wrong object used as an argument", token)
+
+        if "end" not in args[1].sol.keys():
+            raise_error("ARGUMENT ERROR: end attribute is not inside the Vector object")
 
         vect = args[1].sol["end"]
         dx, dy = vect[0], vect[1]
 
         new_obj = deepcopy(args[0].sol)
         
-        for i in range(len(new_obj["points"])):
-            new_obj["points"][i][0] += dx
-            new_obj["points"][i][1] += dy
-        
+        if new_obj["name"] != "Circle":
+            for i in range(len(new_obj["points"])):
+                new_obj["points"][i][0] += dx
+                new_obj["points"][i][1] += dy
+        else:
+            new_obj["center"][0] += dx
+            new_obj["center"][1] += dy
         return new_obj
 
     elif command == "get_x":
         if len(args) != 2:
             raise_error("ARGUMENT ERROR: Wrong number of arguments", token)
-        if type(args[0].sol) == dict and args[0].sol["name"] == "Graph" and type(args[1].sol) in  [int, float]:
-            a = args[0].sol["slope"]
-            b = args[0].sol["intercept"]
-            y = args[1].sol
-            x = y/a - b
-            return x
+        
+        if type(args[0].sol) == dict:
+            if "name" in args[0].sol.keys():
+                if args[0].sol["name"] == "Graph":
+                    if type(args[1].sol) in [int, float]:
+                        if "slope" in args[0].sol.keys() and "intercept" in args[0].sol.keys():
+                            a = args[0].sol["slope"]
+                            b = args[0].sol["intercept"]
+                            y = args[1].sol
+
+                            if not isinstance(y, (int, float)):
+                                raise_error("ARGUMENT ERROR: 'y' must be a number.", token)
+
+                            x = (y - b) / a  # Corrected formula
+                            return x
+
+                        else:
+                            raise_error("ARGUMENT ERROR: Object is not valid for this operation", token)
+                    else:
+                        raise_error("ARGUMENT ERROR: Wrong argument type, should be NUM", token)
+                else:
+                    raise_error("ARGUMENT ERROR: Object should has a name attribute that is Graph", token) 
+            else:
+                raise_error("ARGUMENT ERROR: Object is not valid for this operation", token)
         else:
-            raise_error("ARGUMENT ERROR: While trying to get x from graph, wrong type error occured.")
+            raise_error("ARGUMENT ERROR: First argument should be OBJ.", token)
     
     elif command == "get_y":
         if len(args) != 2:
             raise_error("ARGUMENT ERROR: Wrong number of arguments", token)
-        if type(args[0].sol) == dict and args[0].sol["name"] == "Graph" and type(args[1].sol) in  [int, float]:
-            a = args[0].sol["slope"]
-            b = args[0].sol["intercept"]
-            x = args[1].sol
-            y = a*x+b
-            return y
+        if type(args[0].sol) == dict:
+            if "name" in args[0].sol.keys():
+                if args[0].sol["name"] == "Graph":
+                    if type(args[1].sol) in [int, float]:
+                        if "slope" in args[0].sol.keys() and "intercept" in args[0].sol.keys():
+                            a = args[0].sol["slope"]
+                            b = args[0].sol["intercept"]
+                            x = args[1].sol
+                            y = a*x+b
+                            return y
+                        else:
+                            raise_error("ARGUMENT ERROR: Object is not valid for this operation", token)
+                    else:
+                        raise_error("ARGUMENT ERROR: Wrong argument type, should be NUM", token)
+                else:
+                    raise_error("ARGUMENT ERROR: Object should has a name attribute that is Graph", token) 
+            else:
+                raise_error("ARGUMENT ERROR: Object is not valid for this operation", token)
         else:
-            raise_error("ARGUMENT ERROR: While trying to get y from graph, wrong type error occured.")
+            raise_error("ARGUMENT ERROR: First argument should be OBJ.", token)
 
     elif command == "Triangle":
-        for i in args: 
-            if type(i.sol) != list: 
-                raise_error("ARGUMENT ERROR: Trying to create a Triangle object, wrong arguments, should be sets points (X,Y positions).", token)
-                for j in i:
-                    if type(j) not in  [int, float]:
-                        raise_error("ARGUMENT ERROR: Trying to create a Triangle object with points which X, Y coordinated are not num type.", token)    
-
+        points = []
+        
         if len(args) != 3:
             raise_error("ARGUMENT ERROR: Number of points required to create a Triangle is be 3.", token)
 
+        for i in args: 
+            if type(i.sol) == list: 
+                for j in i:
+                    if type(j) not in [int, float]:
+                        raise_error("ARGUMENT ERROR: Trying to create a Triangle object with points which X, Y coordinated are not num type.", token)    
+                    points.append([i[0], i[1]])
+            elif type(i.sol) == dict:
+                if "name" in i.sol.keys() and "x" in i.sol.keys() and "y" in i.sol.keys():
+                    if i.sol["name"] == "Point":
+                        points.append([i.sol["x"], i.sol["y"]])
+                    else:
+                        raise_error("ARGUMENT ERROR: name attribute should be Point", token)
+                else:
+                    raise_error("ARGUMENT ERROR: name,x,y attributes should be inside the Point attribute", token)
+            else:
+                raise_error("ARGUMENT ERROR: Trying to create a Triangle object, wrong arguments, should be sets points (X,Y positions) or Point OBJ.", token)
+
         # Making the object's atributes
 
-        # Points
-        points = []
-        for i in args:
-            points.append(i.sol)
-        
         # Sides
         sides = []
     
@@ -395,41 +475,63 @@ def execute(token):
                 }
 
     elif command == "Line":
+        points = []
         for i in args: 
-            if type(i.sol) != list: 
-                raise_error("ARGUMENT ERROR: Trying to create a Line object, wrong arguments, should be 2 sets that represent points (x,y)", token)
+            if type(i.sol) == list: 
                 for j in i:
                     if type(j) != int:
+                        
                         raise_error("ARGUMENT ERROR: Trying to create a Line object with points which X, Y coordinated are not num type.", token)    
+                    points.append[[i[0], i[1]]]
+            elif type(i.sol) == dict:
+                if "name" in i.sol.keys() and "x" in i.sol.keys() and "y" in i.sol.keys():
+                    if i.sol["name"] == "Point":
+                        points.append([i.sol["x"], i.sol["y"]])
+                    else:
+                        raise_error("ARGUMENT ERROR: name attribute should be Point", token)
+                else:
+                    raise_error("ARGUMENT ERROR: name,x,y attributes should be inside the Point attribute", token)
+            else:
+                raise_error("ARGUMENT ERROR: Trying to create a Line object, wrong arguments, should be 2 sets that represent points (x,y)", token)
 
         if len(args) != 2:
             raise_error("ARGUMENT ERROR: Number of points required to create a Line is be 2.", token)
         
         obj = {"name":"Line"}
-        x1, y1 = args[0].sol[0], args[0].sol[1]
-        x2, y2 = args[1].sol[0], args[1].sol[1]
+        x1, y1 = points[0]
+        x2, y2 = points[1]
         c = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
         obj["length"] = c
-        obj["points"] = [[x1, y1], [x2, y2]]
+        obj["points"] = points
 
         return obj
 
     elif command == "Rectangle":
+        points = []
         for i in args: 
-            if type(i.sol) != list: 
-                raise_error("ARGUMENT ERROR: Trying to create a Rectangle object, wrong arguments, should be sets points (X,Y positions).", token)
+            if type(i.sol) == list: 
                 for j in i:
                     if type(j) != int:
                         raise_error("ARGUMENT ERROR: Trying to create a Rectangle object with points which X, Y coordinated are not num type.", token)    
+                    points.append([i[0],i[1]])
+
+            elif type(i.sol) == dict:
+                if "name" in i.sol.keys() and "x" in i.sol.keys() and "y" in i.sol.keys():
+                    if i.sol["name"] == "Point":
+                        points.append([i.sol["x"], i.sol["y"]])
+                    else:
+                        raise_error("ARGUMENT ERROR: name attribute should be Point", token)
+                else:
+                    raise_error("ARGUMENT ERROR: name,x,y attributes should be inside the Point attribute", token)
+            else:
+                raise_error("ARGUMENT ERROR: Trying to create a Rectangle object, wrong arguments, should be sets points (X,Y positions).", token)
+
+        
         if len(args) != 4:
             raise_error("ARGUMENT ERROR: Number of points required to create a Rectangle is 4.", token)
 
         # Making the object's atributes
 
-        # Points
-        points = []
-        for i in args:
-            points.append(i.sol)
         # Sorting points so it always looks like a rectangle
         points = sorted(points, key=lambda p: (p[0], p[1]))
 
@@ -472,7 +574,7 @@ def execute(token):
 
     elif command == "Polyline":
         for i in args: 
-            if type(i.sol) != list: 
+            if type(i.sol) == list: 
                 raise_error("ARGUMENT ERROR: Trying to create a Polyline object, wrong arguments, should be multiple sets that represent points (x,y)", token)
         if len(args) <= 1:
             raise_error("ARGUMENT ERROR: Number of points required to create a Line is at least 2.", token)
@@ -859,8 +961,11 @@ def execute(token):
     elif command == "random":
         if len(args) == 2:
             start = args[0].sol
-            end = args[0].sol
-            return random.randint(start, end)
+            end = args[1].sol
+            if type(start) == type(end) == int:
+                return random.randint(start, end)
+            else:
+                raise_error("ARGUMENT ERROR: Lowest and the highest values need to be NUM type.")
         else:
             raise_error("ARGUMENT ERROR: random command only takes in 2 NUM types that represent lowest and the highest value command can result.", token)
     

@@ -1,0 +1,4 @@
+var("p",Point(5,5));
+var("p1",Point(0,5));
+var("l", Line(p,p1));
+draw(l);

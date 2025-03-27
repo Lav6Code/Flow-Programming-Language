@@ -1,0 +1,6 @@
+var("p", Point(0,0));
+var("p1", Point(4,0));
+var("p2", Point(4,4));
+var("p3", Point(0,4));
+var("r", Rectangle(p,p1,p2,p3));
+draw(r);

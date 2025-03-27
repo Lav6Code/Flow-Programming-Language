@@ -14,12 +14,17 @@ def calculate_global_extent(objects):
             for x, y in obj["points"]:
                 max_x = max(max_x, abs(x))
                 max_y = max(max_y, abs(y))
+        elif obj["name"] == "Point":
+            center_x, center_y = obj["x"], obj["y"]
+            radius = 1
+            max_x = max(max_x, abs(center_x) + radius)
+            max_y = max(max_y, abs(center_y) + radius)
     return max_x + 1, max_y + 1
 
 def draw_grid(screen_width, screen_height, max_x, max_y, margin=50):
     """Draws a grid centered at (0,0), covering all four quadrants."""
     t.penup()
-    t.color("gray")
+    t.color("#989898")
     step = (screen_height - margin * 2) // (2 * max(max_x, max_y) or 1)
     
     # Draw horizontal lines
@@ -43,8 +48,8 @@ def draw_grid(screen_width, screen_height, max_x, max_y, margin=50):
             t.write(x, align="center", font=("Arial", 10, "normal"))
     
     # Draw axes with arrows
-    t.color("black")
-    t.pensize(3)
+    t.color("#696969")
+    t.pensize(2)
     
     # X-axis
     t.goto(-max_x * step, 0)
@@ -73,6 +78,8 @@ def draw_grid(screen_width, screen_height, max_x, max_y, margin=50):
     t.write("X", font=("Arial", 12, "bold"))
     t.goto(-25, max_y * step - 20)
     t.write("Y", font=("Arial", 12, "bold"))
+
+    t.color("black")
 
 def scale_points(points, screen_width, screen_height, max_x, max_y, margin=50):
     """Scale points to fit within the centered grid."""
@@ -109,6 +116,7 @@ def draw_vector(points, screen_width, screen_height, max_x, max_y, length):
     t.setheading(ang)
     t.lt(135)
     t.fd(arlen)
+    t.setheading(0)
 
 def draw_polygon(points):
     scaled_points = scale_points(points, screen_width, screen_height, max_x, max_y)
@@ -129,6 +137,17 @@ def draw_circle(circle_obj):
     t.pendown()
     t.pensize(3)
     t.circle(scaled_radius)
+
+def draw_point(x,y):
+    step = (screen_height - 2 * margin) // (2 * max(max_x, max_y) or 1)
+    scaled_center = scale_points([[x,y]], screen_width, screen_height, max_x, max_y)[0]
+    scaled_radius = 0.1 * step
+    t.penup()
+    t.goto(scaled_center[0], scaled_center[1] - scaled_radius)
+    t.pendown()
+    t.pensize(5)
+    t.circle(scaled_radius)
+    t.fillcolor("black")
 
 def draw_graph(graph_obj, screen_width, screen_height, max_x, max_y):
     """Draw a graph based on the slope and intercept in the object."""
@@ -200,7 +219,9 @@ def start(objects):
             draw_graph(obj, screen_width, screen_height, max_x, max_y)
         elif obj["name"] == "Vector":
             draw_vector(obj["points"], screen_width, screen_height, max_x, max_y, obj["length"])
-    
+        elif obj["name"] == "Point":
+            draw_point(obj["x"],obj["y"])
+
     screen.cv._rootwindow.resizable(False, False)
     screen.update()
     turtle.done()
