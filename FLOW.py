@@ -27,7 +27,7 @@ COMMANDS = [None,
             "disjunction", "subset", "superset", "add", "union", "sort", "reverse", "filter", "remove", "setify", # SET RELATED
             "len", "fetch", "intersection",  # SET RELATED
             "func", "call", "draw", # FUNCTION RELATED
-            "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", "CircumCircle", "Point", "Polygon", "Graph", "get_x", "translate" , "get_y", "Vector",  #GEOMETRY
+            "Triangle", "Line", "Circle", "Polyline", "Rectangle", "InCircle", "CircumCircle", "rotate" ,"Point", "Polygon", "Graph", "get_x", "translate" , "get_y", "Vector",  #GEOMETRY
             "get", "object", "attr" # OBJECT RELATED
             ]
 BOOLS = ["TRUE", "FALSE"]
@@ -252,7 +252,7 @@ def execute(token):
                     if is_int(i):
                         ...
                     else:
-                        raise_error("ARGUMENT ERROR: Circle commands takes in a list of only NUM type values")
+                        raise_error("ARGUMENT ERROR: Circle commands takes in a list of only NUM type values",token)
 
             objc = {"name":"Circle",
                     "center":center,
@@ -330,6 +330,65 @@ def execute(token):
                 "perimeter":sum(sides)
                 }
     
+    elif command == "rotate":
+        if type(args[0].sol) == dict:
+            if "points" in args[0].sol:
+
+                if len(args) == 3:
+                    if type(args[1].sol) == dict:
+                        if "x" in args[1].sol.keys() and "y" in args[1].sol.keys():
+                            cx,cy = [args[1].sol["x"], args[1].sol["y"]]
+
+
+                    elif type(args[1].sol) == list:
+                        if len(args[1].sol) == 2:
+                            if type(args[1].sol[0]) == int and type(args[1].sol[1]) == int:
+                                cx, cy = args[1].sol
+                    else:
+                        raise_error("ARGUMENT ERROR: Second argument in rotate function is not Point obj or set",token)
+                    points = args[0].sol["points"]
+                    if type(args[2].sol) == int:
+                        angle = args[2].sol
+                    else:
+                        raise_error("ARGUMENT ERROR: Third argument")
+
+                elif len(args) == 2:
+                    cx = sum(e[0] for e in args[0].sol["points"]) // len(args[0].sol["points"])
+                    cy = sum(e[1] for e in args[0].sol["points"]) // len(args[0].sol["points"])
+                    if type(args[1].sol) == int:
+                        angle = args[1].sol
+                    else:
+                        raise_error("ARGUMENT ERROR: Third argument")
+                    points = args[0].sol["points"]
+
+                updated_points = []
+                for i in points:
+                    x,y = i
+                    radians = math.radians(angle)
+                    cos_theta = math.cos(radians)
+                    sin_theta = math.sin(radians)
+                    # Translate point to origin
+                    x -= cx
+                    y -= cy
+ 
+                    # Rotate around origin
+                    x_new = x * cos_theta - y * sin_theta
+                    y_new = x * sin_theta + y * cos_theta
+                    updated_points.append([x_new+cx, y_new+cy])
+                    
+            else:
+                raise_error("ARGUMENT TYPE: Inavlid obj format")
+        else:
+            raise_error("ARGUMENT TYPE: First argument of rotate command should be OBJ")
+
+        new_obj = deepcopy(args[0].sol)
+
+        new_obj["points"] = updated_points
+
+        return new_obj
+
+
+
     elif command == "translate":
         
         if len(args) != 2:
@@ -509,10 +568,10 @@ def execute(token):
         points = []
         for i in args: 
             if type(i.sol) == list: 
-                for j in i:
+                for j in i.sol:
                     if type(j) != int:
                         raise_error("ARGUMENT ERROR: Trying to create a Rectangle object with points which X, Y coordinated are not num type.", token)    
-                    points.append([i[0],i[1]])
+                points.append(i.sol)
 
             elif type(i.sol) == dict:
                 if "name" in i.sol.keys() and "x" in i.sol.keys() and "y" in i.sol.keys():
