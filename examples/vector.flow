@@ -1,0 +1,2 @@
+var("V", Vector(2,2));
+draw(V);

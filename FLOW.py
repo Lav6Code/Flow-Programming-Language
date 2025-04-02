@@ -406,7 +406,7 @@ def execute(token):
         if type(args[1].sol) != dict:
             raise_error("ARGUMENT ERROR: Second argument should be a Vector OBJ",token)
 
-        if "name" not in args[1].sol.keys:
+        if "name" not in args[1].sol.keys():
             raise_error("ARGUMENT ERROR: Object is not valid for this operation", token)
         
         if args[1].sol["name"] != "Vector":
@@ -1359,7 +1359,7 @@ def execute(token):
                 return True
         
         else:
-            raise_error("ARGUMENT ERROR: Input's arguments should only be 'num' or 'txt' depending on what type does a user wants to convert value into.", token)
+            raise_error("ARGUMENT ERROR: Input's arguments should only be 'num', 'txt' or 'bln' depending on what type does a user wants to convert value into.", token)
 
     elif command == "var":
         if len(args) != 2:

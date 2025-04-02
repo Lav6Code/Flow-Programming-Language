@@ -1,2 +1,0 @@
-output("prije");
-draw(Circle(set(1,1), 4.4));

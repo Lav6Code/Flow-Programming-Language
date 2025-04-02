@@ -1,5 +1,4 @@
 var("N",5); $ Creating a variable N
-for(N,( $ Using variable N as repetition counter
+for("N",seq(N), ( $ Using variable N as repetition counter
 output("FLOW is awesome!"); $ Print
 ));
-

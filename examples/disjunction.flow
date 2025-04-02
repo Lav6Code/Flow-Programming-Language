@@ -2,4 +2,3 @@ var("SET1", set(1,2,3)); $ Creating SET 1
 var("SET2", set(2,3,4)); $ Creating SET 2
 output(disjunction(SET1, SET2)); $ Disjunction
 $ Disjunction takes elements that only appear onces in both sets
-

@@ -1,0 +1,4 @@
+output(not(TRUE));
+output(and(TRUE,FALSE));
+output(or(FALSE,TRUE));
+output(xor(TRUE,TRUE));

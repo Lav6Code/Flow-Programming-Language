@@ -1,0 +1,1 @@
+output(sort(set(3,1,2),"<"));

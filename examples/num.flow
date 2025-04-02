@@ -1,1 +1,2 @@
-var("a", num(input()));
+var("a", input("num"));
+output(a)

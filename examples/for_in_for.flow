@@ -1,5 +1,5 @@
-for(5,( $ For loop 1
-	for(5,( $ For loop 2
+for("i", seq(5),( $ For loop 1
+	for("j", seq(5),( $ For loop 2
 		output("This will print 25 times");
 		)
 	);

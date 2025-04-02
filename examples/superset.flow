@@ -1,0 +1,5 @@
+var("A",set(1,2,3));
+var("B",set(1,2));
+if(superset(A,B),
+(output("A is superset of B");
+));

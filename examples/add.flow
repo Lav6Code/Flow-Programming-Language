@@ -1,0 +1,1 @@
+output(add(set(1,2),3));

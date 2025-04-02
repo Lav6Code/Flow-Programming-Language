@@ -1,0 +1,2 @@
+var("l", Line(set(5,5),set(0,5)));
+draw(l);

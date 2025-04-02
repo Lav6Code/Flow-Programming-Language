@@ -1,0 +1,4 @@
+var("R", Rectangle(set(-5,-5), set(5,5), set(-5,5), set(5,-5)));
+var("P", Point(0,0));
+var("R1", rotate(R,P,45));
+draw(R, R1);

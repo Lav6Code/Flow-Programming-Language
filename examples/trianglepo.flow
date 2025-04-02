@@ -1,2 +1,0 @@
-var("t", Triangle(set(1,1),Point(2,2), set(0,9)));
-draw(t);

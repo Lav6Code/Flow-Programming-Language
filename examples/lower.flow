@@ -1,5 +1,4 @@
 var("a", 1); $ Creating the variable "a"
-if(<(a,2),( $ If a is LESS than 1
+if(<(a,2),( $ If a is lower than 2
 output("a<2");
 ));
-

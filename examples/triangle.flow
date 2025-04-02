@@ -1,0 +1,2 @@
+var("t", Triangle(set(0,5),set(5,5),set(0,0)));
+draw(t);

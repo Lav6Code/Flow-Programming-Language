@@ -1,5 +1,5 @@
 var("p",Point(5,5));
 var("p1",Point(0,5));
 var("p2",Point(0,0));
-var("t", Triangle(p,set(0,5),Point(2,2)));
-draw(Circle(p, 4));
+var("t", Triangle(p,p1,p2));
+draw(t);

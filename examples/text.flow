@@ -1,0 +1,4 @@
+output(lower("HELLO"));
+output(upper("hello"));
+output(trim("  space  "));
+output(replace("hello world", "world", "FLOW"));

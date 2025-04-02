@@ -1,0 +1,4 @@
+var("a", 2); $ Creating variable a
+if(!=(a,1), $ If for checking inequality between variable A and 1
+(output("a!=1"); $ This code will run if A is not equal to 1
+)); 

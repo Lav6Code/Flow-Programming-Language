@@ -1,4 +1,0 @@
-var("T", Rectangle(set(-5,-5), set(5,5), set(-5,5), set(5,-5)));
-var("p", Point(0,0));
-var("t1", rotate(T, p ,45));
-draw(T,t1);
