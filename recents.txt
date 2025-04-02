@@ -1,3 +1,10 @@
+<<<<<<< HEAD
 C:/Users/valdr/Documents/GitHub/Flow-Programming-Language/examples/linepoints.flow
 C:/Users/valdr/Documents/GitHub/Flow-Programming-Language/examples/trianglepoints.flow
 C:/Users/valdr/Documents/GitHub/Flow-Programming-Language/examples/translate.flow
+=======
+C:/Users/Val/Documents/GitHub/Flow-Programming-Language/examples/rotation.flow
+C:/Users/valdr/Documents/GitHub/Flow-Programming-Language/examples/trianglepoints.flow
+C:/Users/valdr/Documents/GitHub/Flow-Programming-Language/examples/trianglepo.flow
+C:/Users/Val/Documents/GitHub/Flow-Programming-Language/examples/pointtest.flow
+>>>>>>> 97dde2eea34cfcc4a1456a35d411477fb2b212e0
