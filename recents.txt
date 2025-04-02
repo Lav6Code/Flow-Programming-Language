@@ -1,4 +1,3 @@
+C:/Users/valdr/Documents/GitHub/Flow-Programming-Language/examples/linepoints.flow
 C:/Users/valdr/Documents/GitHub/Flow-Programming-Language/examples/trianglepoints.flow
-C:/Users/valdr/Documents/GitHub/Flow-Programming-Language/examples/trianglepo.flow
-C:/Users/Val/Documents/GitHub/Flow-Programming-Language/examples/pointtest.flow
-C:/Users/Val/Documents/GitHub/Flow-Programming-Language/examples/randomtest.flow
+C:/Users/valdr/Documents/GitHub/Flow-Programming-Language/examples/translate.flow
