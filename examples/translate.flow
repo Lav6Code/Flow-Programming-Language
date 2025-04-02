@@ -1,0 +1,3 @@
+var("trokut", Triangle(Point(0,0.5), Point(0,3.5), Point(3,3.5)));
+var("vector", Vector(3,3));
+draw(vector);

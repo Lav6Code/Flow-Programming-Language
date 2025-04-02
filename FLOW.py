@@ -536,11 +536,12 @@ def execute(token):
         points = []
         for i in args: 
             if type(i.sol) == list: 
-                for j in i:
+                for j in i.sol:
                     if type(j) != int:
                         
                         raise_error("ARGUMENT ERROR: Trying to create a Line object with points which X, Y coordinated are not num type.", token)    
-                    points.append[[i[0], i[1]]]
+                    points.append([i.sol[0], i.sol[1]])
+
             elif type(i.sol) == dict:
                 if "name" in i.sol.keys() and "x" in i.sol.keys() and "y" in i.sol.keys():
                     if i.sol["name"] == "Point":
