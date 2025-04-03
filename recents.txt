@@ -1,4 +1,4 @@
+C:/Users/valdr/Dropbox/PROGRAMIRANJE/line.flow
+C:/Users/valdr/Dropbox/PROGRAMIRANJE/linetst.flow
 C:/Users/valdr/Dropbox/PROGRAMIRANJE/zadatak.flow
 C:/Users/Val/Documents/GitHub/Flow-Programming-Language/examples/rotation.flow
-C:/Users/valdr/Documents/GitHub/Flow-Programming-Language/examples/trianglepoints.flow
-C:/Users/valdr/Documents/GitHub/Flow-Programming-Language/examples/trianglepo.flow
