@@ -35,13 +35,31 @@ BOOLS = ["TRUE", "FALSE"]
 COMMENT = "$"
 
 # Functions
+"""
+Repeating_el: checks if there are repeating elements inside a list
+
+Args:
+    lists: LIST -> list that will be checked for repeating elements
+
+Returns:
+    solution: NUM/SET/OBJ/TXT/BLN
+"""
 def repeating_el(lists):
     non_repeating_elements = []
     for i in lists:
         if lists.count(i) == 1:
             non_repeating_elements.append(i)
     return list(set(non_repeating_elements))
-        
+
+"""
+is_int: Checks if string can be made into a int
+
+Args:
+    s: TXT -> string that will be checked
+
+Returns:
+    solution: BLN -> True if can, otherwise False
+"""
 def is_int(s):
     try:
         float(s)  # Try converting to a float
@@ -105,7 +123,19 @@ class Token:
     def __repr__(self):
         return f"{self.typ} Token {self.dsc} (sol: {self.sol})"
         
-    
+    """
+    Evaluate: calculates a solution for tokens
+
+    Args:
+        self: token
+        forced: BLN -> if True runs BLK (this is used if a BLK is inside a loop, if...)
+
+    Returns:
+        updates SOL atribute on token (self)
+
+    Raises:
+        Error, if occurs
+    """
     def evaluate(self, forced=False):
 
         global VARS
@@ -146,13 +176,32 @@ class Token:
             else:
                 raise_error(f'SYNTAX ERROR: {self.dsc} is not recognized as any FUNCTION, VARIABLE or COMMAND', self)
 
+"""
+Raise_error: Shows an error in console
+
+Args:
+    error_msg: TXT -> text that will be displayed
+    token: TOKEN -> token in which error occured
+
+Returns:
+    prints the error message and where was it found
+"""
 def raise_error(erorr_msg, token=False):
     print(erorr_msg)
     if token:
         print(f"ERROR FOUND IN {token.dsc}")
     exit()
     
+"""
+Parse_arg: Parses an arg (splits on ,)
 
+Args:
+    sstr: STR -> argument text
+
+Returns:
+    args: LIST
+
+"""
 def parse_arg(sstr):
 
     bracket_checkup = 0 
@@ -184,7 +233,16 @@ def parse_arg(sstr):
     # splitting on sepration marks    
     return "".join(sstr).split("~")
     
-    
+"""
+Execute: Splitting block on ;
+
+Args:
+    sstr: TXT -> block text
+
+Returns:
+    lines: LIST -> list of lines in a block
+
+"""
 def parse_block(sstr):
     
     bracket_checkup = 0 
@@ -209,7 +267,18 @@ def parse_block(sstr):
     
     return "".join(sstr).split("~")
 
+"""
+Execute: Calculates solution of a COM token, depending on the args
 
+Args:
+    token: token
+
+Returns:
+    solution: NUM/SET/OBJ/TXT/BLN
+
+Raises:
+    Error, if occurs
+"""
 def execute(token):
     global VARS, FUNS
     command = token.com
@@ -282,7 +351,7 @@ def execute(token):
     
     elif command == "Point":
         if not(type(args[0].sol) in [int, float] and type(args[1].sol) in [int, float]):
-            raise_error("ARGUMENT ERROR: Wrong argument type")
+            raise_error("ARGUMENT ERROR: Wrong argument type", token)
         return {"name": "Point", "x":args[0].sol, "y":args[1].sol}
 
     elif command == "Polygon":
@@ -350,7 +419,7 @@ def execute(token):
                     if type(args[2].sol) == int:
                         angle = args[2].sol
                     else:
-                        raise_error("ARGUMENT ERROR: Third argument")
+                        raise_error("ARGUMENT ERROR: Third argument is not a valid type, should be NUM", token)
 
                 elif len(args) == 2:
                     cx = sum(e[0] for e in args[0].sol["points"]) // len(args[0].sol["points"])
@@ -358,7 +427,7 @@ def execute(token):
                     if type(args[1].sol) == int:
                         angle = args[1].sol
                     else:
-                        raise_error("ARGUMENT ERROR: Third argument")
+                        raise_error("ARGUMENT ERROR: Second argument is not a valid type, should be NUM", token)
                     points = args[0].sol["points"]
 
                 updated_points = []
@@ -377,9 +446,9 @@ def execute(token):
                     updated_points.append([x_new+cx, y_new+cy])
                     
             else:
-                raise_error("ARGUMENT TYPE: Inavlid obj format")
+                raise_error("ARGUMENT TYPE: Inavlid obj format", token)
         else:
-            raise_error("ARGUMENT TYPE: First argument of rotate command should be OBJ")
+            raise_error("ARGUMENT TYPE: First argument of rotate command should be OBJ",token)
 
         new_obj = deepcopy(args[0].sol)
 
@@ -413,7 +482,7 @@ def execute(token):
             raise_error("ARGUMENT ERROR: Wrong object used as an argument", token)
 
         if "end" not in args[1].sol.keys():
-            raise_error("ARGUMENT ERROR: end attribute is not inside the Vector object")
+            raise_error("ARGUMENT ERROR: end attribute is not inside the Vector object",token)
 
         vect = args[1].sol["end"]
         dx, dy = vect[0], vect[1]
@@ -790,7 +859,7 @@ def execute(token):
 
     elif command == "get":
         if len(args) != 2:
-            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.",token)
         if type(args[0].sol) == dict and type(args[1].sol) == str:
             if args[1].sol in args[0].sol:
                 return args[0].sol[args[1].sol]
@@ -866,7 +935,7 @@ def execute(token):
 
     elif command == ">":
         if len(args) != 2:
-            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.",token)
 
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol > args[1].sol
@@ -875,7 +944,7 @@ def execute(token):
 
     elif command == ">=":
         if len(args) != 2:
-            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.",token)
 
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol >= args[1].sol
@@ -884,7 +953,7 @@ def execute(token):
 
     elif command == "<":
         if len(args) != 2:
-            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.",token)
 
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol < args[1].sol
@@ -893,7 +962,7 @@ def execute(token):
 
     elif command == "<=":
         if len(args) != 2:
-            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.",token)
 
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol <= args[1].sol
@@ -902,7 +971,7 @@ def execute(token):
 
     elif command == "=":
         if len(args) != 2:
-            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.",token)
             
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol == args[1].sol
@@ -913,7 +982,7 @@ def execute(token):
 
     elif command == "!=":
         if len(args) != 2:
-            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.",token)
 
         if type(args[0].sol) == int and type(args[1].sol) == int:
             return args[0].sol != args[1].sol
@@ -922,7 +991,7 @@ def execute(token):
 
     elif command == "not":
         if len(args) != 1:
-            raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+            raise_error("ARGUMENT ERROR: Wrong number of arguments.",token)
 
         if type(args[0].sol) == bool:
             return not(args[0].sol)
@@ -1024,14 +1093,14 @@ def execute(token):
             if type(start) == type(end) == int:
                 return random.randint(start, end)
             else:
-                raise_error("ARGUMENT ERROR: Lowest and the highest values need to be NUM type.")
+                raise_error("ARGUMENT ERROR: Lowest and the highest values need to be NUM type.",token)
         else:
             raise_error("ARGUMENT ERROR: random command only takes in 2 NUM types that represent lowest and the highest value command can result.", token)
     
     elif command == "seq":
         for a in args:
             if type(a.sol) != int:
-                raise_error("ARGUMENT ERROR: All arguments in command seq should be NUM type.")
+                raise_error("ARGUMENT ERROR: All arguments in command seq should be NUM type.",token)
         if len(args) == 1:
             return list(range(args[0].sol))
         elif len(args) == 2:
@@ -1039,11 +1108,11 @@ def execute(token):
         elif len(args) == 3:
             return(list(range(args[0].sol, args[1].sol, args[2].sol)))
         else:
-            raise_error("ARGUMENT ERROR: Number of arguments should be either 1,2 or 3")
+            raise_error("ARGUMENT ERROR: Number of arguments should be either 1,2 or 3",token)
 
     elif command == "while":
         if len(args) != 2:
-            raise_error("ARGUMENT ERROR: Number of arguments should be 2")
+            raise_error("ARGUMENT ERROR: Number of arguments should be 2",token)
         if args[1].typ == "BLK" and type(args[0].sol) == bool:
             while args[0].sol:
                 args[1].evaluate(forced=True)
@@ -1057,7 +1126,7 @@ def execute(token):
         out = ""
         for arg in args:
             if arg.typ == "BLK":
-                raise_error("ARGUMENT ERROR: output command can't take in block of code as an argument")
+                raise_error("ARGUMENT ERROR: output command can't take in block of code as an argument",token)
 
             elif type(arg.sol) == bool:
                 out += (str(arg.sol).upper())
@@ -1176,9 +1245,9 @@ def execute(token):
                     SET_UPDATED.insert(args[1].sol, args[2].sol)
                     return SET_UPDATED
                 except:
-                    raise_error("INDEX ERROR: Trying to insert value to a index thats not in SET")
+                    raise_error("INDEX ERROR: Trying to insert value to a index thats not in SET",token)
             else:
-                raise_error("ARGUMENT ERROR: Wrong number of arguments.")
+                raise_error("ARGUMENT ERROR: Wrong number of arguments.",token)
         else:
             raise_error("ARGUMENT ERROR: trying to add an element into a wrong TYPE, should be SET", token)
 
@@ -1221,7 +1290,7 @@ def execute(token):
         if type(args[0].sol) == list:
             return args[0].sol[::-1]
         else:
-            raise_error("ARGUMENT ERROR: reverse command can only be executed on SET type variables.")
+            raise_error("ARGUMENT ERROR: reverse command can only be executed on SET type variables.",token)
         
     elif command == "sort":
         if len(args) != 2:
@@ -1233,7 +1302,7 @@ def execute(token):
                 return sorted(args[0].sol)[::-1]
             
             else:
-                raise_error('ARGUMENT ERROR: sort command can only be executed on SET type values, second value can be TXT type, use "<" to sort it from smallest to highest and ">" for opposite.')
+                raise_error('ARGUMENT ERROR: sort command can only be executed on SET type values, second value can be TXT type, use "<" to sort it from smallest to highest and ">" for opposite.',token)
         else:
             if type(args[0].sol) == list:
                 return sorted(args[0].sol)
@@ -1453,7 +1522,7 @@ def execute(token):
             replacement = args[2].sol
             return value.replace(replaces, replacement)
         else:
-            raise_error("ARGUMENT ERROR: Can't replace values that are not TXT type.")
+            raise_error("ARGUMENT ERROR: Can't replace values that are not TXT type.",token)
         
     elif command == "set":
         lst = []
@@ -1470,7 +1539,7 @@ def execute(token):
         if type(args[0].sol) == str:
             return list(args[0].sol)
         else:
-            raise_error("ARGUMENT ERROR: setify command takes in only TXT arguments, _ for emtpy SET")
+            raise_error("ARGUMENT ERROR: setify command takes in only TXT arguments, _ for emtpy SET",token)
     
     #COMMAND NOT FOUND SYNTAX ERROR
     elif command not in COMMANDS:
