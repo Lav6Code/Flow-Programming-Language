@@ -207,8 +207,8 @@ def parse_arg(sstr):
     bracket_checkup = 0 
     inside_qoutes = False
     separations = []
-    if "" in sstr.split(","): # New added (check if it breaks anything)
-        raise_error(f"ARGUMENT ERROR: Sufficient number of , in {sstr}")
+    if "" in sstr.split(",") and len(sstr.split(",")) > 1: # New added (check if it breaks anything)
+        raise_error(f"ARGUMENT ERROR: Wrong number of , in {sstr}")
     
     for i,c in enumerate(sstr):
         
@@ -258,6 +258,7 @@ def parse_block(sstr):
         if bracket_checkup == 0:
             if c == ";":
                 separations.append(i)
+
 
     sstr = list(sstr)
 
@@ -1661,12 +1662,13 @@ def run(file_path):
     for i,e in enumerate(file_content):
         if COMMENT in e:
             file_content[i] = e.split(COMMENT)[0]
+        
     file_content = "".join(file_content)
     
     # Additional cleanup
     file_content = file_content.replace("\n", "")
     file_content = file_content.replace("\t", "")
-    
+
     # Execute program
     TOKENS = []
     token_root = tokenize(file_content, TOKENS)

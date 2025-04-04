@@ -122,7 +122,7 @@ KEYWORDS_2 = ['var', 'func', 'output', "sum", "input", "if", "for", "while", "su
 KEYWORDS_3 = ['"']
 KEYWORDS_4 = [";", "(", ")"]
 KEYWORDS_5 = ["TRUE", "FALSE"]
-KEYWORDS_6 = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line","Vector" , "draw", "Polygon", "pi", "Graph", "Rectangle", "translate", "Point"]
+KEYWORDS_6 = ["Circle", "InCircle", "CircumCircle", "Triangle", "Polyline", "Line","Vector" , "draw", "Polygon", "pi", "Graph", "Rectangle", "translate","rotate" ,"Point"]
 KEYWORDS_7 = ["$"] # COMMENT
 COMMANDS = KEYWORDS_3+ KEYWORDS_2 + KEYWORDS_6 + KEYWORDS_5 + KEYWORDS_7 + KEYWORDS_1 + KEYWORDS_4
 COMMANDS_DESCRIPTION = {
@@ -189,7 +189,9 @@ COMMANDS_DESCRIPTION = {
     "draw": "draw(shape [obj], shape [obj]...) -> Opens a window and visually displays the specified shapes.",
     "Polygon": "Polygon(point1 [set], point2 [set]...) -> Creates a Polygon object with points, perimeter, and area attributes, instead of sets you can use Point obj",
     "Vector": "Vector(dx [num] dy [num]) -> Creates a Vector object with length atribute",
-    "Point": "Point(x [num] y [num]) -> Creates a Point object"
+    "Point": "Point(x [num] y [num]) -> Creates a Point object",
+    "Translate": "Translate(object [obj] vector [obj]) -> Moves an object by dx and dy attributes from vector object",
+    "Rotate": "Rotate(object [obj] * angle [num]) -> Rotates an object by a given angle (degrees)"
 }
 
 
