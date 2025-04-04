@@ -140,7 +140,7 @@ class Token:
 
         global VARS
 
-        #print(f'...evaluating {self}')
+        #depending on the type, solution is generated
             
         if self.typ == "NUM": 
 
@@ -779,6 +779,9 @@ def execute(token):
                     "area": radius**2*math.pi}
 
             return objc
+    
+        else:
+            raise_error("ARGUMENT ERROR: Wrong object argument while trying to do InCircle")
         
     elif command == "CircumCircle":
         if len(args) == 1:
@@ -856,6 +859,8 @@ def execute(token):
                     "area": radius**2*math.pi}
 
             return objc
+        else:
+            raise_error("ARGUMENT ERROR: Wrong object argument while trying to do CircumCircle")
 
     elif command == "get":
         if len(args) != 2:
